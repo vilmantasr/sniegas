@@ -1,0 +1,13 @@
+# PyInstaller
+build/
+dist/
+*.spec
+sniegas.ico
+
+# Python
+__pycache__/
+*.pyc
+
+# Programos nustatymai ir žurnalai (kuriami šalia programos)
+sniegas_nustatymai.json*
+sniegas_diagnostika*.log
