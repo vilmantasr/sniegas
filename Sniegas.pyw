@@ -48,8 +48,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.14"
-DATA = "2026-10-25"
+VERSIJA = "12.15"
+DATA = "2026-10-27"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -6913,6 +6913,24 @@ class Sniegas:
             return None
         return max(ys[len(ys) // 2], self.senio_kelio_riba(s_))
 
+    def senio_kelio_virsus(self, s_, Ps):
+        """Prisnigto kelio viršus (y) po apatine gniūžte – mediana – arba None (ne ekrano apačioje). Kaip
+        senio_kelio_tikslas: be stumiamų krūvų (pravažiuojanti krūva tik trumpam uždengia) ir ne aukščiau kelio
+        ribos (palikta krūva senio nekelia)."""
+        kel = self.__dict__.get("kelias")
+        if s_["pav"] is None or s_["pav"][0] != "zeme" or not kel:
+            return None
+        S, base = STULPELIS, self.pagrindas
+        lx = SENIO_GNIUZTE if s_.get("kryptis", 1) > 0 else SENIO_W - 1 - SENIO_GNIUZTE
+        x = s_["x"] + (lx + 0.5 - SENIO_W / 2) * Ps
+        pus = SENIO_GNIUZTES_PUS * Ps
+        a, b = max(0, int((x - pus) // S)), min(len(kel), int((x + pus) // S) + 1)
+        if b - a < 3:
+            return None
+        kr, rib = self.kelio_kruvos(a, b), self.kelio_ribos()
+        ys = sorted(base[c] - min(kel[c], rib[c]) for c in range(a, b) if not kr[c - a] and base[c] is not None)
+        return ys[len(ys) // 2] if len(ys) >= 3 and len(ys) * 2 >= b - a else None
+
     def senio_kelio_riba(self, s_):
         """Kiek aukštai (y) senis daugiausia pakyla ant kelio sniego: iki įprastos kelio ribos (kelio_ribos – iki
         tiek prisninga) arba pusnies, jei ji aukštesnė. Buldozeriukų krūvos aukštesnės – dėl jų nekyla."""
@@ -7122,6 +7140,12 @@ class Sniegas:
                     # pamažu kyla kartu (kitaip atrodydavo įdubęs), kad kelias dengtų tik kojas. Dėl pusnies (ji –
                     # už senio) ir buldozeriukų krūvų nekyla
                     s_["y_fiks"] = max(tikslas, s_["y_fiks"] - SENIO_KYLA * k * dt)
+                if pav[0] == "zeme":
+                    # Kelio sniegas piešiamas PRIEŠ senį – bet kokiu atveju (ir kai pusnis už jo aukštesnė už kelią)
+                    # jis dengia ne daugiau kaip kojas: giliau apsnigtas senis pamažu kyla.
+                    kv = self.senio_kelio_virsus(s_, Ps)
+                    if kv is not None and s_["y_fiks"] > kv + SENIO_KELIO_GYLIS * Ps:
+                        s_["y_fiks"] = max(kv + SENIO_KELIO_GYLIS * Ps, s_["y_fiks"] - SENIO_KYLA * k * dt)
                 y = pagr + s_["y_fiks"]
             else:
                 s_["y_fiks"] = None
@@ -7541,6 +7565,20 @@ class Sniegas:
             finally:
                 gdi32.RestoreDC(self.fdc, -1)
 
+    def senio_apacia(self, s_):
+        """Žemiau kur senio nepiešti (y, neįskaitytinai): ant paviršiaus stovinčio – iki pagrindo (užduočių juostos
+        ar lango viršaus). Įsmegusi apačia dengiama sniegu, bet žemiau pagrindo sniego nėra – ji matydavosi ant
+        užduočių juostos. Krentantis, pagautas – be ribos."""
+        pav = s_.get("pav")
+        if pav is None or s_["busena"] not in SENIO_ANT_PAVIRSIAUS + ("nukrenta",):
+            return None
+        if pav[0] == "zeme":
+            c = int(s_["x"] // STULPELIS)
+            base = self.pagrindas
+            return base[c] if 0 <= c < len(base) else None
+        st = s_.get("st")
+        return st["t"] if st is not None else None
+
     def piesti_senius(self, i_langa, visas):
         if not self.senio_sprite or not (self.seniai or self.senio_daleles):
             return
@@ -7556,7 +7594,8 @@ class Sniegas:
                 nr = self.senio_kadras(s_)
                 x0, y0 = int(s_["x"] - W / 2), int(s_["y"]) - H + 1
                 nauja = self.permatomas_kopijavimas((W, H), x0, y0, self.senio_sprite["dc"],
-                                                    nr % n * W, nr // n * H)  # juostoje – 2 eilutės (kryptys)
+                                                    nr % n * W, nr // n * H,  # juostoje – 2 eilutės (kryptys)
+                                                    y_max=self.senio_apacia(s_))
                 X = senio_x(senio_poslinkis(*SENIO_KADRAI[nr % n]), nr >= n, Ps)  # kaip juostoje
                 spalva = i % len(SENIO_SAGOS)
                 puosmena = self.senio_puosmena(s_)
