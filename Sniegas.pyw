@@ -48,8 +48,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.15"
-DATA = "2026-10-27"
+VERSIJA = "12.16"
+DATA = "2026-10-28"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -360,8 +360,8 @@ EN = {
         "When the active program fills the whole screen (a game, a film, a presentation), the snow is hidden. Ordinary maximized windows – not.",
     "Rašo techninį žurnalą sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos. „Atverti“ – parodo žurnalą.":
         "Writes a technical log sniegas_diagnostika.log (frame times, errors) – for tracking down problems. “Open” – shows the log.",
-    "Snaigės krisdamos sukasi. Išjungus – krenta nesisukdamos.":
-        "Flakes spin as they fall. When off – they fall without spinning.",
+    "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.":
+        "Flakes spin as they fall. When off – they do not spin, only tilt slightly as they sway.",
     "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.":
         "Now and then a sparkle glints on the piled snow and on falling flakes.",
     "Įprastos – glotnios snaigės; Pixel art – stambiais taškais, kaip senuose žaidimuose.":
@@ -651,6 +651,9 @@ TIPAI = [
 
 # vieno simetrijos periodo dydis laipsniais (6 spinduliai – 60°): po tiek laipsnių snaigė atrodo taip pat
 TIPU_PERIODAI = [360 / forma[1] if rusis in ("kristalas", "kontura") else 360 for _, rusis, forma in TIPAI]
+# Kai „Snaigės sukasi“ išjungta, kristalas vis tiek nebūna sustingęs lipdukas: svyruodamas į šoną jis
+# pasvyra į judėjimo pusę (kaip krentanti plokštelė), ±SUPIMOSI_KAMPAS laipsnių, kai svyravimas numatytasis.
+SUPIMOSI_KAMPAS, SUPIMOSI_MAX = 15.0, 30.0
 
 # Tikroviškumui svarbiausia – gylis. Smulkios snaigės yra toli: krenta lėčiau, vėjas jas ekrane neša lėčiau,
 # jos blankesnės (oras tarp mūsų ir jų). Stambios – arti: greitesnės, ryškios, labiau svyruoja.
@@ -774,8 +777,8 @@ NUMATYTI = {
     "snaiges": True,
     "tipai": [25, 20, 8, 20, 5, 25, 25, 25, 10, 10, 10, 10, 7],  # iš viso 200; daugiau stambių – tikroviškiausia
     "greitis": 90,
-    "svyravimas": 80,  # %, kristalų svyravimas į šonus (krentančio lapelio)
-    "plasnojimas": 80,  # %, kristalų lėtėjimas / greitėjimas krentant
+    "svyravimas": 35,  # %, svyravimas į šonus (netolygus – ne švytuoklė)
+    "plasnojimas": 10,  # %, kristalų lėtėjimas / greitėjimas krentant (stiprus atrodo kaip snaigė ant siūlo)
     "snaigiu_stilius": "iprastos",  # „pikseliai“ arba „iprastos“
     "snaiges_sukasi": True,
     "sniego_konturas": True,  # sukaupto sniego kontūras apačioje – matosi ant baltų langų
@@ -818,7 +821,7 @@ NUMATYTI = {
     "girliandu_kiekis": 18,  # lempučių vienoje ekrano pusėje
     "girliandu_atspindziai": True,  # šviečiančių lempučių stikle kartais blyksteli atspindys
     "girliandu_mirksejimas": 100,  # mirksėjimo greitis, %; 0 – šviečia nemirksėdamos
-    "fps": 30,
+    "fps": 60,  # sklandžiau: lėta snaigė juda po ~0,5 taško per kadrą, o ne netolygiais 0–2 taškų šuoliukais
     "fejerverkai": False,
     "fejerverku_intervalas": 60,  # min; paleidžiama kas tiek minučių nuo vidurnakčio (60 – pilnomis valandomis)
     "fejerverku_trukme": 30,  # s
@@ -909,7 +912,7 @@ APRASAI = {
     "kaupti_languose": "Sniegas kaupiasi ant atidarytų langų viršutinio krašto.",
     "slepti_pilname_ekrane": "Kai aktyvi programa užima visą ekraną (žaidimas, filmas, pristatymas), sniegas paslepiamas. Išdidinti įprasti langai – ne.",
     "diagnostika": "Rašo techninį žurnalą sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos. „Atverti“ – parodo žurnalą.",
-    "snaiges_sukasi": "Snaigės krisdamos sukasi. Išjungus – krenta nesisukdamos.",
+    "snaiges_sukasi": "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.",
     "sniego_konturas": "Plona melsva linija sukaupto sniego viršuje. Ant langų ji būna visada – be jos sniegas ant baltų langų nesimatytų.",
     "sniegas_blizga": "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.",
     "snaigiu_stilius": "Įprastos – glotnios snaigės; Pixel art – stambiais taškais, kaip senuose žaidimuose.",
@@ -8436,6 +8439,15 @@ class Sniegas:
         sar += [st["sritis"] for st in self.langai.values()]
         return sar
 
+    @staticmethod
+    def supimo_kadrai(f, laikas, supimas, sin):
+        """Kiek posūkio kadrų pasvirusi nesisukanti snaigė: svyrimas – pagal tą patį netolygų svyravimą kaip
+        zingsnis() (šoninis greitis), t. y. pasvyra į tą pusę, į kurią tuo metu slenka."""
+        fz = laikas * f[SDAZN] + f[SFAZE]
+        sfz = ((sin(fz) + 0.45 * sin(fz * 2.37 + f[SFAZE] * 3.1))
+               * (0.775 + 0.225 * sin(laikas * f[SDAZN] * 0.23 + f[SFAZE] * 1.7)) * 0.69)
+        return int(sfz * supimas / TIPU_PERIODAI[f[STIPAS]] * SUKIMO_KADRAI + 100.5) - 100
+
     def piesti_snaiges(self, i_langa, visas, toli):
         """toli=True – tolimos snaigės: po jų statinio sluoksnio daiktai (eglės, pusnys, girliandos) vėl
         uždedami ant viršaus (TransparentBlt su permatoma spalva), todėl snaigės atrodo krentančios už jų."""
@@ -8451,7 +8463,11 @@ class Sniegas:
         g = self.g
         Ellipse, Polyline, SetViewportOrgEx, PatBlt = gdi32.Ellipse, gdi32.Polyline, gdi32.SetViewportOrgEx, gdi32.PatBlt
         atlasas = self.snaigiu_atlasas
-        laikas = time.perf_counter() if self.n["snaiges_sukasi"] else 0.0
+        sukasi = self.n["snaiges_sukasi"]
+        laikas = time.perf_counter()
+        # supimasis (tik nesisukant): kampas laipsniais pagal svyravimą; 0 – išjungta
+        supimas = 0.0 if sukasi else min(SUPIMOSI_MAX, SUPIMOSI_KAMPAS * self.n["svyravimas"] / NUMATYTI["svyravimas"])
+        sin = math.sin
         esamas_tipas = -1
         iprastos = None
         if atlasas:
@@ -8471,7 +8487,7 @@ class Sniegas:
             langelis = None
             if atlasas:
                 kadrai = vietos[f[STIPAS]]
-                if len(kadrai) > 1 and laikas:
+                if len(kadrai) > 1 and sukasi:
                     # pixel art šuoliukai kiek greitesni – kitaip lėta snaigė persijungtų tik kas kelias sekundes
                     ax, w, h = kadrai[int(laikas * 1.5 * abs(f[SSUKIMAS]) / PIKS_SUKIMO_ZINGSNIS[f[STIPAS]]
                                           + f[SSUK_FAZE] * 2) & 1]
@@ -8492,9 +8508,11 @@ class Sniegas:
                     if len(kadrai) > 1:
                         # pradinis pasukimas – iš SFAZE (atsitiktinė, 0…2π), sukimasis – kaip piešiant tiesiogiai
                         k_ = int(f[SFAZE] * sukimo_k)
-                        if laikas:
+                        if sukasi:
                             k_ += int((laikas * f[SSUKIMAS] / TIPU_PERIODAI[f[STIPAS]] + f[SSUK_FAZE]) % 1.0
                                       * SUKIMO_KADRAI)
+                        elif supimas:
+                            k_ += self.supimo_kadrai(f, laikas, supimas, sin)
                         ax, ay = kadrai[k_ % SUKIMO_KADRAI]
                     else:
                         ax, ay = kadrai[0]
@@ -8510,9 +8528,11 @@ class Sniegas:
             if nauja and not atlasas and langelis is None:
                 taskai = f[STASKAI]
                 if taskai is not None:
-                    if laikas:
+                    if sukasi:
                         taskai = taskai[int((laikas * f[SSUKIMAS] / TIPU_PERIODAI[f[STIPAS]] + f[SSUK_FAZE])
                                             % 1.0 * SUKIMO_KADRAI)]
+                    elif supimas:
+                        taskai = taskai[self.supimo_kadrai(f, laikas, supimas, sin) % SUKIMO_KADRAI]
                     else:
                         taskai = taskai[0]
                 piesti.append((ix, iy, f[STIPAS], taskai, f[SSKERSMUO]))
@@ -9138,11 +9158,17 @@ class Sniegas:
             k_ = dt * f[SREAKCIJA]
             vx += (tikslas - vx) * (k_ if k_ < 1 else 1)
             f[SVX] = vx
-            sfz = sin(fz)
+            # Svyravimas – ne viena sinusoidė (tada snaigė juda kaip švytuoklė, „pririšta už siūlo“), o dvi
+            # nekartotinio santykio bangos (2,37 karto dažnesnė, 0,45 amplitudės) ir lėtai kintantis mostų dydis
+            # (0,55–1): kiekvienas mostas kitoks, judesys nesikartoja. Nauji laukai nereikalingi – antros bangos
+            # fazė ir mostų kitimas išvedami iš SDAZN ir SFAZE.
+            fz2 = fz * 2.37 + f[SFAZE] * 3.1
+            mostas = 0.775 + 0.225 * sin(t * f[SDAZN] * 0.23 + f[SFAZE] * 1.7)
+            sfz = (sin(fz) + 0.45 * sin(fz2)) * mostas * 0.69  # 0,69 ≈ 1 / 1,45 – didžiausia vertė ~1
             nx = x + (vx + sfz * f[SAMP] * svyr) * dt
-            # kristalai lėtėja, kai „pasvyra“ į šoną, ir greitėja grįždami – kaip krentantis lapas;
-            # cos(2·fz) = 1 − 2·sin²(fz) – vienu trigonometriniu kvietimu mažiau kiekvienai snaigei
-            ny = y + (f[SVY] * gk * (1 - f[SPLASNOJIMAS] * plasn * (1.0 - 2.0 * sfz * sfz)) + v * vk) * dt
+            # kristalai lėtėja, kai „pasvyra“ į šoną, ir greitėja grįždami – kaip krentantis lapas; 0,358 – kad
+            # vidutiniškai (per ilgą laiką) kritimo greitis nepasikeistų: vidutinis 2·sfz² ≈ 0,358
+            ny = y + (f[SVY] * gk * (1 - f[SPLASNOJIMAS] * plasn * (0.358 - 2.0 * sfz * sfz)) + v * vk) * dt
             nusileido = False
             di = int(nx) >> 6
             for sy, x1, x2, hl, lx, st in (dezes[di] if 0 <= di < nd else ()):
@@ -10723,7 +10749,7 @@ class Sniegas:
                 u = v = 0.0
                 vk = 0.6
             f[4] += (vejas * z + u - f[4]) * min(1.0, dt * 2.5)
-            f[0] = (x + (f[4] + math.sin(t * 1.7 + f[3]) * 3 * z * self.n["svyravimas"] / 80) * dt) % VEJO_PERZ_W
+            f[0] = (x + (f[4] + (math.sin(t * 1.7 + f[3]) + 0.45 * math.sin(t * 4.03 + f[3] * 5.47)) * 3 * z * self.n["svyravimas"] / 55) * dt) % VEJO_PERZ_W
             f[1] = y + ((14 + 16 * z) + v * vk) * dt
             if f[1] > apacia:
                 f[1] = virsus - 2
