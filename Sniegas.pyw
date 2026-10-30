@@ -48,7 +48,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.21"
+VERSIJA = "12.22"
 DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -1202,6 +1202,8 @@ if sys.platform == "win32":
     user32.ReleaseDC.argtypes = [wintypes.HWND, _HDC]
     user32.FillRect.argtypes = [_HDC, ctypes.POINTER(wintypes.RECT), _H]
     dwmapi.DwmGetWindowAttribute.argtypes = [wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD]
+    dwmapi.DwmSetWindowAttribute.argtypes = [wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD]
+    dwmapi.DwmSetWindowAttribute.restype = ctypes.c_long
     user32.ShowWindow.argtypes = [wintypes.HWND, _I]
     dwmapi.DwmGetWindowAttribute.restype = ctypes.c_long
     kernel32.CreateMutexW.argtypes = [ctypes.c_void_p, wintypes.BOOL, wintypes.LPCWSTR]
@@ -2872,6 +2874,7 @@ def logo_png(s):
             + gabalas(b"IDAT", zlib.compress(b"".join(eilutes), 9)) + gabalas(b"IEND", b""))
 
 
+@functools.lru_cache(maxsize=4)
 def logo_ico(dydziai=(16, 32, 48)):
     """.ico su PNG vaizdais (Windows Vista+) – sistemos dėklo piktogramai."""
     pngs = [logo_png(d) for d in dydziai]
@@ -3724,6 +3727,14 @@ class Fejerverkai:
         if galva is not None:
             galva.gyv = 0.0
         xt, yt = x, y
+        # blyksnis sprogimo vietoje: ryškus baltas centras (kryžiukas, įstrižai – mažesni taškai), akimirkai;
+        # kuriamas prieš sprogimą – finale, pasiekus dalelių ribą, šerdis nedingsta
+        P2, balta = self.P * 2, FJ_PALETES["sidabrinė"]
+        for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+            self.nauja(g, xt + dx * P2, yt + dy * P2, 0.0, 0.0, 0.11 if dx == dy == 0 else 0.08, balta,
+                       oras=0.0, trauka=0.0, dydis=2)
+        for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+            self.nauja(g, xt + dx * P2 * 0.75, yt + dy * P2 * 0.75, 0.0, 0.0, 0.06, balta, oras=0.0, trauka=0.0)
         pries = len(g.dalys)
         self.kalibras = kalibras
         try:
@@ -3733,13 +3744,6 @@ class Fejerverkai:
         for p in g.dalys[pries:]:  # sprogimas skrenda toliau ta pačia kryptimi kaip raketa
             p.vx += vx * 0.6
             p.vy += vy * 0.6
-        # blyksnis sprogimo vietoje: ryškus baltas centras (kryžiukas, įstrižai – mažesni taškai), akimirkai
-        P2, balta = self.P * 2, FJ_PALETES["sidabrinė"]
-        for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
-            self.nauja(g, xt + dx * P2, yt + dy * P2, 0.0, 0.0, 0.11 if dx == dy == 0 else 0.08, balta,
-                       oras=0.0, trauka=0.0, dydis=2)
-        for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
-            self.nauja(g, xt + dx * P2 * 0.75, yt + dy * P2 * 0.75, 0.0, 0.0, 0.06, balta, oras=0.0, trauka=0.0)
         if self.detales:  # dūmų debesėlis, kurį lėtai nuneša vėjas
             for _ in range(8):
                 self.nauja(g, xt + rnd.uniform(-20, 20) * self.k, yt + rnd.uniform(-20, 20) * self.k,
@@ -4264,7 +4268,7 @@ def _sn_puosmena(t, gx, gy, puosmena):
         t[(gx - 5, th - 2)] = "b"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.lru_cache(maxsize=256)  # be ribos per ilgą darbą (visos pozos × puošmenos × tūtos) – iki ~16 MB
 def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika"):
     """poza: „eina“ (kadras 0…5), „stovi“, „kabo“ (atsilenkimas × rankų padėtis, žr. senio_kabo_kadras), „nukrenta“, „meta“, „sauna“, „semia“, „mojuoja“,
     „rankos“, „dairosi“ (galva atsukta į kitą pusę). Žiūri į dešinę (i_kaire – veidrodiškai).
@@ -4925,15 +4929,12 @@ def argb(spalva):
 
 def alfa_kreive(astrumas):
     """Dengimo „sustandinimas“: S(x) = xᵖ / (xᵖ + (1−x)ᵖ), p = 1 + 6·aštrumas. 0 – nekeičiama (glotnu), 1 – beveik
-    slenkstis (beveik aštru, bet tada grįžta ir šuoliukai). Grąžina (S, S⁻¹)."""
+    slenkstis (beveik aštru, bet tada grįžta ir šuoliukai). Grąžina S."""
     p = 1 + 6 * max(0.0, min(1.0, astrumas))
 
     def S(x):
         return 0.0 if x <= 0 else 1.0 if x >= 1 else x ** p / (x ** p + (1 - x) ** p)
-
-    def S_atv(y):
-        return 0.0 if y <= 0 else 1.0 if y >= 1 else 1 / (1 + ((1 - y) / y) ** (1 / p))
-    return S, S_atv
+    return S
 
 
 _ALFA_SPALVU_LENTELES = {}
@@ -5119,7 +5120,7 @@ class AlfaSniegas:
         astrumas = max(0.0, min(1.0, astrumas))
         if astrumas == self.astrumas:
             return
-        S, _ = alfa_kreive(astrumas)
+        S = alfa_kreive(astrumas)
         self.astrumas, self.s_lentele = astrumas, bytes(round(255 * S(i / 255)) for i in range(256))
         if self.lapai:
             self.isvalyti_kesa()
@@ -10872,7 +10873,7 @@ class Sniegas:
                         f"{getattr(self, 'energijos_ribojimas_isjungtas', '?')} | MMCSS: "
                         f"{'Games' if getattr(self, 'mmcss', None) else 'ne'} | ekrano ritmas (DWM): "
                         f"{getattr(getattr(self, 'ekrano_ritmas', None), 'veikia', '?')} | perdanga {self.perdangos_hwnd:#x}/"
-                        f"{self.piesimo_hwnd:#x} | langų pranešimai: {len(getattr(self, '_kabliukai', []))}/2 | "
+                        f"{self.piesimo_hwnd:#x} | langų pranešimai: {len(getattr(self, '_kabliukai', []))}/3 | "
                         f"nustatymai: {json.dumps(self.n, ensure_ascii=False)}")
 
     def ijungta_diagnostika(self):
@@ -11294,9 +11295,9 @@ class Sniegas:
 
         for stulpelis in stulpeliai:
             for g in stulpelis.winfo_children():
-                for vardas, (fonas, antraste) in SKILCIU_SPALVOS.items():
+                for vardas, (fonas, antr_spalva) in SKILCIU_SPALVOS.items():
                     if g.winfo_class() == "TLabelframe" and getattr(g, "sk_vardas", g.cget("text")) in (vardas, T(vardas)):
-                        self.spalvinti_skilti(g, fonas, antraste)
+                        self.spalvinti_skilti(g, fonas, antr_spalva)
 
         self.atnaujinti_skiltis()
         self.atnaujinti_ispejimus()
