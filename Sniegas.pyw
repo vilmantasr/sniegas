@@ -48,7 +48,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.22"
+VERSIJA = "12.23"
 DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -791,7 +791,8 @@ NUMATYTI = {
     # Kiekviena skiltis įjungiama / išjungiama varnele savo pavadinime: snaiges, vejas_ijungtas,
     # kaupimasis, fejerverkai, egles, girliandos, ekskavatoriai, bumbulai, sniego_senis.
     "snaiges": True,
-    "tipai": [25, 20, 8, 20, 5, 25, 25, 25, 10, 10, 10, 10, 7],  # iš viso 200; daugiau stambių – tikroviškiausia
+    # iš viso 200: dauguma smulkių (tolimos snaigės), stambių (≥ 6) – ketvirtadalis, didžiausių – mažiausiai
+    "tipai": [40, 30, 12, 25, 10, 18, 12, 8, 14, 12, 7, 4, 8],
     "greitis": 90,
     "svyravimas": 20,  # %, svyravimas į šonus (netolygus – ne švytuoklė)
     "plasnojimas": 10,  # %, kristalų lėtėjimas / greitėjimas krentant (stiprus atrodo kaip snaigė ant siūlo)
@@ -827,7 +828,7 @@ NUMATYTI = {
     "egliu_kiekis": 9,
     "egliu_atsitiktinis": True,
     "egliu_aukstis": 45,
-    "egliu_min": 25,
+    "egliu_min": 45,
     "egliu_max": 120,
     "egliu_plotis_min": 69,  # siauriausių eglučių plotis, % įprastos: 69, 85 arba 100 (EGLIU_PLOCIAI)
     "egliu_lemputes": True,
@@ -2632,6 +2633,7 @@ BUMBULU_SPALVOS = (("#e63946", "#9e1b24", "#ff9aa0"), ("#2fa84f", "#196b2f", "#9
                    ("#f4b400", "#a87400", "#ffe08a"), ("#3a86ff", "#1d4fb0", "#a3c6ff"),
                    ("#9b5de5", "#5c2e9e", "#d3b3f7"), ("#c9d1db", "#7d8896", "#ffffff"),
                    ("#ff6fa8", "#b0306a", "#ffc0da"), ("#2a9d8f", "#16645b", "#86e3d8"))  # pagrindinė, šešėlis, blizgesys
+BUMBULU_SNIEGAS = "#eef2f8"  # sniego spalva bumbuliuko atšvaite
 BUMBULU_SPALVU_PAVADINIMAI = ("Raudona", "Žalia", "Auksinė", "Mėlyna", "Violetinė", "Sidabrinė", "Rožinė", "Turkio")
 BUMBULU_RASTAI = ("vienspalvis", "juosta", "dvi_juostos", "taskai", "zigzagas", "langeliai", "zvaigzde", "snaige",
                   "saulute", "ausrine", "rutele", "rombai")
@@ -2716,21 +2718,30 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
     c = n / 2
     t = [[None] * n for _ in range(n)]
     # Stiklas: keturi tonai pagal rutulio normalę (šviesa iš viršaus kairės), lango atspindžio lankas ir
-    # baltas blizgesys viršuje kairėje, o apačioje dešinėje – šviesus pusmėnulis: šviesa, praėjusi pro stiklą
-    # (kaustika). Be jo burbulas atrodė kaip matinis plastikinis rutulys.
+    # baltas blizgesys viršuje kairėje, o apatiniame krašte – sniego atšvaitas (baltas sniegas atspindi šviesą į
+    # rutulio apačią; kaustika – šviesos „blynas“ – tiktų tik skaidriam burbului, o šitie nepermatomi).
     tonai = (tamsi, _maisyti(pagr, tamsi, 0.45), pagr, _maisyti(pagr, sviesi, 0.45))
-    kaustika, puos_seselis = _maisyti(pagr, sviesi, 0.6), _maisyti(puosimas, tamsi, 0.45)
+    atsvaitas, puos_seselis = _maisyti(pagr, BUMBULU_SNIEGAS, 0.45), _maisyti(puosimas, tamsi, 0.45)
     lx, ly, lz = -0.55, -0.6, 0.58
+    riba = R if R <= 4 else R - 0.2  # mažiems – klasikinis pixel art apskritimas (8 px: 4-6-8-8-8-8-6-4)
+    # auksiniam bumbuliukui – sidabrinė kepurėlė (auksinė su juo susiliedavo)
+    kepure = ("#e8edf2", "#8a96a5") if spalva == 2 else ("#f2c94c", "#c99a00")
+    kep_plotis = 1.0 if R <= 4 else 1.7  # kepurėlė 2 ar 4 langelių pločio (mažam 4 – kaip stiklainio dangtelis)
+
+    def uz(px, py):
+        return math.hypot(px, py) > riba
+
     for y in range(n):
         for x in range(n):
-            dx, dy = x + 0.5 - c, y + 0.5 - c
+            dx, dy = x + 1 - c, y + 1 - c  # centras – langelių sandūroje (lyginis skersmuo – be „spyglių“ ant ašių)
             xr, yr = dx * cs + dy * sn, -dx * sn + dy * cs  # taškas burbulo koordinatėse
             atstumas = math.hypot(dx, dy)
-            if R >= 3 and abs(xr) <= 1.7 and -R - 1.8 <= yr <= -R + 0.9:  # auksinė kepurėlė
-                t[y][x] = "#c99a00" if abs(xr) > 0.9 else "#f2c94c"
+            if R >= 3 and abs(xr) <= kep_plotis and -R - 1.8 <= yr <= -R + 0.9:  # auksinė kepurėlė
+                t[y][x] = kepure[abs(xr) > 0.9]
                 continue
-            if atstumas > R:
+            if atstumas > riba:
                 continue
+            kontur = uz(dx + 1, dy) or uz(dx - 1, dy) or uz(dx, dy + 1) or uz(dx, dy - 1)
             nx, ny = dx / R, dy / R
             sviesa = nx * lx + ny * ly + math.sqrt(max(0.0, 1 - nx * nx - ny * ny)) * lz
             tonas = 0 if sviesa < 0.05 else 1 if sviesa < 0.35 else 2 if sviesa < 0.8 else 3
@@ -2738,13 +2749,13 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
             if R >= 3 and _rasto_taskas(rastas, xr, yr, R):
                 spalva_px = puosimas if tonas >= 2 else puos_seselis
             kampas = math.degrees(math.atan2(dy, dx)) % 360
-            if 0.55 * R < atstumas < 0.85 * R and abs((kampas - 45 + 180) % 360 - 180) < 32:
-                spalva_px = kaustika
+            if dy > 0 and uz(dx, dy + 2) and abs(kampas - 90) < 50:  # sniego atšvaitas – juostelė virš kontūro
+                spalva_px = atsvaitas
             if 0.5 * R < atstumas < 0.78 * R and 195 < kampas < 250:  # lango atspindys
                 spalva_px = sviesi
             if math.hypot(dx + R * 0.42, dy + R * 0.42) < max(0.7, R * 0.13):
                 spalva_px = "#ffffff"
-            if atstumas > R - 0.9:  # kontūras – kad matytųsi ir ant balto sniego
+            if kontur:  # kontūras (kaimynas už rutulio) – kad matytųsi ir ant balto sniego
                 spalva_px = tamsi
             t[y][x] = spalva_px
     return tuple(tuple(e) for e in t)
@@ -7027,7 +7038,7 @@ class Sniegas:
             return
         random.shuffle(spalvos)
         for i in range(self.n["bumbulu_kiekis"]):
-            Pb, R, Pf = bumbulo_matmenys(random.choice((5, 6, 7)), self.P, self.n["bumbulu_dydis"])
+            Pb, R, Pf = bumbulo_matmenys(random.choice((6, 6, 7)), self.P, self.n["bumbulu_dydis"])
             spalva, rastas = spalvos[i % len(spalvos)], BUMBULU_RASTAI[random.choice(rastai)]
             n = 2 * R + 5
             W = round(n * Pf)
@@ -9480,8 +9491,9 @@ class Sniegas:
             nauja = None
             if b["y"] is not None and b["busena"] != "nera":
                 kadras, zemyn, apkirpti = self.bumbulo_vaizdas(b)
-                x0 = int(b["x"] - b["c"])
-                y0 = int(b["y"] - b["aukstis"] - b["r"] - b["c"] + zemyn) + 1
+                pus = b["r"] / b["R"] / 2  # rutulio centras – puse langelio kairiau ir aukščiau sprite centro
+                x0 = int(b["x"] - b["c"] + pus)
+                y0 = int(b["y"] - b["aukstis"] - b["r"] - b["c"] + pus + zemyn) + 1
                 # Niekas – žemiau paviršiaus pagrindo (užduočių juostos, lango viršaus): riedant pasisukęs žemyn
                 # snapelis išlįsdavo už ekrano apačios linijos.
                 atr = self.bumbulo_atrama(b, b["x"]) if b.get("pav") else None
@@ -12202,7 +12214,7 @@ class Sniegas:
         self.bumbulu_perziura, self.bumbulu_perz_skeveldros = [], []
         P_ = self.P if isinstance(getattr(self, "P", None), int) else max(2, int(round(2.4 * k)))
         for i in range(3 if rastai and spalvos else 0):
-            R = bumbulo_matmenys((6, 5, 7)[i], P_, self.n["bumbulu_dydis"])[1]  # kaip ekrane
+            R = bumbulo_matmenys((6, 6, 7)[i], P_, self.n["bumbulu_dydis"])[1]  # kaip ekrane
             spalva, rastas = spalvos[i % len(spalvos)], BUMBULU_RASTAI[rastai[i % len(rastai)]]
             n = 2 * R + 5
             kadrai = ([bumbulo_tinklelis(R, spalva, rastas, kk) for kk in range(BUMBULU_KADRAI)]
@@ -12239,8 +12251,9 @@ class Sniegas:
             if b["busena"] == "nera":
                 continue
             kadras, zemyn, apkirpti = self.bumbulo_vaizdas(b)
-            x0 = int(b["x"] - b["c"])
-            y0 = int(b["y"] - b["r"] - b["c"] + zemyn) + 1
+            pus = b["r"] / b["R"] / 2
+            x0 = int(b["x"] - b["c"] + pus)
+            y0 = int(b["y"] - b["r"] - b["c"] + pus + zemyn) + 1
             piks_piesti(p, b["kadrai"][kadras], x0, y0, Pp)
             if apkirpti:  # įsmenga / išnyra – dalis po sniegu
                 c.create_rectangle(x0, int(b["y"]) + 1, x0 + int(2 * b["c"]) + 1, H, fill=SNIEGAS, outline="")
