@@ -48,8 +48,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.18"
-DATA = "2026-10-29"
+VERSIJA = "12.19"
+DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -1479,6 +1479,26 @@ class GdiPiesejas:
         gdi32.SelectObject(self.dc, self.g.piestukas(spalva))
         pts = self._int(pts)
         gdi32.Polyline(self.dc, (ctypes.c_long * len(pts))(*pts), len(pts) // 2)
+
+
+class PaslinktasPiesejas(GdiPiesejas):
+    """Tas pats, tik piešinys paslinktas (-dx, -dy) – ekrano koordinatėmis nupiešti į mažą atskirą paveikslėlį."""
+
+    def __init__(self, g, dc, dx, dy):
+        super().__init__(g, dc)
+        self.dx, self.dy = dx, dy
+
+    def _slinkti(self, pts):
+        return [v - (self.dy if i & 1 else self.dx) for i, v in enumerate(pts)]
+
+    def poligonas(self, pts, uzpildas):
+        super().poligonas(self._slinkti(pts), uzpildas)
+
+    def staciakampis(self, x1, y1, x2, y2, spalva):
+        super().staciakampis(x1 - self.dx, y1 - self.dy, x2 - self.dx, y2 - self.dy, spalva)
+
+    def linija(self, pts, spalva):
+        super().linija(self._slinkti(pts), spalva)
 
 
 # ---------------------------------------------------------------- pixel art buldozeriukai (sniego valytuvai)
@@ -4539,6 +4559,22 @@ def _gulinti_ant_sniego(d, zeme):
         d["y"] = pav
 
 
+def mindyti_gulincias(daleles, einantys, W, H):
+    """Einantis senis per gulinčius gabalus ir popieriukus pravažiuoja – jie įmindomi į sniegą ir netrukus (per ~1,3 s,
+    konfeti – sumirksėję) pradingsta. Kitaip likdavo gulėti ant pusnies ir, piešiami priekyje senio, atrodė ant
+    jo kabantys ore. einantys – [(x, apačios y)], W, H – senio plotis ir aukštis taškais."""
+    if not einantys:
+        return
+    for d in daleles:
+        if not d.get("guli") or d["tipas"] == "gniuzte":
+            continue
+        for x, y in einantys:
+            if abs(d["x"] - x) < 0.32 * W and y - 0.3 * H < d["y"] < y + 0.15 * H:
+                d["gyv"] = min(d["gyv"], 1.3)
+                break
+
+
+KONFETI_MIRKSI = 1.1  # s – tiek prieš pradingdami gulintys konfeti mirksi (laipsniškai išnyksta)
 GNIUZTES_VEJAS = 0.25  # 1/s – kokia vėjo greičio dalis per sekundę pridedama gniūžtei
 
 
@@ -4585,15 +4621,27 @@ def senio_daleliu_zingsnis(daleles, dt, k, zeme, vejas_px=0.0):
         else:  # konfeti: popieriukai sklando – didelis oro pasipriešinimas, siūbuoja, neša vėjas
             d["gyv"] -= dt
             if not d["guli"]:
-                d["faze"] += dt * 9
+                d["faze"] += dt * d.get("suk", 9.0)
+                # krenta kaip lapelis: plokščias – lėtai ir slysta į šoną, briauna žemyn – trumpam paspartėja
+                # (1,076 – išmatuota: kad vidutinis kritimo greitis liktų toks pat kaip anksčiau, ~38 px/s)
+                plok = abs(math.cos(d["faze"]))
                 d["vx"] += (vejas_px * 0.5 - d["vx"]) * min(1.0, dt * 2.5)
-                d["vy"] = min(d["vy"] + 350 * k * dt, 38 * k) if d["vy"] > 0 else d["vy"] + 600 * k * dt
+                riba = 38 * k * (0.55 + 0.9 * (1 - plok)) / 1.076
+                vy = d["vy"]
+                if vy <= 0:
+                    vy += 600 * k * dt
+                elif vy < riba:
+                    vy = min(riba, vy + 350 * k * dt)
+                else:
+                    vy += (riba - vy) * min(1.0, dt * 8)
+                d["vy"] = vy
                 y0 = d["y"]
-                d["x"] += (d["vx"] + math.sin(d["faze"]) * 18 * k) * dt
-                d["y"] += d["vy"] * dt
+                d["x"] += (d["vx"] + math.sin(d["faze"]) * 18 * k * (0.5 + 0.8 * plok)) * dt
+                d["y"] += vy * dt
                 pav = zeme(d["x"], y0)
                 if pav is not None and d["y"] >= pav and d["vy"] > 0:
-                    d.update(y=pav, guli=True, gyv=min(d["gyv"], random.uniform(2.5, 5.0)))
+                    d.update(y=pav, guli=True, gyv=min(d["gyv"], random.uniform(2.0, 4.5)),
+                             puse=1.0 if math.cos(d["faze"]) >= 0 else -1.0)
             else:
                 _gulinti_ant_sniego(d, zeme)
             if d["gyv"] <= 0 or d["y"] > d["riba_y"] or not -50 < d["x"] < d["riba_x"] + 50:
@@ -4647,15 +4695,48 @@ KONFETI_FORMOS = {  # (kampai nuo horizonto, greitis, kiekis šūvyje, šūvių 
 }
 
 
+# Metaliniai (blizgantys) konfeti: (spalva, sužibimas). Kokia rinkinio dalis metalinė – KONFETI_METALAS (kitų – 12 %).
+KONFETI_METALAI = {"auksas": ("#e0b020", "#fff4b8"), "sidabras": ("#c4c9d2", "#ffffff")}
+KONFETI_METALAS = {"auksas": 0.45, "ledas": 0.3, "trispalve": 0.0}
+
+
+@functools.lru_cache(maxsize=None)
+def konfeti_atspalvis(spalva, dalis):
+    """Tamsesnė popieriuko pusė / briauna (dalis – kiek juodos)."""
+    return _maisyti(spalva, "#000000", dalis)
+
+
+def konfeti_vaizdas(d, Ps):
+    """Dvipusis popieriukas vartosi: plokščias (2×1) → pasviręs (1×1) → briauna (1×2, tamsesnė) → kita, tamsesnė
+    pusė. Metalinis, atsisukęs tiesiai į žiūrintį, sužiba. Gulintis – plokščias, ta puse, kuria nukrito.
+    Grąžina (plotis, aukštis, spalva)."""
+    c = d.get("puse", 1.0) if d["guli"] else math.cos(d["faze"])
+    ac = abs(c)
+    sp = d["spalva"] if c >= 0 else konfeti_atspalvis(d["spalva"], 0.38)
+    p1 = max(1, round(Ps))
+    if ac > 0.75:
+        met = d.get("metalas")
+        if met and not d["guli"] and ac > 0.95:
+            sp = KONFETI_METALAI[met][1]
+        return round(2 * Ps), p1, sp
+    if ac > 0.3:
+        return p1, p1, sp
+    return p1, round(2 * Ps), konfeti_atspalvis(sp, 0.25)
+
+
 def nauji_konfeti(x, y, kryptis, k, riba_x, riba_y, kiek=40, spalvos=KONFETI_SPALVOS, kampai=(40, 80),
-                  greitis=(180, 360)):
+                  greitis=(180, 360), metalo_dalis=0.12):
+    """Kiekvienas popieriukas vartosi savo greičiu (į vieną ar kitą pusę); dalis – metaliniai (blizga)."""
     out = []
+    metalai = ("sidabras",) if metalo_dalis and spalvos == KONFETI_RINKINIAI.get("ledas") else tuple(KONFETI_METALAI)
     for _ in range(kiek):
         a = math.radians(random.uniform(*kampai))
         v = random.uniform(*greitis) * k
+        met = random.choice(metalai) if random.random() < metalo_dalis else None
         out.append({"tipas": "konfeti", "x": x, "y": y, "vx": kryptis * math.cos(a) * v, "vy": -math.sin(a) * v,
-                    "spalva": random.choice(spalvos), "faze": random.uniform(0, 6.3), "guli": False,
-                    "gyv": 12.0, "sena": None, "riba_x": riba_x, "riba_y": riba_y})
+                    "spalva": KONFETI_METALAI[met][0] if met else random.choice(spalvos),
+                    "faze": random.uniform(0, 6.3), "suk": random.choice((-1, 1)) * random.uniform(6.0, 13.0),
+                    "metalas": met, "guli": False, "gyv": 12.0, "sena": None, "riba_x": riba_x, "riba_y": riba_y})
     return out
 
 
@@ -4709,7 +4790,7 @@ def senio_veiksmo_eiga(s_, ranka, k, riba_x, riba_y, daleles, maks_nauju=40, tai
             s_["suviai"] = n + 1
             x, y = ranka((SENIO_TUTA[0], SENIO_TUTA[1] + SENIO_POSLINKIS))
             daleles += nauji_konfeti(x, y, s_["kryptis"], k, riba_x, riba_y, min(kiek, maks_nauju),
-                                     KONFETI_RINKINIAI[rinkinys], kampai, greitis)
+                                     KONFETI_RINKINIAI[rinkinys], kampai, greitis, KONFETI_METALAS.get(rinkinys, 0.12))
         baigta = t >= laikai[-1] + 0.7
     if baigta:
         s_.update(jega=None, konfeti=None, suviai=0, pasemta=False, taiko=False)
@@ -6068,6 +6149,7 @@ class Sniegas:
     def atlaisvinti_buferius(self):
         self.naikinti_ekskavatorius()
         self.naikinti_senius()
+        self.naikinti_egliu_paveikslelius()
         try:
             # DC naikinami pirma – tada į juos parinkti pieštukai/teptukai atlaisvinami ir juos galima ištrinti
             self.naikinti_kadro_buferius()
@@ -8108,7 +8190,16 @@ class Sniegas:
                 return self.pagrindas[c] - self.virsus_be_kruvu(c)
             return None
         vejas_px = self.vejas * 12 * self.k if isinstance(getattr(self, "vejas", None), float) else 0.0
+        mindyti_gulincias(self.senio_daleles, [(o["x"], o["y"]) for o in self.seniai
+                                               if o["busena"] == "eina" and o["y"] is not None],
+                          SENIO_W * Ps, SENIO_H * Ps)
         likusios, suduzo = senio_daleliu_zingsnis(self.senio_daleles, dt, self.k, zeme, vejas_px)
+        blizg = self.__dict__.get("blizgesiai")
+        for d in likusios if blizg is not None else ():  # gulintis metalinis konfeti kartais sužiba (kaip sniegas)
+            if d.get("metalas") and d["guli"] and d["gyv"] > KONFETI_MIRKSI and random.random() < 0.7 * dt \
+                    and len(blizg) < BLIZG_MAKS:
+                blizg.append({"x": d["x"] + Ps, "y": d["y"] - Ps * 0.5, "t": 0.0,
+                                        "trukme": random.uniform(0.45, 0.9), "snaige": None, "sena": None})
         gyvos = {id(d) for d in likusios}  # ne „d in likusios“ – tai lygintų žodynus (O(n²))
         self.papildomos += [d["sena"] for d in self.senio_daleles if d["sena"] and id(d) not in gyvos]
         self.senio_daleles = likusios
@@ -8190,16 +8281,63 @@ class Sniegas:
                     gdi32.RestoreDC(fdc, -1)
 
     def uzdengti_eglemis(self, sritis):
-        """Senis eina UŽ eglučių: kur jo vieta kertasi su egle, eglė iš statinio sluoksnio uždedama ant viršaus
-        (permatoma spalva – tik eglės pikseliai), o ant jos – kelio sniegas. Pagautas pele – priekyje visko."""
+        """Senis eina UŽ eglučių: kur jo vieta kertasi su egle, eglė uždedama ant viršaus (tik eglės pikseliai), o
+        ant jos – kelio sniegas. Pagautas pele – priekyje visko.
+        Eglė – iš atskiro jos paveikslėlio, ne iš statinio sluoksnio: ten eglės stačiakampyje yra ir pusnis, todėl
+        ji eglės stačiakampyje uždengdavo senio apačią, o už jo – ne (einant per krūvą ties eglės kraštu matėsi
+        stati linija nuo apatinių šakų žemyn)."""
         l, t, r, b = sritis
         for e in self.egles:
             el, et, er, eb = e["ribos"]
             il, it, ir_, ib = max(l, el), max(t, et), min(r, er), min(b, eb)
             if il < ir_ and it < ib:
-                msimg32.TransparentBlt(self.fdc, il, it, ir_ - il, ib - it, self.sdc, il, it, ir_ - il, ib - it,
-                                       PERMATOMA_RGB)
+                sp = self.egles_paveikslelis(e)
+                if sp is not None:
+                    msimg32.TransparentBlt(self.fdc, il, it, ir_ - il, ib - it, sp["dc"], il - el, it - et,
+                                           ir_ - il, ib - it, PERMATOMA_RGB)
+                else:  # nepavyko sukurti – kaip anksčiau (iš statinio sluoksnio)
+                    msimg32.TransparentBlt(self.fdc, il, it, ir_ - il, ib - it, self.sdc, il, it, ir_ - il, ib - it,
+                                           PERMATOMA_RGB)
         self.uzdengti_keliu(sritis)
+
+    def egles_paveikslelis(self, e):
+        """Eglė (su lemputėmis dabartinėje būsenoje ir sniegu ant šakų) atskirame paveikslėlyje, permatomame fone.
+        Sukuriamas, kai pirmąkart reikia, ir perpiešiamas tik pasikeitus lemputėms ar nustatymams."""
+        kesas = self.__dict__.setdefault("_egliu_paveiksleliai", {})
+        n_egl = dict(self.n, sniegas_ant_egliu=False) if self.sniegas_isjungtas else self.n
+        mirk = e.get("mirk")
+        raktas = (e["ribos"], tuple(mirk["lygiai"]) if mirk else None, n_egl["egliu_burbuliukai"],
+                  n_egl["egliu_lemputes"], n_egl["egliu_mirksi"], bool(n_egl.get("sniegas_ant_egliu", False)))
+        v = kesas.get(id(e))
+        if v is not None and v[0] is e and v[1] == raktas:
+            return v[2]
+        # kuriama / perpiešiama (retai): eglės sukurtos iš naujo – senųjų paveikslėliai atlaisvinami
+        gyvos = {id(x): x for x in self.egles}
+        for k in [k for k, v_ in kesas.items() if gyvos.get(k) is not v_[0]]:
+            self.naikinti_dc(kesas.pop(k)[2])
+        v = kesas.get(id(e))
+        el, et, er, eb = e["ribos"]
+        w, h = er - el, eb - et
+        if w <= 0 or h <= 0:
+            return None
+        if v is not None and v[0] is e and (v[2].get("w"), v[2].get("h")) == (w, h):
+            d = v[2]  # tas pats dydis – perpiešiama tame pačiame
+        else:
+            if v is not None:
+                self.naikinti_dc(kesas.pop(id(e))[2])
+            d = self.naujas_dc(w, h)
+            if not d["bmp"]:
+                self.naikinti_dc(d)
+                return None
+            d["w"], d["h"] = w, h
+        user32.FillRect(d["dc"], ctypes.byref(wintypes.RECT(0, 0, w, h)), self.g.teptukas(PERMATOMA))
+        piesti_egle(PaslinktasPiesejas(self.g, d["dc"], el, et), e, n_egl)
+        kesas[id(e)] = (e, raktas, d)
+        return d
+
+    def naikinti_egliu_paveikslelius(self):
+        for _, _, d in self.__dict__.pop("_egliu_paveiksleliai", {}).values():
+            self.naikinti_dc(d)
 
     def kelio_kruvos(self, a, b):
         """Kurie kelio stulpeliai a…b-1 – dabar stumiamos buldozeriukų krūvos (nuo buldozeriuko galo iki krūvos
@@ -8386,14 +8524,13 @@ class Sniegas:
                 if nauja:
                     FillRect(self.fdc, ctypes.byref(RECT(*nauja)), self.g.teptukas(d["spalva"]))
             else:
-                if d["gyv"] < 0.6 and d["guli"] and int(d["gyv"] * 12) % 2 == 0:  # prieš dingdami pamirksi
+                if d["gyv"] < KONFETI_MIRKSI and d["guli"] and int(d["gyv"] * 12) % 2 == 0:  # prieš dingdami pamirksi
                     nauja = None
                 else:
-                    plac = int(math.sin(d["faze"]) * 2) != 0 or d["guli"]  # „vartaliojasi“: plokščias / briauna
-                    w_, h_ = (round(2 * Ps), max(1, round(Ps))) if plac else (max(1, round(Ps)), round(2 * Ps))
+                    w_, h_, sp = konfeti_vaizdas(d, Ps)
                     nauja = self.ribos(x, y - h_, x + w_, y)
                     if nauja:
-                        FillRect(self.fdc, ctypes.byref(RECT(*nauja)), self.g.teptukas(d["spalva"]))
+                        FillRect(self.fdc, ctypes.byref(RECT(*nauja)), self.g.teptukas(sp))
             if nauja:  # gabalėliai, gniūžtės, konfeti – senio gylyje, t. y. irgi už eglučių ir kelio
                 dengti.append(nauja)
             if not visas:
@@ -12328,6 +12465,8 @@ class Sniegas:
                 p.update(busena=b, t=0.0, stoveti=random.uniform(1.0, 3.0), suviai=0)
                 if b == "dairosi":
                     senio_dairytis(p)
+        if p["busena"] == "eina":
+            mindyti_gulincias(p["daleles"], [(p["x"], p["y"])], SENIO_W * Pp, SENIO_H * Pp)
         p["daleles"], _ = senio_daleliu_zingsnis(p["daleles"], dt, k * f, lambda x, y: float(PERZ_ZEME))
         self.piesti_senio_perziura()
 
@@ -12367,9 +12506,9 @@ class Sniegas:
             x, y = int(d["x"]), int(d["y"])
             if d["tipas"] == "gniuzte":
                 c.create_rectangle(x - 3, y - 3, x + 3, y + 3, fill=SNIEGAS, outline=SENIO_SPALVOS["g"])
-            elif not (d["guli"] and d["gyv"] < 0.6 and int(d["gyv"] * 12) % 2 == 0):
-                w_, h_ = (2 * Pp, Pp) if (int(math.sin(d["faze"]) * 2) != 0 or d["guli"]) else (Pp, 2 * Pp)
-                c.create_rectangle(x, y - h_, x + w_, y, fill=d["spalva"], outline="")
+            elif not (d["guli"] and d["gyv"] < KONFETI_MIRKSI and int(d["gyv"] * 12) % 2 == 0):
+                w_, h_, sp = konfeti_vaizdas(d, Pp)
+                c.create_rectangle(x, y - h_, x + w_, y, fill=sp, outline="")
 
     def senio_perz_griebimo_sritis(self):
         p, Pp = self.senio_perziura, self.senio_perziuros_mastelis()[2]
@@ -12640,6 +12779,7 @@ class Sniegas:
         if nauja_sekla:
             self.egliu_sekla = random.randrange(1 << 30)
         self.kurti_egles()
+        self.naikinti_egliu_paveikslelius()
         self.pilnas_perpiesimas = True
 
     def ribu_tikrinimas(self, iki):
