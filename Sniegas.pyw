@@ -48,8 +48,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.16"
-DATA = "2026-10-28"
+VERSIJA = "12.18"
+DATA = "2026-10-29"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -154,6 +154,22 @@ EN = {
         "A thin bluish line on top of the piled snow. On windows it is always there – without it snow on white "
         "windows would be invisible.",
     "Sniegas kartais sužiba": "Snow sparkles now and then",
+    "Glotnus judėjimas": "Smooth motion",
+    "Krentančios snaigės glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. Išjungus – kaip anksčiau. "
+    "Pixel art stiliui netaikoma.":
+        "Falling flakes have smooth edges and move evenly instead of in one-pixel steps. When off – as before. "
+        "Does not apply to the Pixel art style.",
+    "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – kelias sekundes, "
+    "lėtesniame kompiuteryje iki ~20 s). Senesniuose kompiuteriuose, ypač su didelės raiškos ekranu (2560×1440 ir "
+    "daugiau), jis gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite.":
+        "Puts more load on the computer: when turned on, flakes appear gradually while their images are created (a few "
+        "seconds, up to ~20 s on a slower computer). Older computers, especially with a high-resolution screen "
+        "(2560×1440 and above), may not keep up – the snow starts to stutter. In that case, better turn it off.",
+    "Kraštų aštrumas, %": "Edge sharpness, %",
+    "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų snaigių. Pakeitus "
+    "snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.":
+        "Edge sharpness of smooth flakes: 0 – very soft, as if through fog; 100 – almost like regular flakes. After a "
+        "change the flake images are created anew – for a few seconds the flakes appear gradually.",
     # vėjas, kaupimasis, kita
     "Vėjas": "Wind",
     "Įprastas vėjas": "Normal wind",
@@ -654,6 +670,7 @@ TIPU_PERIODAI = [360 / forma[1] if rusis in ("kristalas", "kontura") else 360 fo
 # Kai „Snaigės sukasi“ išjungta, kristalas vis tiek nebūna sustingęs lipdukas: svyruodamas į šoną jis
 # pasvyra į judėjimo pusę (kaip krentanti plokštelė), ±SUPIMOSI_KAMPAS laipsnių, kai svyravimas numatytasis.
 SUPIMOSI_KAMPAS, SUPIMOSI_MAX = 15.0, 30.0
+SVYRAVIMO_PLOTIS = 1.72  # netolygaus svyravimo mostų plotis – 0,58 vienos sinusoidės (išmatuota), 1 / 0,58 ≈ 1,72
 
 # Tikroviškumui svarbiausia – gylis. Smulkios snaigės yra toli: krenta lėčiau, vėjas jas ekrane neša lėčiau,
 # jos blankesnės (oras tarp mūsų ir jų). Stambios – arti: greitesnės, ryškios, labiau svyruoja.
@@ -777,16 +794,18 @@ NUMATYTI = {
     "snaiges": True,
     "tipai": [25, 20, 8, 20, 5, 25, 25, 25, 10, 10, 10, 10, 7],  # iš viso 200; daugiau stambių – tikroviškiausia
     "greitis": 90,
-    "svyravimas": 35,  # %, svyravimas į šonus (netolygus – ne švytuoklė)
+    "svyravimas": 20,  # %, svyravimas į šonus (netolygus – ne švytuoklė)
     "plasnojimas": 10,  # %, kristalų lėtėjimas / greitėjimas krentant (stiprus atrodo kaip snaigė ant siūlo)
     "snaigiu_stilius": "iprastos",  # „pikseliai“ arba „iprastos“
     "snaiges_sukasi": True,
     "sniego_konturas": True,  # sukaupto sniego kontūras apačioje – matosi ant baltų langų
     "sniegas_blizga": True,  # ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė
-    "dydis": 70,
+    "snaiges_glotnios": False,  # krentančios snaigės – pusskaidriame lange: glotnūs kraštai, juda tarp taškų
+    "glotniu_astrumas": 90,  # glotnių snaigių kraštų aštrumas, %: 0 – visai minkšti, 100 – beveik kaip įprastų
+    "dydis": 90,
     "vejas_ijungtas": True,  # išjungus – jokio vėjo, gūsių ir sūkurių (oras ramus)
     "vejas": 3,  # įprastas (ramaus meto) vėjas
-    "gusiai": 2,  # „Sūkuriai“ (raktas „gusiai“ – istorinis, paliktas dėl nustatymų bylų suderinamumo)
+    "gusiai": 3,  # „Sūkuriai“ (raktas „gusiai“ – istorinis, paliktas dėl nustatymų bylų suderinamumo)
     "gusio_stiprumas": 2,  # 0 – gūsių nėra
     "vejo_kryptis": "kintanti",  # „kintanti“, „desine“ arba „kaire“
     "kaupimasis": True,  # išjungus sniegas niekur nesikaupia (žemiau – kur kaupti, kai įjungta)
@@ -854,7 +873,7 @@ RIBOS = {
     "fps": (30, 120), "fejerverku_intervalas": (1, 1440), "fejerverku_trukme": (10, 180),
     "senio_kiekis": (1, 5), "senio_dydis": (50, 200),
     "ekskavatoriu_kiekis": (1, 6), "ekskavatoriu_dydis": (50, 200), "girliandu_dydis": (50, 200), "girliandu_kiekis": (4, 40),
-    "girliandu_mirksejimas": (0, 300),
+    "girliandu_mirksejimas": (0, 300), "glotniu_astrumas": (0, 100),
 }
 # „Išplėstos ribos“: ribos išplečiamos, bet ne iki begalybės – kitaip vienas per didelis skaičius užšaldytų programą
 # (pvz. 100 000 snaigių – ~3 s vienam kadrui) ar suėstų gigabaitus atminties (bumbuliukų piešinių juostos).
@@ -869,7 +888,7 @@ RIBOS_LAISVOS = {
     "fps": (30, 120), "fejerverku_intervalas": (1, 1440), "fejerverku_trukme": (5, 3600),
     "senio_kiekis": (1, 20), "senio_dydis": (20, 400),
     "ekskavatoriu_kiekis": (1, 30), "ekskavatoriu_dydis": (20, 600), "girliandu_dydis": (20, 600), "girliandu_kiekis": (2, 150),
-    "girliandu_mirksejimas": (0, 1000),
+    "girliandu_mirksejimas": (0, 1000), "glotniu_astrumas": (0, 100),
 }
 # Eglės žemesnės nei 16 px nebūna (šablonas – 16 langelių, langelis ≥ 1 px), plotis – tik EGLIU_PLOCIAI (69–100):
 # todėl ir ribos tokios.
@@ -915,6 +934,14 @@ APRASAI = {
     "snaiges_sukasi": "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.",
     "sniego_konturas": "Plona melsva linija sukaupto sniego viršuje. Ant langų ji būna visada – be jos sniegas ant baltų langų nesimatytų.",
     "sniegas_blizga": "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.",
+    "snaiges_glotnios": ("Krentančios snaigės glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. "
+                         "Išjungus – kaip anksčiau. Pixel art stiliui netaikoma.",
+                         "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
+                         "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesniuose kompiuteriuose, ypač su "
+                         "didelės raiškos ekranu (2560×1440 ir daugiau), jis gali nebespėti – sniegas ima trūkčioti. "
+                         "Tada geriau išjunkite."),
+    "glotniu_astrumas": "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų "
+                        "snaigių. Pakeitus snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.",
     "snaigiu_stilius": "Įprastos – glotnios snaigės; Pixel art – stambiais taškais, kaip senuose žaidimuose.",
     "vejo_kryptis": "Kintanti – vėjas kartais pasikeičia ir trumpam papučia atgal; „Į dešinę“ ir „Į kairę“ – visada ta kryptimi.",
     "girliandu_atspindziai": "Šviečiančių lempučių stikle kartais blyksteli atspindys.",
@@ -957,7 +984,7 @@ GUSIO_RIMIMAS = 100  # %, kaip greitai silpsta
 # skilties pavadinime grąžina tik juos į numatytuosius.
 SKILCIU_NUSTATYMAI = {
     "snaiges": ("tipai", "greitis", "svyravimas", "plasnojimas", "snaigiu_stilius", "snaiges_sukasi", "sniego_konturas",
-                "sniegas_blizga", "dydis"),
+                "sniegas_blizga", "snaiges_glotnios", "glotniu_astrumas", "dydis"),
     "vejas_ijungtas": ("vejas", "gusiai", "gusio_stiprumas", "vejo_kryptis"),
     "kaupimasis": ("kaupti_apacioje", "max_aukstis", "kaupti_languose", "max_aukstis_languose", "kaupimo_greitis"),
     "egles": ("egliu_kiekis", "egliu_atsitiktinis", "egliu_aukstis", "egliu_min", "egliu_max", "egliu_plotis_min",
@@ -1035,7 +1062,7 @@ NE_ISKYLANTYS = {"Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Progman", "WorkerW"
 
 # snaigės laukai
 SX, SY, SVY, SR, SFAZE, SAMP, SDAZN, STASKAI, SDYDIS, SSENA, STIPAS, SSUK_FAZE, SSUKIMAS, SVX, SREAKCIJA, \
-    SPLASNOJIMAS, SSKERSMUO, SGYLIS = range(18)
+    SPLASNOJIMAS, SSKERSMUO, SGYLIS, SLETOS = range(19)
 VSYNC_FAZE = 0.002     # kadras pradedamas tiek s po ekrano atnaujinimo (vblank)
 SUKIMO_KADRAI = 20      # įprastos snaigės: iš anksto apskaičiuoti posūkiai per vieną simetrijos periodą
                         # (20 – ne 10: daugiau pradinių padėčių ir tolygesnis sukimasis; atlasas ~2,6 MB)
@@ -1110,6 +1137,23 @@ class NOTIFYICONDATAW(ctypes.Structure):
                 ("szTip", ctypes.c_wchar * 128), ("dwState", wintypes.DWORD), ("dwStateMask", wintypes.DWORD),
                 ("szInfo", ctypes.c_wchar * 256), ("uVersion", wintypes.UINT), ("szInfoTitle", ctypes.c_wchar * 64),
                 ("dwInfoFlags", wintypes.DWORD), ("guidItem", GUID), ("hBalloonIcon", wintypes.HANDLE)]
+
+
+class BLENDFUNCTION(ctypes.Structure):
+    _fields_ = [("BlendOp", ctypes.c_ubyte), ("BlendFlags", ctypes.c_ubyte),
+                ("SourceConstantAlpha", ctypes.c_ubyte), ("AlphaFormat", ctypes.c_ubyte)]
+
+
+class BITMAPINFOHEADER(ctypes.Structure):
+    _fields_ = [("biSize", wintypes.DWORD), ("biWidth", wintypes.LONG), ("biHeight", wintypes.LONG),
+                ("biPlanes", wintypes.WORD), ("biBitCount", wintypes.WORD), ("biCompression", wintypes.DWORD),
+                ("biSizeImage", wintypes.DWORD), ("biXPelsPerMeter", wintypes.LONG),
+                ("biYPelsPerMeter", wintypes.LONG), ("biClrUsed", wintypes.DWORD), ("biClrImportant", wintypes.DWORD)]
+
+
+class GDIPLUS_PRADZIA(ctypes.Structure):
+    _fields_ = [("GdiplusVersion", ctypes.c_uint32), ("DebugEventCallback", ctypes.c_void_p),
+                ("SuppressBackgroundThread", wintypes.BOOL), ("SuppressExternalCodecs", wintypes.BOOL)]
 
 
 class MONITORINFO(ctypes.Structure):
@@ -1242,6 +1286,47 @@ if sys.platform == "win32":
                                        _I, _I, _I, _I, wintypes.HWND, wintypes.HANDLE, wintypes.HANDLE,
                                        ctypes.c_void_p]
     user32.DestroyWindow.argtypes = [wintypes.HWND]
+    # glotnios snaigės: pusskaidris langas (UpdateLayeredWindow), AlphaBlend, GDI+ (glotnios linijos)
+    msimg32.AlphaBlend.argtypes = [_HDC, _I, _I, _I, _I, _HDC, _I, _I, _I, _I, BLENDFUNCTION]
+    msimg32.AlphaBlend.restype = wintypes.BOOL
+    user32.UpdateLayeredWindow.argtypes = [wintypes.HWND, _HDC, ctypes.POINTER(wintypes.POINT),
+                                           ctypes.POINTER(wintypes.SIZE), _HDC, ctypes.POINTER(wintypes.POINT),
+                                           wintypes.DWORD, ctypes.POINTER(BLENDFUNCTION), wintypes.DWORD]
+    user32.UpdateLayeredWindow.restype = wintypes.BOOL
+    gdi32.CreateDIBSection.argtypes = [_HDC, ctypes.c_void_p, wintypes.UINT, ctypes.POINTER(ctypes.c_void_p),
+                                       _H, wintypes.DWORD]
+    gdi32.CreateDIBSection.restype = _H
+    gdi32.GdiFlush.argtypes = []
+    try:
+        gdiplus = ctypes.WinDLL("gdiplus")
+    except OSError:
+        gdiplus = None
+    if gdiplus:
+        _P, _PP, _F = ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p), ctypes.c_float
+        for _vardas, _arg in (
+                ("GdiplusStartup", [ctypes.POINTER(ctypes.c_size_t), ctypes.POINTER(GDIPLUS_PRADZIA), _P]),
+                ("GdiplusShutdown", [ctypes.c_size_t]),
+                ("GdipCreateBitmapFromScan0", [_I, _I, _I, _I, _P, _PP]),
+                ("GdipGetImageGraphicsContext", [_P, _PP]),
+                ("GdipSetSmoothingMode", [_P, _I]),
+                ("GdipResetWorldTransform", [_P]),
+                ("GdipTranslateWorldTransform", [_P, _F, _F, _I]),
+                ("GdipCreatePen1", [ctypes.c_uint32, _F, _I, _PP]),
+                ("GdipSetPenLineJoin", [_P, _I]),
+                ("GdipSetPenStartCap", [_P, _I]),
+                ("GdipSetPenEndCap", [_P, _I]),
+                ("GdipDrawLines", [_P, _P, _P, _I]),
+                ("GdipCreateSolidFill", [ctypes.c_uint32, _PP]),
+                ("GdipFillEllipse", [_P, _P, _F, _F, _F, _F]),
+                ("GdipFillRectangle", [_P, _P, _F, _F, _F, _F]),
+                ("GdipDeletePen", [_P]),
+                ("GdipDeleteBrush", [_P]),
+                ("GdipDeleteGraphics", [_P]),
+                ("GdipDisposeImage", [_P])):
+            getattr(gdiplus, _vardas).argtypes = _arg
+            getattr(gdiplus, _vardas).restype = _I
+else:
+    gdiplus = None
 
 
 def rgb(spalva):
@@ -3860,6 +3945,7 @@ class EkranoRitmas:
             q = ctypes.c_int64()
             self.k32.QueryPerformanceCounter(ctypes.byref(q))
             dabar = time.perf_counter()
+            self.skaitikliai = (info.cRefresh, info.cFrame)  # ekrano atnaujinimų ir DWM sukomponuotų kadrų skaičiai
             return periodas, dabar - (q.value - info.qpcVBlank) / self.daznis
         except Exception:
             return None
@@ -4400,7 +4486,7 @@ def senio_lemputes_spalva(j, senis, sviesumas):
 # Stovintis senis nekyla, kai aplink jį prisninga (apsninga), bet nusileidžia, kai sniegas po juo suslūgsta
 SENIO_GNIUZTE, SENIO_GNIUZTES_PUS = 12.0, 8  # apatinės gniūžtės vidurys ir pusplotis langeliais (žiūrint į dešinę)
 SENIO_NUSESDA = 40  # px/s (×k): kaip greitai stovintis senis nusileidžia, kai sniegas po juo suslūgsta
-SENIO_KELIO_GYLIS = 3  # langeliai: tiek senio apačios uždengia prisnigtas kelias priešais jį – giliau senis kyla
+SENIO_KELIO_GYLIS = 1  # langeliai: tiek senio apačios uždengia prisnigtas kelias priešais jį – giliau senis kyla
 SENIO_KYLA = 6  # px/s (×k): kaip greitai stovintis senis ekrano apačioje kyla, kai priešais jį kaupiasi kelio sniegas
 SENIO_STOVINT = ("stovi", "dairosi", "rankos", "mojuoja", "meta", "sauna", "nukrenta")
 # būsenos, kai senis stovi ant paviršiaus (gali būti taikinys, pagaunamas spragtelėjimu ir pan.)
@@ -4710,6 +4796,568 @@ def senio_veiksmo_kadras(s_):
 SENIO_KADRO_NR = {k: i for i, k in enumerate(SENIO_KADRAI)}
 
 
+# ------------------------------------------------------------------ glotnios (pusskaidrės) snaigės
+
+ALFA_FAZES = 4            # padėtys tarp taškų kiekviena kryptimi: 4 × 4 = 16 kiekvieno piešinio variantų
+ALFA_LINIJA = 1.0         # linijos storis taškais (kaip įprastų snaigių – smulkus raštas lieka matomas)
+# Glotninimas skaičiuojamas „šviesos“ (tiesinėje) skalėje: spalvos pirma paverčiamos tiesinėmis, po piešimo visi
+# baitai – atgal (ALFA_GAMA). Be to pusiau uždengti kraštų taškai gaunami per tamsūs (50 % → 128, o akiai tai tik
+# ~22 % šviesos): plona glotni linija atrodo pilka, blanki ir neryški, ypač ant tamsaus fono.
+ALFA_GAMA = 2.2
+ALFA_ASTRUMAS = 0.9  # pradinis kraštų aštrumas (nustatymas „glotniu_astrumas“ / 100): 0 – visai glotnu, 1 – beveik aštru
+ALFA_GAMOS_LENTELE = bytes(round(255 * (i / 255) ** (1 / ALFA_GAMA)) for i in range(256))
+ALFA_BALTUMAS = 0.5       # kiek glotnios snaigės baltesnės už įprastas (0 – tokios pat, 1 – visos baltos)
+ALFA_LAPAS = 1024         # spraitų lapo kraštinė
+ALFA_MAKS_LAPU = 16       # ~64 MB; prisipildžius – išvaloma ir pradedama iš naujo
+ALFA_KURIMO_MS = 3.0      # tiek daugiausia ms per kadrą naujiems piešiniams (kitaip – jau esantis kitas posūkis)
+ALFA_KAUKE = 256          # pagalbinio buferio kraštinė (snaigės kaukei)
+PERMATOMA_DIB = int(PERMATOMA[1:], 16)  # permatoma spalva 32 bitų buferyje (0x00RRGGBB)
+
+
+def argb(spalva):
+    return 0xFF000000 | int(spalva[1:7], 16)
+
+
+def alfa_kreive(astrumas):
+    """Dengimo „sustandinimas“: S(x) = xᵖ / (xᵖ + (1−x)ᵖ), p = 1 + 6·aštrumas. 0 – nekeičiama (glotnu), 1 – beveik
+    slenkstis (beveik aštru, bet tada grįžta ir šuoliukai). Grąžina (S, S⁻¹)."""
+    p = 1 + 6 * max(0.0, min(1.0, astrumas))
+
+    def S(x):
+        return 0.0 if x <= 0 else 1.0 if x >= 1 else x ** p / (x ** p + (1 - x) ** p)
+
+    def S_atv(y):
+        return 0.0 if y <= 0 else 1.0 if y >= 1 else 1 / (1 + ((1 - y) / y) ** (1 / p))
+    return S, S_atv
+
+
+_ALFA_SPALVU_LENTELES = {}
+
+
+def alfa_spalvu_lenteles(spalva):
+    """Baltas dengimas → spalva: trys baitų lentelės (B, G, R – kaip baitai atmintyje); sukuriamos kartą spalvai."""
+    v = _ALFA_SPALVU_LENTELES.get(spalva)
+    if v is None:
+        v = _ALFA_SPALVU_LENTELES[spalva] = [bytes(round(i * int(spalva[k:k + 2], 16) / 255) for i in range(256))
+                                            for k in (5, 3, 1)]
+    return v
+
+
+def tiesine(spalva):
+    """Spalva tiesinėje (šviesos) skalėje – piešiama glotniai, paskui grąžinama ALFA_GAMOS_LENTELE."""
+    return "#" + "".join(f"{round(255 * (int(spalva[i:i + 2], 16) / 255) ** ALFA_GAMA):02x}" for i in (1, 3, 5))
+
+
+def baltesne(spalva, dalis):
+    """Spalva, priartinta prie baltos: dalis 0 – ta pati, 1 – balta."""
+    return "#" + "".join(f"{round(int(spalva[i:i + 2], 16) + (255 - int(spalva[i:i + 2], 16)) * dalis):02x}"
+                         for i in (1, 3, 5))
+
+
+def alfa_matmenys(rusis, r, D):
+    """(c, w): snaigės centras langelyje ir langelio kraštinė – su vieta šešėliui (+1), padėčiai tarp taškų (<1)
+    ir glotniam kraštui."""
+    if D:
+        d = D // 2 + 2
+    else:
+        d = int(math.ceil(r * (1.1 if rusis == "kontura" else 1.0))) + 1
+    return d + 2, 2 * d + 6
+
+
+def dib_sekcija(W, H):
+    """32 bitų paveikslas atmintyje (viršus–apačia, nuliais). Grąžina (dc, bitmap, adresas)."""
+    bi = BITMAPINFOHEADER(ctypes.sizeof(BITMAPINFOHEADER), W, -H, 1, 32, 0, 0, 0, 0, 0, 0)
+    bits = ctypes.c_void_p()
+    dc = gdi32.CreateCompatibleDC(None)
+    bmp = gdi32.CreateDIBSection(dc, ctypes.byref(bi), 0, ctypes.byref(bits), None, 0) if dc else None
+    if not (dc and bmp and bits.value):
+        if bmp:
+            gdi32.DeleteObject(bmp)
+        if dc:
+            gdi32.DeleteDC(dc)
+        raise MemoryError(f"nepavyko sukurti {W}×{H} paveikslo")
+    gdi32.SelectObject(dc, bmp)
+    return dc, bmp, bits.value
+
+
+class AlfaSniegas:
+    """Krentančios snaigės pusskaidriame lange (kiekvienas taškas – su savo permatomumu): glotnūs kraštai ir
+    judėjimas tarp taškų (ALFA_FAZES × ALFA_FAZES padėčių). Langas priklauso perdangai, todėl Windows jį laiko
+    virš jos, kartu iškelia ir nuleidžia; pelė eina kiaurai. Tolimos snaigės ten, kur perdangoje kas nors
+    nupiešta (eglės, pusnys, seniai, bumbuliukai…), išpjaunamos – todėl matosi už jų; artimos – tik ten, kur
+    girliandos ir kibirkštėlės (jos priekyje visko). Piešiniai (su šešėliu, 16 padėčių) kuriami GDI+ tik tada,
+    kai prireikia, ir laikomi lapuose. Bet kokia klaida – glotnus judėjimas išjungiamas, sniegas piešiamas kaip
+    anksčiau (žr. žurnalą)."""
+
+    def __init__(self):
+        self.veikia = False
+        self.klaida = None
+        self.hwnd = None
+        self.token = None
+        self.dc = self.bmp = None
+        self.bits = 0
+        self.kdc = self.kbmp = None
+        self.vw = self.vh = 0
+        self.vx = self.vy = 0
+        self.lapai = []
+        self.kesas = {}
+        self.bet_kuris = {}
+        self.zingsniai = [0.5] * len(TIPAI)
+        self.astrumas, self.s_lentele = 0.0, bytes(range(256))
+        self.nustatyti_astruma(ALFA_ASTRUMAS)
+        self.senos = []
+        self.visas = True
+        self.rodomas = False
+        self.d_nulis()
+
+    def d_nulis(self):
+        self.d_kadrai = 0
+        self.d_piesimas = self.d_kauke = self.d_ekranas = self.d_kurimas = 0.0
+        self.d_sukurta = 0
+        self.d_kaukiu = 0
+        self.d_pakaitalai = 0
+        self.d_praleista = 0
+
+    # ---- sukūrimas ir naikinimas
+
+    def pradeti(self, savininkas, vx, vy, vw, vh):
+        """Sukuria (arba pritaiko naujiems ekranams) langą ir buferius. Grąžina, ar veikia."""
+        if self.klaida:
+            return False
+        try:
+            if self.token is None:
+                if not gdiplus:
+                    raise OSError("nėra gdiplus.dll")
+                token = ctypes.c_size_t()
+                st = gdiplus.GdiplusStartup(ctypes.byref(token), ctypes.byref(GDIPLUS_PRADZIA(1, None, False, False)),
+                                            None)
+                if st:
+                    raise OSError(f"GdiplusStartup: {st}")
+                self.token = token
+            if not self.hwnd:
+                ex = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE
+                self.hwnd = user32.CreateWindowExW(ex, "STATIC", "Sniegas", WS_POPUP, vx, vy, vw, vh,
+                                                   savininkas or None, None, None, None)
+                if not self.hwnd:
+                    raise OSError(f"CreateWindowExW: {ctypes.get_last_error()}")
+                self.rodomas = False
+            if not self.dc or (vw, vh) != (self.vw, self.vh):
+                self.naikinti_buferi()
+                self.dc, self.bmp, self.bits = dib_sekcija(vw, vh)
+                self.vw, self.vh = vw, vh
+                self.masyvas = (ctypes.c_uint32 * (vw * vh)).from_address(self.bits)
+            if not self.kdc:
+                self.kdc, self.kbmp, kbits = dib_sekcija(ALFA_KAUKE, ALFA_KAUKE)
+                self.kmasyvas = (ctypes.c_uint32 * (ALFA_KAUKE * ALFA_KAUKE)).from_address(kbits)
+            self.vx, self.vy = vx, vy
+            self.taskas, self.dydis, self.p0 = wintypes.POINT(vx, vy), wintypes.SIZE(vw, vh), wintypes.POINT(0, 0)
+            self.blend = BLENDFUNCTION(0, 0, 255, 1)  # AC_SRC_OVER, AC_SRC_ALPHA (iš anksto padauginta)
+            self.juoda = gdi32.GetStockObject(4)  # BLACK_BRUSH
+            self.fillrect_valo = self.patikrinti_valyma()
+            self.visas, self.senos = True, []
+            if not self.veikia:
+                ZURNALAS.rasyti(f"glotnus judėjimas įjungtas: {vw}×{vh}, FillRect valo ir alfa: "
+                                f"{'taip' if self.fillrect_valo else 'ne'}")
+            self.veikia = True
+            return True
+        except Exception as e:
+            self.isjungti(e)
+            return False
+
+    def patikrinti_valyma(self):
+        """Ar FillRect juodu teptuku nustato ir alfa = 0? Jei ne – valoma tiesiogiai atmintyje."""
+        p = self.masyvas
+        senas = p[0]
+        p[0] = 0xFFFFFFFF
+        user32.FillRect(self.dc, ctypes.byref(wintypes.RECT(0, 0, 1, 1)), self.juoda)
+        gdi32.GdiFlush()
+        valo = p[0] == 0
+        p[0] = senas
+        return valo
+
+    def isjungti(self, e):
+        self.klaida = f"{type(e).__name__}: {e}"
+        self.veikia = False
+        try:
+            ZURNALAS.rasyti("GLOTNUS JUDĖJIMAS IŠJUNGTAS (sniegas piešiamas kaip anksčiau): " + self.klaida + "\n"
+                            + traceback.format_exc())
+        except Exception:
+            pass
+        try:
+            self.paslepti()
+        except Exception:
+            pass
+
+    def naikinti_buferi(self):
+        if self.dc:
+            gdi32.DeleteDC(self.dc)
+        if self.bmp:
+            gdi32.DeleteObject(self.bmp)
+        self.dc = self.bmp = None
+        self.bits = 0
+        self.vw = self.vh = 0
+
+    def isvalyti_kesa(self):
+        for l_ in self.lapai:
+            try:
+                gdiplus.GdipDisposeImage(l_["gp"])
+            finally:
+                gdi32.DeleteDC(l_["dc"])
+                gdi32.DeleteObject(l_["bmp"])
+        self.lapai = []
+        self.kesas = {}
+        self.bet_kuris = {}
+
+    def nustatyti_astruma(self, astrumas):
+        """Kraštų aštrumas 0–1: nauja lentelė, piešiniai kuriami iš naujo."""
+        astrumas = max(0.0, min(1.0, astrumas))
+        if astrumas == self.astrumas:
+            return
+        S, _ = alfa_kreive(astrumas)
+        self.astrumas, self.s_lentele = astrumas, bytes(round(255 * S(i / 255)) for i in range(256))
+        if self.lapai:
+            self.isvalyti_kesa()
+
+    def nustatyti_dydzius(self, k, dydis):
+        """Snaigių dydžio žingsnis kiekvienai rūšiai (kaip įprastų snaigių atlase) – piešinių būna nedaug.
+        Pasikeitus dydžiui ar ekranui senieji piešiniai išmetami."""
+        dk0 = k * dydis / 100
+        for tipas, (_, rusis, forma) in enumerate(TIPAI):
+            if rusis in ("kristalas", "kontura"):
+                self.zingsniai[tipas] = max(0.5, round(forma[0] * dk0 * 1.15 * 0.04 * 2) / 2)
+        if self.lapai:
+            self.isvalyti_kesa()
+
+    def naikinti(self):
+        try:
+            self.isvalyti_kesa()
+        except Exception:
+            pass
+        self.naikinti_buferi()
+        if self.kdc:
+            gdi32.DeleteDC(self.kdc)
+            gdi32.DeleteObject(self.kbmp)
+            self.kdc = self.kbmp = None
+        if self.hwnd:
+            user32.DestroyWindow(self.hwnd)
+            self.hwnd = None
+        if self.token is not None and gdiplus:
+            gdiplus.GdiplusShutdown(self.token.value)
+            self.token = None
+        self.veikia = False
+
+    def atlaisvinti(self):
+        """Išjungus glotnų judėjimą – atlaisvinama atmintis (piešinių lapai, viso ekrano buferis; ~40–60 MB).
+        Langas lieka (paslėptas); vėl įjungus viskas sukuriama iš naujo (pradeti)."""
+        self.paslepti()
+        self.isvalyti_kesa()
+        self.naikinti_buferi()
+        self.veikia = False
+
+    def paslepti(self):
+        if self.hwnd and self.rodomas:
+            user32.ShowWindow(self.hwnd, 0)  # SW_HIDE
+        self.rodomas = False
+        if self.bits:
+            ctypes.memset(self.bits, 0, self.vw * self.vh * 4)
+        self.senos = []
+        self.visas = True
+
+    # ---- piešiniai (spraitai)
+
+    def vieta(self, b):
+        """Vieta b×b blokui lapuose: (lapas, x, y)."""
+        if b > ALFA_LAPAS:  # milžiniška snaigė (išplėstos ribos) – atskiras lapas
+            return self.naujas_lapas(b), 0, 0
+        lapas = self.lapai[-1] if self.lapai and self.lapai[-1]["dydis"] == ALFA_LAPAS else None
+        if lapas is not None:
+            x, y, eil = lapas["x"], lapas["y"], lapas["eil"]
+            if x + b > ALFA_LAPAS:
+                x, y, eil = 0, y + eil, 0
+            if y + b > ALFA_LAPAS:
+                lapas = None
+        if lapas is None:
+            if len(self.lapai) >= ALFA_MAKS_LAPU:
+                self.isvalyti_kesa()
+            lapas = self.naujas_lapas(ALFA_LAPAS)
+            x = y = eil = 0
+        lapas["x"], lapas["y"], lapas["eil"] = x + b, y, max(eil, b)
+        return lapas, x, y
+
+    def naujas_lapas(self, L):
+        dc, bmp, bits = dib_sekcija(L, L)
+        gp = ctypes.c_void_p()
+        st = gdiplus.GdipCreateBitmapFromScan0(L, L, L * 4, 0x000E200B, bits, ctypes.byref(gp))  # 32bppPARGB
+        if st or not gp.value:
+            gdi32.DeleteDC(dc)
+            gdi32.DeleteObject(bmp)
+            raise OSError(f"GdipCreateBitmapFromScan0: {st}")
+        lapas = {"dc": dc, "bmp": bmp, "bits": bits, "gp": gp, "dydis": L, "x": 0, "y": 0, "eil": 0}
+        self.lapai.append(lapas)
+        return lapas
+
+    def kurti(self, tipas, q, k_):
+        """Vienos snaigės piešinys (rūšis, dydis, posūkis): ALFA_FAZES × ALFA_FAZES padėčių tarp taškų, su šešėliu.
+        Grąžina (lapo dc, x0, y0, w, c); padėtis (fx, fy) – langelis (x0 + fx·w, y0 + fy·w).
+        Piešiama tiesinėje (šviesos) skalėje, paskui – atgal (ALFA_GAMA). Kai aštrumas > 0: šešėlis ir snaigė pirma
+        nupiešiami baltai atskirai (tik dengimas), jų dengimas sustandinamas, nuspalvinama, snaigė uždedama ant
+        šešėlio – taip sustandėja ir kraštai, ir melsvi tarpeliai tarp snaigės linijų (kaip įprastose snaigėse)."""
+        _, rusis, forma = TIPAI[tipas]
+        if rusis in ("kristalas", "kontura"):
+            r, D = q * self.zingsniai[tipas], 0
+            pts = formos_taskai(rusis, forma, r, 2 * math.pi / forma[1] * k_ / SUKIMO_KADRAI)
+            n = len(pts) // 2
+            taskai = (ctypes.c_float * len(pts))(*pts)
+        else:
+            r, D, taskai = 0.0, q, None
+        c, w = alfa_matmenys(rusis, r, D)
+        F = ALFA_FAZES
+        B = F * w
+        lapas, x0, y0 = self.vieta(B)
+        G = gdiplus
+        seselis, snaige = tiesine(SNAIGES_SESELIS), tiesine(baltesne(TIPU_SPALVOS[tipas], ALFA_BALTUMAS))
+        astrus = self.astrumas > 0
+        kauke = None
+        if astrus:  # laikinas B × 2B paveikslas: viršuje – šešėlio, apačioje – snaigės dengimas (baltai); taip
+            # kiekviena pusė atmintyje ištisinė ir apdorojama visa iš karto, ne eilutėmis
+            kdc, kbmp, kbits = dib_sekcija(B, 2 * B)
+            kgp = ctypes.c_void_p()
+            st = G.GdipCreateBitmapFromScan0(B, 2 * B, B * 4, 0x000E200B, kbits, ctypes.byref(kgp))
+            if st or not kgp.value:
+                gdi32.DeleteDC(kdc)
+                gdi32.DeleteObject(kbmp)
+                raise OSError(f"GdipCreateBitmapFromScan0: {st}")
+            kauke = (kdc, kbmp, kbits, kgp)
+            darbai = ((kgp, 0, 0, 1, "#ffffff"), (kgp, 0, B, 0, "#ffffff"))
+        else:
+            darbai = ((lapas["gp"], x0, y0, 1, seselis), (lapas["gp"], x0, y0, 0, snaige))
+        try:
+            for gp, bx, by, poslinkis, spalva in darbai:
+                g = ctypes.c_void_p()
+                st = G.GdipGetImageGraphicsContext(gp, ctypes.byref(g))
+                if st or not g.value:
+                    raise OSError(f"GdipGetImageGraphicsContext: {st}")
+                irankis = ctypes.c_void_p()
+                try:
+                    G.GdipSetSmoothingMode(g, 4)  # SmoothingModeAntiAlias
+                    if taskai is not None:
+                        G.GdipCreatePen1(argb(spalva), ALFA_LINIJA, 2, ctypes.byref(irankis))  # UnitPixel
+                        if not irankis.value:
+                            raise OSError("GdipCreatePen1")
+                        G.GdipSetPenLineJoin(irankis, 2)  # LineJoinRound
+                        G.GdipSetPenStartCap(irankis, 2)  # LineCapRound
+                        G.GdipSetPenEndCap(irankis, 2)
+                    else:
+                        G.GdipCreateSolidFill(argb(spalva), ctypes.byref(irankis))
+                        if not irankis.value:
+                            raise OSError("GdipCreateSolidFill")
+                    for fy in range(F):
+                        for fx in range(F):
+                            # taško centras – sveikoji koordinatė (kaip GDI), padėtis tarp taškų – fx/F
+                            ox = bx + fx * w + c + fx / F + poslinkis
+                            oy = by + fy * w + c + fy / F + poslinkis
+                            if taskai is not None:
+                                G.GdipResetWorldTransform(g)
+                                G.GdipTranslateWorldTransform(g, ox, oy, 0)
+                                G.GdipDrawLines(g, irankis, taskai, n)
+                            else:
+                                h_ = D // 2
+                                # GDI: Ellipse / PatBlt dengia taškus ox-h_ … ox-h_+D-1 → GDI+ kraštai ±0,5
+                                (G.GdipFillRectangle if D <= 2 else G.GdipFillEllipse)(
+                                    g, irankis, ox - h_ - 0.5, oy - h_ - 0.5, D, D)
+                finally:
+                    if irankis.value:
+                        (G.GdipDeletePen if taskai is not None else G.GdipDeleteBrush)(irankis)
+                    G.GdipDeleteGraphics(g)
+            gdi32.GdiFlush()
+            L, n_ = lapas["dydis"], B * 4
+            gama_lape = True  # ar gama dar taikytina lape (eilutėmis)
+            if astrus:
+                kdc, _, kbits, _ = kauke
+                SL, nB = self.s_lentele, B * n_
+                for poz, sp in ((0, seselis), (nB, snaige)):
+                    lent = alfa_spalvu_lenteles(sp)
+                    e = bytearray(ctypes.string_at(kbits + poz, nB).translate(SL))  # baltas: visi baitai = dengimas
+                    for k in range(3):
+                        e[k::4] = e[k::4].translate(lent[k])
+                    ctypes.memmove(kbits + poz, (ctypes.c_char * nB).from_buffer(e), nB)
+                gdi32.GdiFlush()
+                # snaigė ant šešėlio tame pačiame paveiksle (sritys nepersidengia), gama – visam iš karto, tada
+                # eilutės nukopijuojamos į lapą
+                if msimg32.AlphaBlend(kdc, 0, 0, B, B, kdc, 0, B, B, B, self.blend):
+                    gdi32.GdiFlush()
+                    g_ = bytearray(ctypes.string_at(kbits, nB).translate(ALFA_GAMOS_LENTELE))
+                    adr = ctypes.addressof((ctypes.c_char * nB).from_buffer(g_))
+                    for eil in range(B):
+                        ctypes.memmove(lapas["bits"] + ((y0 + eil) * L + x0) * 4, adr + eil * n_, n_)
+                    gama_lape = False
+                else:  # atsarginis kelias (jei AlphaBlend tame pačiame paveiksle nepavyktų): kaip anksčiau – lape
+                    for eil in range(B):
+                        ctypes.memmove(lapas["bits"] + ((y0 + eil) * L + x0) * 4, kbits + eil * n_, n_)
+                    gdi32.GdiFlush()
+                    msimg32.AlphaBlend(lapas["dc"], x0, y0, B, B, kdc, 0, B, B, B, self.blend)
+                    gdi32.GdiFlush()
+            if gama_lape:  # iš tiesinės skalės – atgal (visi keturi baitai: iš anksto padaugintos spalvos ir alfa)
+                for eil in range(B):
+                    adr = lapas["bits"] + ((y0 + eil) * L + x0) * 4
+                    ctypes.memmove(adr, ctypes.string_at(adr, n_).translate(ALFA_GAMOS_LENTELE), n_)
+        finally:
+            if kauke is not None:
+                G.GdipDisposeImage(kauke[3])
+                gdi32.DeleteDC(kauke[0])
+                gdi32.DeleteObject(kauke[1])
+        v = (lapas["dc"], x0, y0, w, c)
+        self.kesas[(tipas, q, k_)] = v
+        self.bet_kuris[(tipas, q)] = v
+        self.d_sukurta += 1
+        return v
+
+    # ---- kadras
+
+    def kauke(self, fdc, r):
+        """Snaigės stačiakampyje r išpjauna (alfa = 0) taškus, kuriuose perdangoje kas nors nupiešta."""
+        vw = self.vw
+        l, t, rr, b = max(0, r[0]), max(0, r[1]), min(vw, r[2]), min(self.vh, r[3])
+        KS = ALFA_KAUKE
+        for ty in range(t, b, KS):
+            for tx in range(l, rr, KS):
+                w, h = min(KS, rr - tx), min(KS, b - ty)
+                gdi32.BitBlt(self.kdc, 0, 0, w, h, fdc, tx, ty, SRCCOPY)
+                gdi32.GdiFlush()
+                src, dst, KEY = self.kmasyvas, self.masyvas, PERMATOMA_DIB
+                for j in range(h):
+                    o = j * KS
+                    d = (ty + j) * vw + tx
+                    for i, v in enumerate(src[o:o + w]):
+                        if v & 0xFFFFFF != KEY:
+                            dst[d + i] = 0
+        self.d_kaukiu += 1
+
+    def piesti(self, sn, fdc, laikas, kurti_iki=None):
+        """Vienas kadras: išvalomos senos vietos, nupiešiamos tolimos snaigės (ir išpjaunamos už daiktų), tada
+        artimos (išpjaunamos po girliandomis ir kibirkštėlėmis), paveikslas perduodamas Windows."""
+        pc = time.perf_counter
+        t0 = pc()
+        sukurta0, kaukiu0 = self.d_sukurta, self.d_kaukiu
+        vw, vh, adc, bl = self.vw, self.vh, self.dc, self.blend
+        if self.visas:
+            ctypes.memset(self.bits, 0, vw * vh * 4)
+            self.visas = False
+            buvo = True
+        else:
+            buvo = bool(self.senos)
+            if self.fillrect_valo:
+                FillRect, rect, juoda = user32.FillRect, wintypes.RECT(), self.juoda
+                for l, t, r, b in self.senos:
+                    rect.left, rect.top, rect.right, rect.bottom = l, t, r, b
+                    FillRect(adc, ctypes.byref(rect), juoda)
+            else:
+                for l, t, r, b in self.senos:
+                    l, r = max(0, l), min(vw, r)
+                    for yy in range(max(0, t), min(vh, b)):
+                        ctypes.memset(self.bits + (yy * vw + l) * 4, 0, (r - l) * 4)
+        n = sn.n
+        sukasi = n["snaiges_sukasi"]
+        supimas = 0.0 if sukasi else min(SUPIMOSI_MAX, SUPIMOSI_KAMPAS * n["svyravimas"] / NUMATYTI["svyravimas"])
+        sukimo_k = SUKIMO_KADRAI / (2 * math.pi)
+        AB, floor, sin, F = msimg32.AlphaBlend, math.floor, math.sin, ALFA_FAZES
+        kesas, bet_kuris, zingsniai = self.kesas, self.bet_kuris, self.zingsniai
+        if kurti_iki is None:
+            kurti_iki = t0 + ALFA_KURIMO_MS / 1000
+        supimo_kadrai = Sniegas.supimo_kadrai
+        naujos = []
+        kaukes_s = kurimo_s = 0.0
+        snaiges = sn.snaiges
+        for toli in (True, False):
+            kliutys = sn.alfa_kliutys(toli)
+            kl_virsus = min((k[1] for k in kliutys), default=vh)
+            isp = []
+            for f in snaiges:
+                if (f[SGYLIS] < GILUMO_RIBA) != toli:
+                    continue
+                x, y, tipas = f[SX], f[SY], f[STIPAS]
+                if f[STASKAI] is not None:
+                    q = int(f[SR] / zingsniai[tipas] + 0.5)
+                    k_ = int(f[SFAZE] * sukimo_k)
+                    if sukasi:
+                        k_ += int((laikas * f[SSUKIMAS] / TIPU_PERIODAI[tipas] + f[SSUK_FAZE]) % 1.0 * SUKIMO_KADRAI)
+                    elif supimas:
+                        k_ += supimo_kadrai(f, laikas, supimas, sin)
+                    k_ %= SUKIMO_KADRAI
+                else:
+                    q, k_ = f[SSKERSMUO], 0
+                v = kesas.get((tipas, q, k_))
+                if v is None:
+                    t1 = pc()
+                    if t1 > kurti_iki:  # šiam kadrui laikas baigėsi – artimiausias jau sukurtas posūkis (±1–2
+                        # kadrai = ±3–6°, akimi nematyti), tik jei tokio nėra – bet kuris tos snaigės
+                        for dk in (1, -1, 2, -2):
+                            v = kesas.get((tipas, q, (k_ + dk) % SUKIMO_KADRAI))
+                            if v is not None:
+                                break
+                        else:
+                            v = bet_kuris.get((tipas, q))
+                        if v is not None:
+                            self.d_pakaitalai += 1
+                        else:  # jokio jos piešinio dar nėra: šį kadrą nepiešiama (pasirodys po kelių kadrų), užuot
+                            # kūrus daug iš karto – įjungus pirmas kadras užtrukdavo 55–70 ms
+                            self.d_praleista += 1
+                            continue
+                    if v is None:  # dar yra laiko – kuriamas
+                        v = self.kurti(tipas, q, k_)
+                        kurimo_s += pc() - t1
+                ldc, x0, y0, w, c = v
+                ix, iy = floor(x), floor(y)
+                kx, ky = ix - c, iy - c
+                if kx >= vw or ky >= vh or kx + w <= 0 or ky + w <= 0:
+                    continue
+                AB(adc, kx, ky, w, w, ldc, x0 + int((x - ix) * F) * w, y0 + int((y - iy) * F) * w, w, w, bl)
+                r = (kx, ky, kx + w, ky + w)
+                naujos.append(r)
+                if ky + w > kl_virsus:
+                    # išpjaunama tik ten, kur snaigė kertasi su daikto stačiakampiu (ne visas snaigės kvadratas):
+                    # kitaip artima snaigė prie girliandos ar kibirkštėlės būdavo išpjaunama ir ten, kur už jos
+                    # eglė ar pusnis, o tolima – ir ten, kur už jos tik fejerverkas
+                    for k in kliutys:
+                        if kx < k[2] and kx + w > k[0] and ky < k[3] and ky + w > k[1]:
+                            isp.append((max(kx, k[0]), max(ky, k[1]), min(kx + w, k[2]), min(ky + w, k[3])))
+            if isp:
+                t1 = pc()
+                for r in isp:
+                    self.kauke(fdc, r)
+                kaukes_s += pc() - t1
+        self.senos = naujos
+        t2 = pc()
+        if naujos or buvo:
+            user32.UpdateLayeredWindow(self.hwnd, None, ctypes.byref(self.taskas), ctypes.byref(self.dydis), adc,
+                                       ctypes.byref(self.p0), 0, ctypes.byref(bl), 2)  # ULW_ALPHA
+            if not self.rodomas:
+                user32.ShowWindow(self.hwnd, 4)  # SW_SHOWNOACTIVATE
+                self.rodomas = True
+        t3 = pc()
+        self.d_kadrai += 1
+        self.d_piesimas += (t2 - t0 - kaukes_s - kurimo_s) * 1000
+        self.d_kauke += kaukes_s * 1000
+        self.d_kurimas += kurimo_s * 1000
+        self.d_ekranas += (t3 - t2) * 1000
+        # šio kadro dalys – lėto kadro įrašui žurnale (kuri glotnių snaigių dalis užtruko)
+        self.paskutinis_kadras = ((t2 - t0 - kaukes_s - kurimo_s) * 1000, kurimo_s * 1000, self.d_sukurta - sukurta0,
+                                  kaukes_s * 1000, self.d_kaukiu - kaukiu0, (t3 - t2) * 1000, len(naujos))
+
+    def suvestine(self):
+        k_ = max(1, self.d_kadrai)
+        if self.klaida:
+            return "glotnus judėjimas: KLAIDA " + self.klaida
+        if not self.veikia:
+            return "glotnus judėjimas: ne"
+        t = (f"glotnus judėjimas: piešimas {self.d_piesimas / k_:.1f} / kaukė {self.d_kauke / k_:.1f} "
+             f"({self.d_kaukiu / k_:.0f} snaigių) / naujų piešinių {self.d_kurimas / k_:.1f} ms "
+             f"({self.d_sukurta}, laikinai kitu posūkiu {self.d_pakaitalai}, dar nerodyta {self.d_praleista}) / į ekraną {self.d_ekranas / k_:.1f} ms"
+             f" | piešinių {len(self.kesas)}, lapų {len(self.lapai)}, aštrumas {round(self.astrumas * 100)} %")
+        self.d_nulis()
+        return t
+
+
 class Sniegas:
     plociu_praejimas = False  # sąsaja perkuriama su platesnėmis peržiūromis (pritaikyti_perziuru_plocius)
     perziuru_plociai = {}  # (kalba, ribos) → išmatuoti peržiūrų pločiai
@@ -4734,6 +5382,7 @@ class Sniegas:
         self.mmcss = mmcss_ijungti()  # tkinter (pagrindinė) gija – ta pati, kuri piešia kadrus
         self.ekrano_ritmas = EkranoRitmas()
         self.vsync_periodas, self.vsync_kas = 0.0, 1
+        self.alfa, self.alfa_buvo = AlfaSniegas(), False
         self.diag_nulis()
         self.diag_nustatymai = dict(self.n)
         self.diag_proc = proceso_busena()
@@ -4842,7 +5491,7 @@ class Sniegas:
         else:
             # main() langą paslepia, kol nustatoma piktograma ir sukuriama sąsaja: jei langas pasirodo anksčiau,
             # užduočių juostos mygtukas sukuriamas su tkinter plunksna ir ji ten lieka iki kito parodymo.
-            self.root.deiconify()
+            self.rodyti_be_mirgejimo()
 
         # Be to Windows laikmačio žingsnis ~15,6 ms – kadrai ateina netolygiai ir sniegas trūkčioja.
         self.laikmacio_tikslumas(True)
@@ -4998,6 +5647,15 @@ class Sniegas:
         self.buferiai = True
         self.s_senas = gdi32.SelectObject(self.sdc, self.sbmp)
         self.f_senas = gdi32.SelectObject(self.fdc, self.fbmp)
+        # Nauji buferiai – juodi (0,0,0), o permatoma tik PERMATOMA spalva: jei perdanga būtų parodyta (WM_PAINT) dar
+        # prieš pirmą kadrą, visas ekranas pajuoduotų. Todėl iškart užpildomi permatoma spalva.
+        teptukas = gdi32.CreateSolidBrush(PERMATOMA_RGB)
+        try:
+            visa = wintypes.RECT(0, 0, self.vw, self.vh)
+            for dc in (self.sdc, self.fdc):
+                user32.FillRect(dc, ctypes.byref(visa), teptukas)
+        finally:
+            gdi32.DeleteObject(teptukas)
         self.statinis = GdiPiesejas(self.g, self.sdc)
 
     def naikinti_kadro_buferius(self):
@@ -5052,6 +5710,9 @@ class Sniegas:
         self.kurti_ekskavatorius()
         self.kurti_senius()
         self.kurti_snaigiu_atlasa()
+        a = self.__dict__.get("alfa")
+        if a is not None and a.veikia:
+            a.pradeti(self.perdangos_hwnd, self.vx, self.vy, self.vw, self.vh)
         self.fj.sustabdyti()
         self.fj.k, self.fj.P = self.k, self.fejerverku_P()
         self.pritaikyti_kieki(perkurti=True)
@@ -5237,8 +5898,32 @@ class Sniegas:
         d.szInfo = tekstas
         shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(d))
 
+    def rodyti_be_mirgejimo(self):
+        """Paslėptas nustatymų langas parodomas jau nupieštas: pirma nematomas (alfa 0) – per tą laiką Windows ir
+        tkinter nupiešia visus valdiklius, – tik tada matomas. Kitaip matėsi baltas langas ir po juo pamažu
+        (~0,1–0,2 s) atsirandantys valdikliai."""
+        r = self.root
+        try:
+            paslepta = r.state() != "normal"
+        except tk.TclError:
+            paslepta = False
+        if not paslepta:
+            r.deiconify()
+            return
+        try:
+            r.attributes("-alpha", 0.0)
+            r.deiconify()
+            r.update()
+        except tk.TclError:
+            pass
+        finally:
+            try:
+                r.attributes("-alpha", 1.0)
+            except tk.TclError:
+                pass
+
     def rodyti_nustatymus(self):
-        self.root.deiconify()
+        self.rodyti_be_mirgejimo()
         self.root.lift()
         self.root.focus_force()
 
@@ -5415,6 +6100,9 @@ class Sniegas:
         """Pixel art snaigės nupiešiamos vieną kartą į atminties juostą (atlasą); kadre jos tik kopijuojamos.
         Padėtis NEprilyginama prie „pikselių“ tinklelio – snaigė juda po 1 tašką, todėl krenta tolygiai."""
         self.naikinti_snaigiu_atlasa()
+        a = self.__dict__.get("alfa")
+        if a is not None and a.veikia:
+            a.nustatyti_dydzius(self.k, self.n["dydis"])
         if self.n["snaigiu_stilius"] != "pikseliai":
             self.kurti_iprastu_atlasa()
             return
@@ -5571,6 +6259,8 @@ class Sniegas:
             self.paskutinis = self.kitas_kadras = time.perf_counter()
         else:
             self.perdanga.withdraw()
+            if self.__dict__.get("alfa"):
+                self.alfa.paslepti()
             self.fj.sustabdyti()  # paslėpus šou nutraukiamas, kad nepasirodytų pavėluotai
         for s_ in self.seniai:  # sniego senių pagavimo langeliai – kartu su perdanga
             if s_["busena"] == "kabo" and not rodyti:
@@ -6044,7 +6734,8 @@ class Sniegas:
                 # snaigės beveik neturi inercijos (prisitaiko per ~0,2 s); kiek lėčiau – tik stambiausios
                 6.0 - min(r, 9.5) * 0.25,
                 0.22 if kristalas else 0.0,  # kristalai krisdami „plasnoja“ kaip lapas
-                skersmuo, z]
+                skersmuo, z,
+                (0.0, 0.0, 1.0, 1.0)]  # lėtai kintančios dalys (sūkurių greitis, gūsio banga, mostas) – žr. zingsnis
 
     def pritaikyti_kieki(self, perkurti=False, visame_ekrane=True):
         if perkurti:
@@ -6288,32 +6979,38 @@ class Sniegas:
         """Kartą per kadrą (po buldozeriukų ir kelio žingsnio): kelio sniegas be dabar stumiamų krūvų. Stulpelyje, kurį
         pasiekia stumiama krūva (kelio_kruvos jį pažymi kiek anksčiau, nei krūva atvažiuoja), įsimenamas tuometinis
         kelio aukštis; kol krūva ten – ne aukščiau jo (nuvalyta vieta už verstuvo – kaip yra). Krūvą palikus
-        (buldozeriukas apsisuko) – ant jos kylama pamažu. Rezultatas – self._kelias_bk (None – kaip kelias)."""
+        (buldozeriukas apsisuko) – ant jos kylama pamažu. Rezultatas – self._kelias_bk (None – kaip kelias).
+        Tikrinami tik krūvų ir įsimintų stulpelių, o ne viso kelio stulpeliai."""
         kel = self.__dict__.get("kelias")
         if not kel:
             self._kelias_bk = None
             return
         n = len(kel)
-        kr = self.kelio_kruvos(0, n) if getattr(self, "ekskavatoriai", None) else None
+        ruoz = self.kelio_kruvu_ruozai(0, n) if getattr(self, "ekskavatoriai", None) else ()
         pries = self.__dict__.get("_kelias_pries_kruva")
         if pries is None or pries[0] is not kel:  # naujas kelias (ekranai, nuvalymas) – senos atminties nebelieka
-            pries = self._kelias_pries_kruva = (kel, [None] * n)
-        pries = pries[1]
-        if (kr is None or not any(kr)) and all(v is None for v in pries):
+            pries = self._kelias_pries_kruva = (kel, {})
+        pries = pries[1]  # stulpelis → įsimintas aukštis
+        if not ruoz and not pries:
             self._kelias_bk = None
             return
         kyla = SENIO_KYLA * 2 * self.k * min(0.1, dt)
         rez = list(kel)
-        for c in range(n):
+        po_kruva = set()
+        for ca, cb in ruoz:
+            po_kruva.update(range(ca, cb))
+            for c in range(ca, cb):
+                p_, v = pries.get(c), kel[c]
+                if p_ is None or v < p_:  # nuvalyta – taip ir lieka
+                    p_ = pries[c] = v
+                if p_ < v:
+                    rez[c] = p_
+        for c in [c for c in pries if c not in po_kruva]:
             p_ = pries[c]
-            if kr is not None and kr[c]:
-                if p_ is None or kel[c] < p_:  # nuvalyta – taip ir lieka
-                    p_ = kel[c]
-            elif p_ is not None:
-                p_ = None if kel[c] <= p_ + kyla else p_ + kyla
-            pries[c] = p_
-            if p_ is not None and p_ < kel[c]:
-                rez[c] = p_
+            if kel[c] <= p_ + kyla:
+                del pries[c]
+            else:
+                rez[c] = pries[c] = p_ + kyla
         self._kelias_bk = (kel, rez)
 
     def sniego_pavirsius(self, x):
@@ -6917,9 +7614,9 @@ class Sniegas:
         return max(ys[len(ys) // 2], self.senio_kelio_riba(s_))
 
     def senio_kelio_virsus(self, s_, Ps):
-        """Prisnigto kelio viršus (y) po apatine gniūžte – mediana – arba None (ne ekrano apačioje). Kaip
-        senio_kelio_tikslas: be stumiamų krūvų (pravažiuojanti krūva tik trumpam uždengia) ir ne aukščiau kelio
-        ribos (palikta krūva senio nekelia)."""
+        """Prisnigto kelio viršus (y) po apatine gniūžte – mediana – arba None (ne ekrano apačioje). Be dabar
+        stumiamų krūvų (pravažiuojanti krūva tik trumpam uždengia), bet su paliktomis: buldozeriuko palikta krūva
+        priešais senį jį užversdavo iki pusės – dabar senis ant jos užkyla (nustūmus – vėl nusileidžia)."""
         kel = self.__dict__.get("kelias")
         if s_["pav"] is None or s_["pav"][0] != "zeme" or not kel:
             return None
@@ -6930,8 +7627,8 @@ class Sniegas:
         a, b = max(0, int((x - pus) // S)), min(len(kel), int((x + pus) // S) + 1)
         if b - a < 3:
             return None
-        kr, rib = self.kelio_kruvos(a, b), self.kelio_ribos()
-        ys = sorted(base[c] - min(kel[c], rib[c]) for c in range(a, b) if not kr[c - a] and base[c] is not None)
+        kr = self.kelio_kruvos(a, b)
+        ys = sorted(base[c] - kel[c] for c in range(a, b) if not kr[c - a] and base[c] is not None)
         return ys[len(ys) // 2] if len(ys) >= 3 and len(ys) * 2 >= b - a else None
 
     def senio_kelio_riba(self, s_):
@@ -7507,46 +8204,66 @@ class Sniegas:
     def kelio_kruvos(self, a, b):
         """Kurie kelio stulpeliai a…b-1 – dabar stumiamos buldozeriukų krūvos (nuo buldozeriuko galo iki krūvos
         priekio, su šlaitais), o ne prisnigtas kelias: [bool]. Paliktos krūvos – ne (jos ribojamos kelio riba)."""
+        zym = [False] * (b - a)
+        for ca, cb in self.kelio_kruvu_ruozai(a, b):
+            ca, cb = max(ca, a), min(cb, b)
+            if ca < cb:
+                zym[ca - a:cb - a] = [True] * (cb - ca)
+        return zym
+
+    def kelio_kruvu_ruozai(self, a, b):
+        """Tas pats kaip kelio_kruvos, tik ištisiniais ruožais [(nuo, iki)] (surikiuoti, nepersidengia). Tikrinami
+        tik ruožų kraštai (kur tęsiasi šlaitai), o ne kiekvienas stulpelis – kas kadrą kviečiama visam ekrano
+        pločiui, o stulpelių – šimtai."""
         S, kel = STULPELIS, self.kelias
         stumia = [(e["x"] - e["kryptis"] * self.ekskav_pus(),
                    e["x"] + e["kryptis"] * (self.ekskav_pus() + (e.get("kruvos_ilgis", 0) + 6) * S))
                   for e in getattr(self, "ekskavatoriai", ()) if e["busena"] != "nera"
                   and e.get("pav") is not None and e["pav"][0] == "zeme"]
         if not stumia:
-            return [False] * (b - a)
+            return []
         n = len(kel)
         a0, b0 = max(0, a - 40), min(n, b + 40)  # su paraštėmis – krūvos šlaitai gali prasidėti už senio
-        zym = [False] * (b0 - a0)
+        ruoz = []
         for p1, p2 in stumia:  # stulpeliai, kurių vidurys (c + 0,5)·S tarp p1 ir p2
             ca, cb = max(a0, math.ceil(min(p1, p2) / S - 0.5)), min(b0, math.floor(max(p1, p2) / S - 0.5) + 1)
             if ca < cb:
-                zym[ca - a0:cb - a0] = [True] * (cb - ca)
-        # krūvos šlaitai (žemesni už kelio ribą) – ta pati krūva: nuo pažymėtų stulpelių į šalis, kol kelias vis žemėja
-        # (kitaip ant šlaito senis matėsi PRIEŠ krūvą, o jos viršūnė – priešais jį)
-        for kryptis in (1, -1):
-            rng = range(a0, b0) if kryptis > 0 else range(b0 - 1, a0 - 1, -1)
-            ankst = None
-            for c in rng:
-                i = c - a0
-                if zym[i]:
-                    ankst = kel[c]
-                elif ankst is not None and 1.0 < kel[c] < ankst - 0.2:  # tik žemėjantis (lygus kelias – ne)
-                    zym[i], ankst = True, kel[c]
+                ruoz.append([ca, cb])
+        if not ruoz:
+            return []
+
+        def sujungti(tarpas):  # besiliečiantys (ar tarpas ≤ tarpas) ruožai – vienas
+            ruoz.sort()
+            rez = [ruoz[0]]
+            for r_ in ruoz[1:]:
+                if r_[0] - rez[-1][1] <= tarpas:
+                    if r_[1] > rez[-1][1]:
+                        rez[-1][1] = r_[1]
                 else:
-                    ankst = None
+                    rez.append(r_)
+            ruoz[:] = rez
+        sujungti(0)
+        # krūvos šlaitai (žemesni už kelio ribą) – ta pati krūva: nuo ruožo į šalis, kol kelias vis žemėja
+        # (kitaip ant šlaito senis matėsi PRIEŠ krūvą, o jos viršūnė – priešais jį)
+        for i, r_ in enumerate(ruoz):
+            riba = ruoz[i + 1][0] if i + 1 < len(ruoz) else b0
+            c, ankst = r_[1], kel[r_[1] - 1]
+            while c < riba and 1.0 < kel[c] < ankst - 0.2:  # tik žemėjantis (lygus kelias – ne)
+                ankst = kel[c]
+                c += 1
+            r_[1] = c
+        sujungti(0)
+        for i in range(len(ruoz) - 1, -1, -1):
+            r_ = ruoz[i]
+            riba = ruoz[i - 1][1] if i > 0 else a0
+            c, ankst = r_[0] - 1, kel[r_[0]]
+            while c >= riba and 1.0 < kel[c] < ankst - 0.2:
+                ankst = kel[c]
+                c -= 1
+            r_[0] = c + 1
         # siauri tarpai tarp krūvų (du buldozeriukai stumia vienas priešais kitą – viršūnė tarp jų) – ta pati krūva
-        i, nz = 0, len(zym)
-        while i < nz:
-            if not zym[i]:
-                j = i
-                while j < nz and not zym[j]:
-                    j += 1
-                if 0 < i and j < nz and j - i <= 3:
-                    zym[i:j] = [True] * (j - i)
-                i = j
-            else:
-                i += 1
-        return [zym[c - a0] if a0 <= c < b0 else False for c in range(a, b)]
+        sujungti(3)
+        return [(ca, cb) for ca, cb in ruoz]
 
     def uzdengti_keliu(self, sritis):
         """Kelio sniegas (ir buldozeriukų krūvos) – priešais senius ir bumbuliukus (jie – pusnyse, toliau už eglių):
@@ -8711,7 +9428,18 @@ class Sniegas:
                         + ", ".join(f"{k} {v:.1f}" for k, v in dalys) + f") | atstatymas {atstatymas:.1f} | piešimas "
                         f"{piesimas:.1f} | ekranas {ekranas:.1f} ms ({self._ekrano_kv} kop.) | pilnas perpiešimas: "
                         f"{'taip' if pilnas else 'ne'} | šiukšlių surinkimas {self._gc_ms:.0f} ms | snaigės {len(self.snaiges)}"
-                        f" | langai {len(self.langai)}")
+                        f" | langai {len(self.langai)}" + self.alfa_leto_kadro_dalys())
+
+    def alfa_leto_kadro_dalys(self):
+        """Lėto kadro įrašui: glotnių snaigių dalys tame kadre (jos įeina į „piešimą“)."""
+        a = self.__dict__.get("alfa")
+        k = a.__dict__.get("paskutinis_kadras") if a is not None and self.alfa_buvo else None
+        if not k:
+            return ""
+        snaiges, kurimas, sukurta, kauke, kaukiu, ekranas, rodoma = k
+        return (f" | iš piešimo glotnios: {snaiges + kurimas + kauke + ekranas:.1f} ms (snaigės {snaiges:.1f}, "
+                f"nauji piešiniai {kurimas:.1f} ({sukurta}), kaukė {kauke:.1f} ({kaukiu}), į ekraną {ekranas:.1f}; "
+                f"rodoma {rodoma})")
 
     def kadras(self):
         pradzia = time.perf_counter()
@@ -8798,6 +9526,14 @@ class Sniegas:
         dabar = time.perf_counter()
         ritmas = self.ekrano_ritmas.gauti() if self.ekrano_ritmas.veikia else None
         if ritmas:
+            # Ar Windows (DWM) ekrane parodė praeitą kadrą: tarp mūsų kadrų ekranas atsinaujino, o DWM nesukomponavo nė
+            # vieno – tada du mūsų kadrai parodomi kaip vienas (trūkčiojimas, kurio programos laikai nemato).
+            sk, pr = self.ekrano_ritmas.__dict__.get("skaitikliai"), self.__dict__.get("_dwm_pries")
+            if sk is not None and pr is not None and sk[0] > pr[0]:
+                self.d_dwm_n += 1
+                if sk[1] == pr[1]:
+                    self.d_dwm_praleista += 1
+            self._dwm_pries = sk
             # Sinchronizuota su ekranu: kadras pradedamas ~2 ms po ekrano atnaujinimo (vblank) ir kas n atnaujinimų
             # (30 kadrų/s 60 Hz ekrane – kas antrą). Tada jis visada spėja iki kito atnaujinimo ir kiekvienas
             # kadras ekrane išbūna vienodai. Be to 30 kadrų/s su 59,94 Hz „slysta“: kadras kartais rodomas 1,
@@ -9109,6 +9845,9 @@ class Sniegas:
         # gūsio banga keliauja per ekraną: vėjas vietomis stipresnis, vietomis silpnesnis
         banga_k, banga_t = 1 / (260 * self.k), t * 0.6
         svyr, plasn = n["svyravimas"] / 100, n["plasnojimas"] / 100
+        # netolygaus svyravimo mostai (dvi bangos, kintantis mostas, sfz ≤ ~1) siauresni nei vienos sinusoidės –
+        # SVYRAVIMO_PLOTIS juos praplatina, kad tas pats procentas reikštų tokį pat mostų plotį kaip senojoje fizikoje
+        svyr_plotis = svyr * SVYRAVIMO_PLOTIS
         # Tikroviškas oras: 6 bangos; stiprumas – pagal „Sūkurius“, pučiant stipriau – ir sūkuriai stipresni.
         # Raštą neša vėjas: fazėje – vėjo nuneštas atstumas (tolimoms dėl k/z mastelio tas pats).
         turb = sukurys > 0
@@ -9124,12 +9863,21 @@ class Sniegas:
                 (kx, ky, ux * stipr, uy * stipr, ph - kx * off - w * t, zf)
                 for kx, ky, ux, uy, w, ph, zf in self.oro_modos[1]]
             vk = 1.0  # bangos jau beveik gulsčios – vertikalaus judėjimo nebemažiname
+        # Lėtai kintančios dalys – sūkurių laukas (šimtų taškų bangos, 6 kosinusai snaigei – brangiausia fizikos
+        # dalis), gūsio banga ir mostų dydis (~16 s ciklas): per kadrą snaigė pasislenka 1–2 taškus, tad jos beveik
+        # nesikeičia. Skaičiuojamos pakaitomis – pusei snaigių šį kadrą, kitai pusei kitą; tarp jų imama paskutinė
+        # vertė. Tai keičia tik greitį, ne padėtį, ir vos vos (bandymuose – < 0,01 px/kadrą), todėl judėjimas
+        # lieka toks pat tolygus.
+        puse = self._letu_puse = not self.__dict__.get("_letu_puse", False)
 
         for f in self.snaiges:
             x, y, r = f[SX], f[SY], f[SR]
             zz = f[SGYLIS]
             z = 0.4 + 0.6 * zz  # paralaksas: tolimų snaigių judėjimas ekrane mažesnis
-            if turb:
+            puse = not puse
+            if puse:
+                u, v, banga, mostas = f[SLETOS]
+            elif turb:
                 iz = 1.0 / z  # tolimų sūkuriai ekrane mažesni
                 xs, ys = x * iz, y * iz
                 c = cos(k1x * xs + k1y * ys + p1 + z1 * zz)
@@ -9151,9 +9899,13 @@ class Sniegas:
                 v = (v + a6y * c) * z
             else:  # sūkurių nėra („Sūkuriai“ 0)
                 u = v = 0.0
+            if not puse:
+                banga = 1 + 0.35 * sin(x * banga_k - banga_t)
+                mostas = 0.775 + 0.225 * sin(t * f[SDAZN] * 0.23 + f[SFAZE] * 1.7)
+                f[SLETOS] = (u, v, banga, mostas)
             fz = t * f[SDAZN] + f[SFAZE]
             # snaigė prie vėjo prisitaiko greitai, bet ne akimirksniu
-            tikslas = vejas_px * z * (1 + 0.35 * sin(x * banga_k - banga_t)) + u
+            tikslas = vejas_px * z * banga + u
             vx = f[SVX]
             k_ = dt * f[SREAKCIJA]
             vx += (tikslas - vx) * (k_ if k_ < 1 else 1)
@@ -9163,9 +9915,8 @@ class Sniegas:
             # (0,55–1): kiekvienas mostas kitoks, judesys nesikartoja. Nauji laukai nereikalingi – antros bangos
             # fazė ir mostų kitimas išvedami iš SDAZN ir SFAZE.
             fz2 = fz * 2.37 + f[SFAZE] * 3.1
-            mostas = 0.775 + 0.225 * sin(t * f[SDAZN] * 0.23 + f[SFAZE] * 1.7)
             sfz = (sin(fz) + 0.45 * sin(fz2)) * mostas * 0.69  # 0,69 ≈ 1 / 1,45 – didžiausia vertė ~1
-            nx = x + (vx + sfz * f[SAMP] * svyr) * dt
+            nx = x + (vx + sfz * f[SAMP] * svyr_plotis) * dt
             # kristalai lėtėja, kai „pasvyra“ į šoną, ir greitėja grįždami – kaip krentantis lapas; 0,358 – kad
             # vidutiniškai (per ilgą laiką) kritimo greitis nepasikeistų: vidutinis 2·sfz² ≈ 0,358
             ny = y + (f[SVY] * gk * (1 - f[SPLASNOJIMAS] * plasn * (0.358 - 2.0 * sfz * sfz)) + v * vk) * dt
@@ -9268,11 +10019,70 @@ class Sniegas:
                 for j in js:
                     self.nesvarios_sritys.append(g["vietos"][j][3])
 
+    def alfa_aktyvus(self):
+        """Ar krentančios snaigės piešiamos pusskaidriame lange (AlfaSniegas). Persijungus senos snaigių vietos
+        perdangoje išvalomos (papildomos), pusskaidris langas paslepiamas arba bus parodytas su pirmu kadru."""
+        a = self.__dict__.get("alfa")
+        if a is None:
+            return False
+        noras = bool(self.n.get("snaiges_glotnios")) and self.n["snaigiu_stilius"] != "pikseliai"
+        if noras and not a.veikia and not a.klaida:
+            if a.pradeti(self.perdangos_hwnd, self.vx, self.vy, self.vw, self.vh):
+                a.nustatyti_dydzius(self.k, self.n["dydis"])
+                self.pritaikyti_astruma()
+        aktyvus = noras and a.veikia
+        if aktyvus != self.alfa_buvo:
+            self.alfa_buvo = aktyvus
+            for f in self.snaiges:
+                if f[SSENA]:
+                    self.papildomos.append(f[SSENA])
+                    f[SSENA] = None
+            if not aktyvus:
+                a.atlaisvinti() if a.veikia else a.paslepti()
+        return aktyvus
+
+    def pritaikyti_astruma(self):
+        a = self.__dict__.get("alfa")
+        if a is not None:
+            a.nustatyti_astruma(self.n.get("glotniu_astrumas", NUMATYTI["glotniu_astrumas"]) / 100)
+
+    def alfa_hwnd(self):
+        """[glotnių snaigių lango HWND] arba [] – perdangos Z tvarkos keitimams."""
+        a = self.__dict__.get("alfa")
+        return [a.hwnd] if a is not None and a.hwnd else []
+
+    def alfa_kliutys(self, toli):
+        """Kur perdangoje nupiešta tai, kas yra priekyje tolimų (toli=True) ar artimų snaigių – stačiakampiai."""
+        if toli:
+            sar = self.statiniai_plotai()
+            for bu in itertools.chain(self.bumbulai, self.skeveldros, self.pustomos, self.ekskavatoriai,
+                                      self.ekskav_daleles, self.blizgesiai, self.seniai, self.senio_daleles):
+                if bu["sena"]:
+                    sar.append(bu["sena"])
+            return sar
+        sar = [g["ribos"] for g in getattr(self, "girliandos", None) or ()]
+        sar += [b["sena"] for b in self.blizgesiai if b["sena"]]
+        return sar
+
+    def piesti_alfa(self):
+        try:
+            # nauji piešiniai kuriami tol, kol nuo kadro pradžios praėjo ~55 % kadrui skirto laiko (bet ne mažiau
+            # 2 ms): galingame kompiuteryje jie susikuria per 1–2 s, silpname – kadras vis tiek spėja laiku
+            vp = self.__dict__.get("vsync_periodas")
+            P = self.vsync_kas * vp if vp else 1 / self.n["fps"]
+            dabar = time.perf_counter()
+            pradzia = self.__dict__.get("paskutinis", dabar)  # kadro pradžia (kadras())
+            self.alfa.piesti(self, self.fdc, dabar, max(dabar + 0.002, pradzia + P * 0.55))
+        except Exception as e:
+            self.alfa.isjungti(e)
+            self.alfa_buvo = False  # kitame kadre snaigės vėl perdangoje (kaip anksčiau)
+
     def piesti(self):
         sdc, fdc = self.sdc, self.fdc
         BitBlt = gdi32.BitBlt
         ribos = self.ribos
         i_langa = []
+        alfa = self.alfa_aktyvus()
 
         visas = self.pilnas_perpiesimas
         if visas:
@@ -9342,7 +10152,8 @@ class Sniegas:
         #    PRIEŠ tai, kas priešais egles, kitaip eglės kopija uždengtų ir tai), tada bumbuliukai, pustomas
         #    sniegas ir buldozeriukai – arčiausiai
         self.piesti_fejerverkus(i_langa, visas)
-        self.piesti_snaiges(i_langa, visas, toli=True)
+        if not alfa:
+            self.piesti_snaiges(i_langa, visas, toli=True)
         self.piesti_senius(i_langa, visas)
         self.piesti_gumulus(i_langa, visas, senio=True)
         self.piesti_bumbulus_kadre(i_langa, visas)
@@ -9350,11 +10161,15 @@ class Sniegas:
         self.piesti_ekskavatorius(i_langa, visas)
 
         # 3) arti esančios snaigės – priekyje visko, išskyrus girliandas
-        self.piesti_snaiges(i_langa, visas, toli=False)
+        if not alfa:
+            self.piesti_snaiges(i_langa, visas, toli=False)
         self.piesti_blizgesius(i_langa, visas)
         # 3a) girliandos kabo ant ekrano krašto – arčiausiai žiūrinčiojo, todėl ant viršaus visko (ir
         #     bumbuliukų, senių, buldozeriukų bei artimų snaigių)
         self.uzdengti_girliandomis(i_langa, visas)
+        # 3b) glotnios snaigės – atskirame pusskaidriame lange (perdangos kadras jau baigtas: pagal jį išpjaunama)
+        if alfa:
+            self.piesti_alfa()
 
         # 4) į ekraną – tik pasikeitę stačiakampiai, jau galutiniai, todėl niekas nemirga.
         # Visas kadras kopijuojamas, kai Windows perdangą „ištrynė“, langams nurimus ir dar kas 5 s – dėl visa ko.
@@ -9637,7 +10452,9 @@ class Sniegas:
                 # Nebūtinai „visada viršuje“ langas – tada ir perdanga juo nebebus (ji lieka virš visų įprastų
                 # langų, nes šis meniu – aukščiausias iš jų); ją vėl iškels kelti_perdanga, meniu užsidarius.
                 # Sniego senių pagavimo langeliai – irgi po meniu, kitaip paspaudimą meniu punkte „suvalgytų“.
-                for hw in [ph] + [x for s_ in self.seniai for x in (s_.get("hwnds") or ())[:1]]:
+                # glotnių snaigių langas – po perdangos (h, jis, perdanga): jis perdangai priklauso ir Windows jį
+                # turėtų nuleisti kartu, bet dėl visa ko – aiškiai
+                for hw in [ph] + self.alfa_hwnd() + [x for s_ in self.seniai for x in (s_.get("hwnds") or ())[:1]]:
                     user32.SetWindowPos(hw, h, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
                 self.seniai_nuleisti = True
                 self.nuleista_po = h  # kai jis užsidarys – perdanga iškart grąžinama „visada viršuje“
@@ -9673,7 +10490,8 @@ class Sniegas:
         ph = self.__dict__.get("perdangos_hwnd")
         if not ph or not self.rodoma:
             return
-        user32.SetWindowPos(ph, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+        for hw in [ph] + self.alfa_hwnd():  # glotnios snaigės – tiesiai virš perdangos
+            user32.SetWindowPos(hw, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
         if self.__dict__.get("seniai_nuleisti"):
             self.seniai_nuleisti = False
             for s_ in self.seniai:
@@ -9727,7 +10545,8 @@ class Sniegas:
                     f"aktyvus: {'taip' if user32.GetForegroundWindow() == h else 'ne'})")
             except Exception:
                 pass
-        user32.SetWindowPos(self.perdangos_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+        for hw in [self.perdangos_hwnd] + self.alfa_hwnd():  # glotnios snaigės – tiesiai virš perdangos
+            user32.SetWindowPos(hw, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
         if self.__dict__.get("seniai_nuleisti"):  # po sistemos meniu nuleisti senių langeliai – vėl į viršų
             self.seniai_nuleisti = False
             for s_ in self.seniai:
@@ -9822,6 +10641,7 @@ class Sniegas:
         self.d_pilni = 0
         self.d_plotas = 0
         self.d_topmost = 0
+        self.d_dwm_n = self.d_dwm_praleista = 0
         self.d_trynimai0 = getattr(self, "windows_trynimai", 0)
         self.d_klaidos = getattr(self, "d_klaidos", 0)
 
@@ -9894,11 +10714,15 @@ class Sniegas:
                    f"pilni kopijavimai {self.d_pilni}",
                    f"daliniai {self.d_plotas / trukme / 1e6:.2f} Mpx/s",
                    f"Windows trynė {self.windows_trynimai - self.d_trynimai0}",
-                   f"iškelta į viršų {self.d_topmost}"]
+                   f"iškelta į viršų {self.d_topmost}",
+                   f"DWM nesukomponavo {self.d_dwm_praleista} iš {self.d_dwm_n} kadrų "
+                   f"({100 * self.d_dwm_praleista / max(1, self.d_dwm_n):.1f} %)"]
             if proc and self.diag_proc:
                 eil.append(f"CPU {(proc[3] - self.diag_proc[3]) / trukme * 100:.1f} %")
             if proc:
                 eil.append(f"RAM {proc[0]:.0f} MB, GDI {proc[1]}, USER {proc[2]}")
+            if self.__dict__.get("alfa") is not None and (self.alfa.veikia or self.alfa.klaida):
+                eil.append(self.alfa.suvestine())
             if self.fj.aktyvus:
                 eil.append("vyksta fejerverkai")
             if self.d_klaidos:
@@ -10535,6 +11359,33 @@ class Sniegas:
         # 3 – prierašas. Visos juostos (rūšių, bendro kiekio, dydžio ir kt.) – viename stulpelyje, lygiai po viena kita.
         e = len(TIPAI) + 1
         ttk.Separator(g, orient="horizontal").grid(row=e, column=0, columnspan=4, sticky="we", padx=4, pady=(10, 8))
+        # Stilius – svarbus pasirinkimas (keičia visų snaigių išvaizdą), todėl virš kiekių ir paryškintas; glotnus
+        # judėjimas – tik įprastoms snaigėms, todėl po „Įprastos“ (pixel art – visada šuoliukais po „pikselį“)
+        et = ttk.Label(g, text=T("Stilius"), font=("Segoe UI", 9, "bold"))
+        et.grid(row=e + 1, column=0, columnspan=2, sticky="nw", padx=4, pady=(2, 2))
+        self.patarimas_nustatymui(et, "snaigiu_stilius")
+        stilius = ttk.Frame(g)
+        stilius.grid(row=e + 1, column=2, columnspan=2, sticky="w", padx=4, pady=(0, 2))
+        v = tk.StringVar(value=self.n["snaigiu_stilius"])
+        self.kint["snaigiu_stilius"] = v
+        rb = ttk.Radiobutton(stilius, text=T("Įprastos"), variable=v, value="iprastos",
+                             command=lambda: self.pakeista("snaigiu_stilius"))
+        rb.pack(anchor="w")
+        self.patarimas_nustatymui(rb, "snaigiu_stilius")
+        gv = tk.BooleanVar(value=self.n["snaiges_glotnios"])
+        self.kint["snaiges_glotnios"] = gv
+        cb = ttk.Checkbutton(stilius, text=T("Glotnus judėjimas"), variable=gv,
+                             command=lambda: self.pakeista("snaiges_glotnios"))
+        cb.pack(anchor="w", padx=(22, 0))
+        self.valdikliai["snaiges_glotnios"] = cb
+        self.patarimas_nustatymui(cb, "snaiges_glotnios")
+        rb = ttk.Radiobutton(stilius, text=T("Pixel art"), variable=v, value="pikseliai",
+                             command=lambda: self.pakeista("snaigiu_stilius"))
+        rb.pack(anchor="w")
+        self.patarimas_nustatymui(rb, "snaigiu_stilius")
+        self.slankiklis(g, "glotniu_astrumas", "Kraštų aštrumas, %", e + 2, ilgis=2)  # glotnioms snaigėms
+        ttk.Separator(g, orient="horizontal").grid(row=e + 3, column=0, columnspan=4, sticky="we", padx=4, pady=(6, 8))
+        e += 3
         # Bendras kiekis: patempus – atsitiktinai paskirstomas po rūšis (matosi rūšių eilutėse)
         self.is_viso_kint = tk.StringVar(value=str(sum(self.n["tipai"])))
         etikete = ttk.Label(g, text=T("Iš viso snaigių"), font=("Segoe UI", 9, "bold"))
@@ -10562,21 +11413,9 @@ class Sniegas:
         self.slankiklis(g, "greitis", "Kritimo greitis, %", e + 1, ilgis=2)
         self.slankiklis(g, "svyravimas", "Svyravimas į šonus, %", e + 2, ilgis=2)
         self.slankiklis(g, "plasnojimas", "Plasnojimas, %", e + 3, ilgis=2)
-        et = ttk.Label(g, text=T("Stilius"))
-        et.grid(row=e + 4, column=0, columnspan=2, sticky="w", padx=4, pady=(6, 2))
-        self.patarimas_nustatymui(et, "snaigiu_stilius")
-        stilius = ttk.Frame(g)
-        stilius.grid(row=e + 4, column=2, columnspan=2, sticky="w", padx=4, pady=(6, 2))
-        v = tk.StringVar(value=self.n["snaigiu_stilius"])
-        self.kint["snaigiu_stilius"] = v
-        for tekstas, reiksme in (("Įprastos", "iprastos"), ("Pixel art", "pikseliai")):
-            rb = ttk.Radiobutton(stilius, text=T(tekstas), variable=v, value=reiksme,
-                                 command=lambda: self.pakeista("snaigiu_stilius"))
-            rb.pack(side="left", padx=(0, 8))
-            self.patarimas_nustatymui(rb, "snaigiu_stilius")
-        self.zymimasis(g, "snaiges_sukasi", "Snaigės sukasi", e + 5, ilgis=4)
-        self.zymimasis(g, "sniego_konturas", "Sniego kontūras ekrano apačioje", e + 6, ilgis=4)
-        self.zymimasis(g, "sniegas_blizga", "Sniegas kartais sužiba", e + 7, ilgis=4)
+        self.zymimasis(g, "snaiges_sukasi", "Snaigės sukasi", e + 4, ilgis=4)
+        self.zymimasis(g, "sniego_konturas", "Sniego kontūras ekrano apačioje", e + 5, ilgis=4)
+        self.zymimasis(g, "sniegas_blizga", "Sniegas kartais sužiba", e + 6, ilgis=4)
 
     def kurti_girliandu_skilti(self, tevas):
         g = self.skilties_remas(tevas, "Girliandos", "girliandos")
@@ -10749,7 +11588,7 @@ class Sniegas:
                 u = v = 0.0
                 vk = 0.6
             f[4] += (vejas * z + u - f[4]) * min(1.0, dt * 2.5)
-            f[0] = (x + (f[4] + (math.sin(t * 1.7 + f[3]) + 0.45 * math.sin(t * 4.03 + f[3] * 5.47)) * 3 * z * self.n["svyravimas"] / 55) * dt) % VEJO_PERZ_W
+            f[0] = (x + (f[4] + (math.sin(t * 1.7 + f[3]) + 0.45 * math.sin(t * 4.03 + f[3] * 5.47)) * 3 * z * self.n["svyravimas"] / 95) * dt) % VEJO_PERZ_W
             f[1] = y + ((14 + 16 * z) + v * vk) * dt
             if f[1] > apacia:
                 f[1] = virsus - 2
@@ -11039,6 +11878,8 @@ class Sniegas:
             "bumbulu_kiekis": bumb, "bumbulu_dydis": bumb, "bumbulu_greitis": juda,
             "gusis_dabar": n["gusio_stiprumas"] > 0,
             "sniegas_ant_senio": n["senio_stovi"],  # prisninga tik stovinčiam
+            "snaiges_glotnios": n["snaigiu_stilius"] != "pikseliai",  # pixel art – visada šuoliukais
+            "glotniu_astrumas": n["snaigiu_stilius"] != "pikseliai" and n["snaiges_glotnios"],
         }
         grupes = {"bumbulu_dingimai": bumb and n["bumbulu_dingsta"], "bumbulu_rastai": bumb,
                   "bumbulu_spalvos": bumb, "bumbulu_mygtukas": bumb}
@@ -12044,7 +12885,7 @@ class Sniegas:
         if raktas in SKILCIU_RAKTAI:
             self.atnaujinti_skiltis()  # visa skiltis papilkėja / atsiranda
         elif raktas in ("kaupti_apacioje", "kaupti_languose", "bumbulu_dingsta", "gusio_stiprumas", "gusiai",
-                        "senio_stovi"):
+                        "senio_stovi", "snaigiu_stilius", "snaiges_glotnios"):
             self.atnaujinti_bumbulu_valdiklius()  # priklausomi nustatymai papilkėja / atsiranda
         if raktas in ("vejas", "vejas_ijungtas", "gusio_stiprumas", "girliandos", "girliandu_kiekis", "girliandu_dydis",
                       "egles", "egliu_atsitiktinis", "egliu_min", "egliu_max"):
@@ -12077,6 +12918,8 @@ class Sniegas:
                 self.vejo_tikslas = abs(self.vejo_tikslas) * self.vejo_kryptis  # ir vykstantis gūsis apsisuka
         elif raktas == "gusio_stiprumas" and self.gusio_liko > 0:
             self.pradeti_gusi()  # vykstantis gūsis iškart pagal naują stiprumą
+        if raktas == "glotniu_astrumas":  # piešiniai kuriami iš naujo – tik paleidus juostą (ne kas žingsnį)
+            self.atideti("astrumas", 400, self.pritaikyti_astruma)
         if raktas == "dydis":
             self.atideti("perkurti", 300, lambda: (self.kurti_snaigiu_atlasa(), self.pritaikyti_kieki(perkurti=True)))
         elif raktas == "sniego_konturas":
@@ -12450,7 +13293,8 @@ class Sniegas:
         for zingsnis in (issaugoti, lambda: self.laikmacio_tikslumas(False), lambda: mmcss_isjungti(self.mmcss),
                          self.naikinti_dekla,
                          self.naikinti_langu_kabliukus, self.atstatyti_lango_procedura,
-                         self.atstatyti_nustatymu_procedura, self.atlaisvinti_buferius):
+                         self.atstatyti_nustatymu_procedura, self.atlaisvinti_buferius,
+                         lambda: self.alfa.naikinti()):
             try:
                 zingsnis()
             except Exception:

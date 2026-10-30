@@ -5,6 +5,7 @@
 Sniegas paverčia Windows darbalaukį žiema: snaigės krenta virš langų, kaupiasi ant jų ir ekrano apačioje.
 
 - Snaigės krenta ir svyruoja. Jas neša vėjas, gūsiai ir sūkuriai.
+- Galima įjungti glotnų snaigių judėjimą: kraštai glotnūs, snaigės juda tolygiai, ne taškas po taško (labiau apkrauna kompiuterį).
 - Sniegas kaupiasi ekrano apačioje (virš užduočių juostos) ir ant atidarytų langų viršaus.
 - Apačioje stovi pixel art eglutės su mirksinčiomis lemputėmis.
 - Sniegu rieda bumbuliukai.
@@ -66,6 +67,7 @@ Sniegas turns the Windows desktop into a winter scene: snow falls over windows a
 
 Also:
 
+- optional smooth flake motion (smooth edges, even movement; uses more CPU);
 - pixel art trees, rolling baubles, snowmen you can grab by the scarf, little bulldozers, light strings and scheduled fireworks;
 - English interface available.
 
