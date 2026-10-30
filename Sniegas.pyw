@@ -48,7 +48,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.20"
+VERSIJA = "12.21"
 DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -3031,14 +3031,16 @@ FJ_DUMAI = ("#a4acbc", "#8c94a4", "#727a8a", "#5a606e", "#444852")
 
 class Kibirkstis:
     __slots__ = ("x", "y", "vx", "vy", "t", "gyv", "pal", "pal2", "oras", "trauka", "uodega", "dydis",
-                 "mirks", "spragsi", "skyla", "zuvis", "blizga")
+                 "mirks", "spragsi", "skyla", "zuvis", "blizga", "mirg", "faze")
 
     def __init__(self, x, y, vx, vy, gyv, pal, oras=1.6, trauka=40.0, uodega=0, dydis=1, pal2=None,
-                 mirks=False, spragsi=False, skyla=0.0, zuvis=False, blizga=False):
+                 mirks=False, spragsi=False, skyla=0.0, zuvis=False, blizga=False, mirg=0.0, faze=0.0):
         self.x, self.y, self.vx, self.vy = x, y, vx, vy
         self.t, self.gyv, self.pal, self.pal2 = 0.0, gyv, pal, pal2
         self.oras, self.trauka, self.uodega, self.dydis = oras, trauka, uodega, dydis
         self.mirks, self.spragsi, self.skyla, self.zuvis, self.blizga = mirks, spragsi, skyla, zuvis, blizga
+        # savas ryškumo „pulsas“ (rad/s, 0 – nėra): kibirkštys žėri kiekviena savo ritmu, ne visos kartu
+        self.mirg, self.faze = mirg, faze
 
 
 class FjGrupe:
@@ -3208,11 +3210,14 @@ class Fejerverkai:
         return FJ_PALETES[self.rnd.choice(FJ_SPALVOS)]
 
     def is_formos(self, g, x, y, taskai, R, pal, oras, trauka, gyv, uodega=0, **kw):
+        """Greitis – vos išbarstytas (forma – žiedas, širdelė – lieka aiški); gyvavimas – plačiau (0,78–1,18), kad
+        sprogimas gęstų ne visas vienu metu; kiekviena kibirkštis žėri savo ritmu (mirg, faze)."""
         rnd = self.rnd
         for dx, dy in taskai:
             j = rnd.uniform(0.94, 1.06)
-            self.nauja(g, x, y, dx * R * oras * j, dy * R * oras * j, gyv * rnd.uniform(0.85, 1.12), pal,
-                       oras=oras, trauka=trauka, uodega=uodega, **kw)
+            self.nauja(g, x, y, dx * R * oras * j, dy * R * oras * j, gyv * rnd.uniform(0.78, 1.18), pal,
+                       oras=oras, trauka=trauka, uodega=uodega, mirg=rnd.uniform(7.0, 19.0),
+                       faze=rnd.uniform(0.0, 2 * math.pi), **kw)
 
     # ------------------------------------------------ sprogimai (23 rūšys)
 
@@ -3435,6 +3440,12 @@ class Fejerverkai:
                 continue
             pal = p.pal2 if p.pal2 is not None and u > 0.5 else p.pal
             i = 0 if u < 0.07 else 1 if u < 0.45 else 2 if u < 0.78 else 3 if u < 0.93 else 4
+            if p.mirg and 0.1 < u < 0.85:  # žėri: savo ritmu trumpam pašviesėja ar patamsėja
+                v = math.sin(p.t * p.mirg + p.faze)
+                if v > 0.8:
+                    i -= 1
+                elif v < -0.85 and i < 4:
+                    i += 1
             d = P * p.dydis
             x = int(p.x) - d // 2
             y = int(p.y) - d // 2
@@ -3722,10 +3733,13 @@ class Fejerverkai:
         for p in g.dalys[pries:]:  # sprogimas skrenda toliau ta pačia kryptimi kaip raketa
             p.vx += vx * 0.6
             p.vy += vy * 0.6
-        # blyksnis sprogimo vietoje
+        # blyksnis sprogimo vietoje: ryškus baltas centras (kryžiukas, įstrižai – mažesni taškai), akimirkai
+        P2, balta = self.P * 2, FJ_PALETES["sidabrinė"]
         for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
-            self.nauja(g, xt + dx * self.P * 2, yt + dy * self.P * 2, 0.0, 0.0, 0.09, FJ_PALETES["sidabrinė"],
+            self.nauja(g, xt + dx * P2, yt + dy * P2, 0.0, 0.0, 0.11 if dx == dy == 0 else 0.08, balta,
                        oras=0.0, trauka=0.0, dydis=2)
+        for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+            self.nauja(g, xt + dx * P2 * 0.75, yt + dy * P2 * 0.75, 0.0, 0.0, 0.06, balta, oras=0.0, trauka=0.0)
         if self.detales:  # dūmų debesėlis, kurį lėtai nuneša vėjas
             for _ in range(8):
                 self.nauja(g, xt + rnd.uniform(-20, 20) * self.k, yt + rnd.uniform(-20, 20) * self.k,
