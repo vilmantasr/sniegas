@@ -48,7 +48,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.23"
+VERSIJA = "12.24"
 DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -5113,6 +5113,7 @@ class AlfaSniegas:
             gdi32.DeleteObject(self.bmp)
         self.dc = self.bmp = None
         self.bits = 0
+        self.masyvas = None  # rodė į ką tik atlaisvintą atmintį – rašymas ten nulaužtų visą procesą
         self.vw = self.vh = 0
 
     def isvalyti_kesa(self):
@@ -5155,7 +5156,7 @@ class AlfaSniegas:
         if self.kdc:
             gdi32.DeleteDC(self.kdc)
             gdi32.DeleteObject(self.kbmp)
-            self.kdc = self.kbmp = None
+            self.kdc = self.kbmp = self.kmasyvas = None
         if self.hwnd:
             user32.DestroyWindow(self.hwnd)
             self.hwnd = None
@@ -5387,7 +5388,7 @@ class AlfaSniegas:
         kaukes_s = kurimo_s = 0.0
         snaiges = sn.snaiges
         for toli in (True, False):
-            kliutys = sn.alfa_kliutys(toli)
+            kl_girl, kliutys = sn.alfa_kliutys(toli)
             kl_virsus = min((k[1] for k in kliutys), default=vh)
             isp = []
             for f in snaiges:
@@ -5432,13 +5433,15 @@ class AlfaSniegas:
                 AB(adc, kx, ky, w, w, ldc, x0 + int((x - ix) * F) * w, y0 + int((y - iy) * F) * w, w, w, bl)
                 r = (kx, ky, kx + w, ky + w)
                 naujos.append(r)
-                if ky + w > kl_virsus:
-                    # išpjaunama tik ten, kur snaigė kertasi su daikto stačiakampiu (ne visas snaigės kvadratas):
-                    # kitaip artima snaigė prie girliandos ar kibirkštėlės būdavo išpjaunama ir ten, kur už jos
-                    # eglė ar pusnis, o tolima – ir ten, kur už jos tik fejerverkas
-                    for k in kliutys:
-                        if kx < k[2] and kx + w > k[0] and ky < k[3] and ky + w > k[1]:
-                            isp.append((max(kx, k[0]), max(ky, k[1]), min(kx + w, k[2]), min(ky + w, k[3])))
+                # išpjaunama tik ten, kur snaigė kertasi su daikto stačiakampiu (ne visas snaigės kvadratas):
+                # kitaip artima snaigė prie girliandos ar kibirkštėlės būdavo išpjaunama ir ten, kur už jos
+                # eglė ar pusnis, o tolima – ir ten, kur už jos tik fejerverkas
+                for k in (kliutys if ky + w > kl_virsus else ()):
+                    if kx < k[2] and kx + w > k[0] and ky < k[3] and ky + w > k[1]:
+                        isp.append((max(kx, k[0]), max(ky, k[1]), min(kx + w, k[2]), min(ky + w, k[3])))
+                for k in kl_girl:  # siauros, ekrano kraštuose – kelios patikros
+                    if kx < k[2] and kx + w > k[0] and ky < k[3] and ky + w > k[1]:
+                        isp.append((max(kx, k[0]), max(ky, k[1]), min(kx + w, k[2]), min(ky + w, k[3])))
             if isp:
                 t1 = pc()
                 for r in isp:
@@ -6735,8 +6738,16 @@ class Sniegas:
             # Eglės – pusnų priekyje (kitaip sniegas užkloja apatines šakas), o priešais eglės – kelio sniegas
             for e in self.egles:
                 el, et, er, eb = e["ribos"]
-                if er > l and el < r and eb > t and et < b:
-                    piesti_egle(self.statinis, e, n_egl)
+                il, it, ir_, ib = max(l, el), max(t, et), min(r, er), min(b, eb)
+                if il < ir_ and it < ib:
+                    # iš eglės paveikslėlio (vienas TransparentBlt, ne ~60 FillRect) – kai sniegas kaupiasi, tai
+                    # kartojama kas kelis kadrus
+                    sp = self.egles_paveikslelis(e)
+                    if sp is not None:
+                        msimg32.TransparentBlt(dc, il, it, ir_ - il, ib - it, sp["dc"], il - el, it - et,
+                                               ir_ - il, ib - it, PERMATOMA_RGB)
+                    else:
+                        piesti_egle(self.statinis, e, n_egl)
             for c1, c2, pagrindas in self.zemes_ruozai:
                 a, bb = max(c1, a0), min(c2, b0)
                 if a < bb and pagrindas >= t and pagrindas - maks <= b:
@@ -7426,13 +7437,25 @@ class Sniegas:
             return
         fdc = self.fdc
         SelectObject, PatBlt, teptukas = gdi32.SelectObject, gdi32.PatBlt, self.g.teptukas
-        dabartine = [None]
+        # Grupės kvadratėliai surenkami pagal spalvą ir piešiami spalva po spalvos: kibirkšties galvutė ir uodega –
+        # skirtingų spalvų, todėl piešiant iš eilės teptukas būdavo keičiamas 2–3 kartus kiekvienai kibirkščiai
+        # (finale – tūkstančiai SelectObject per kadrą). Tamsesnės – pirma: galvutės lieka ant uodegų.
+        pagal_spalva = {}
+        sviesumas = self.__dict__.setdefault("_fj_sviesumas", {})
 
         def kvadratas(x, y, d, spalva):
-            if spalva is not dabartine[0]:
+            sar = pagal_spalva.get(spalva)
+            if sar is None:
+                sar = pagal_spalva[spalva] = []
+            sar.append((x, y, d))
+
+        def isspausti():
+            for spalva in sorted(pagal_spalva, key=lambda c: sviesumas.get(c) or sviesumas.setdefault(
+                    c, 0.3 * int(c[1:3], 16) + 0.59 * int(c[3:5], 16) + 0.11 * int(c[5:7], 16) + 0.001)):
                 SelectObject(fdc, teptukas(spalva))
-                dabartine[0] = spalva
-            PatBlt(fdc, x, y, d, d, PATCOPY)
+                for x, y, d in pagal_spalva[spalva]:
+                    PatBlt(fdc, x, y, d, d, PATCOPY)
+            pagal_spalva.clear()
 
         pakite = []
         plotai = []
@@ -7442,7 +7465,7 @@ class Sniegas:
             # toli danguje – už eglių, sniego, girliandų: kur jie kertasi, statinis sluoksnis vėl uždedamas ant
             # viršaus (kitaip raketos pėdsakas eidavo per eglę)
             if not plotai:
-                plotai.extend(self.statiniai_plotai() or [None])
+                plotai.extend(self.statiniai_plotai(su_girliandomis=False) or [None])
             l, t, r, b = nauja
             for pl in plotai:
                 if pl is None:
@@ -7473,6 +7496,7 @@ class Sniegas:
                         gdi32.ExcludeClipRect(fdc, *juosta)
             for g in fj.grupes:
                 nauja = fj.piesti_grupe(g, kvadratas)
+                isspausti()
                 if nauja:
                     nauja = self.ribos(*nauja)
                 if nauja:
@@ -9316,11 +9340,15 @@ class Sniegas:
             user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*rr)),
                             self.g.teptukas(EKSKAV_SVYT_SPALVOS[0 if u < EKSKAV_SVYT_SVIECIA else 1]))
 
-    def statiniai_plotai(self):
-        """Kur statiniame sluoksnyje kas nors nupiešta (eglės, pusnys, langų sniegas, girliandos)."""
+    def statiniai_plotai(self, su_girliandomis=True):
+        """Kur statiniame sluoksnyje kas nors nupiešta (eglės, pusnys, langų sniegas, girliandos).
+        su_girliandomis=False – kai girliandos kadro pabaigoje vis tiek uždedamos ant viršaus (uzdengti_girliandomis):
+        jos kabo nuo ekrano viršaus, todėl su jomis „aukščiau visų plotų“ patikra nepraleisdavo nė vienos snaigės."""
         S = STULPELIS
         maks = int(self.n["max_aukstis"] * self.k) + 4
-        sar = [e["ribos"] for e in self.egles] + [g["ribos"] for g in getattr(self, "girliandos", ())]
+        sar = [e["ribos"] for e in self.egles]
+        if su_girliandomis:
+            sar += [g["ribos"] for g in getattr(self, "girliandos", ())]
         sar += [(c1 * S, pagr - maks, c2 * S, pagr + 2) for c1, c2, pagr in self.zemes_ruozai]
         sar += [st["sritis"] for st in self.langai.values()]
         return sar
@@ -9338,7 +9366,7 @@ class Sniegas:
         """toli=True – tolimos snaigės: po jų statinio sluoksnio daiktai (eglės, pusnys, girliandos) vėl
         uždedami ant viršaus (TransparentBlt su permatoma spalva), todėl snaigės atrodo krentančios už jų."""
         fdc, ribos = self.fdc, self.ribos
-        plotai = self.statiniai_plotai() if toli else None
+        plotai = self.statiniai_plotai(su_girliandomis=False) if toli else None
         # aukščiau už visus statinius daiktus esančioms snaigėms uždengimo tikrinti nereikia (dauguma snaigių)
         plotu_virsus = min(pt for _, pt, _, _ in plotai) if plotai else 0
         # Snaigė visa ekrane (beveik visada) – TransparentBlt tiesiai, be permatomas_kopijavimas() ir ribos()
@@ -10222,17 +10250,18 @@ class Sniegas:
         return [a.hwnd] if a is not None and a.hwnd else []
 
     def alfa_kliutys(self, toli):
-        """Kur perdangoje nupiešta tai, kas yra priekyje tolimų (toli=True) ar artimų snaigių – stačiakampiai."""
+        """Kur perdangoje nupiešta tai, kas yra priekyje tolimų (toli=True) ar artimų snaigių – stačiakampiai:
+        (girliandos, visa kita). Girliandos atskirai – jos siauros, bet nuo ekrano viršaus: kartu su kitais daiktais
+        jos „aukščiau visų kliūčių“ patikrą padarytų bevertę (kiekviena snaigė tikrintų visas kliūtis)."""
+        girl = [g["ribos"] for g in getattr(self, "girliandos", None) or ()]
         if toli:
-            sar = self.statiniai_plotai()
+            sar = self.statiniai_plotai(su_girliandomis=False)
             for bu in itertools.chain(self.bumbulai, self.skeveldros, self.pustomos, self.ekskavatoriai,
                                       self.ekskav_daleles, self.blizgesiai, self.seniai, self.senio_daleles):
                 if bu["sena"]:
                     sar.append(bu["sena"])
-            return sar
-        sar = [g["ribos"] for g in getattr(self, "girliandos", None) or ()]
-        sar += [b["sena"] for b in self.blizgesiai if b["sena"]]
-        return sar
+            return girl, sar
+        return girl, [b["sena"] for b in self.blizgesiai if b["sena"]]
 
     def piesti_alfa(self):
         try:
