@@ -48,7 +48,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.19"
+VERSIJA = "12.20"
 DATA = "2026-10-30"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -195,7 +195,6 @@ EN = {
         "The preview shows the current wind: direction, strength and whether it is calm, gusting or easing.",
     "Sniego kaupimasis": "Snow accumulation",
     "Kaupti ekrano apačioje": "Pile up at the bottom of the screen",
-    "Didžiausias aukštis, px": "Maximum height, px",
     "Kaupti ant langų viršaus": "Pile up on top of windows",
     "Kaupimosi greitis, %": "Accumulation speed, %",
     "Nuvalyti sniegą": "Clear snow",
@@ -1083,6 +1082,7 @@ SWP_FRAMECHANGED = 0x0020
 SWP_SHOWWINDOW = 0x0040
 DWMWA_EXTENDED_FRAME_BOUNDS = 9
 DWMWA_CLOAKED = 14
+DWMWA_EXCLUDED_FROM_PEEK = 12
 MONITOR_DEFAULTTONEAREST = 2
 ERROR_ALREADY_EXISTS = 183
 SRCCOPY = 0x00CC0020
@@ -1400,6 +1400,16 @@ def proceso_vardas(pid):
             _PROCESU_VARDAI.clear()
         _PROCESU_VARDAI[pid] = v
     return v
+
+
+def nepaslepti_per_peek(hwnd):
+    """Užvedus pelę ant užduočių juostos miniatiūros (ar „Rodyti darbalaukį“ kampe) Windows „Peek“ paslepia visus
+    kitus langus – ir sniegą. Šis langas iš to išimamas: sniegas lieka matomas."""
+    try:
+        v = ctypes.c_int(1)
+        dwmapi.DwmSetWindowAttribute(hwnd, DWMWA_EXCLUDED_FROM_PEEK, ctypes.byref(v), ctypes.sizeof(v))
+    except Exception:
+        pass
 
 
 def paslepta_dwm(hwnd):
@@ -5021,6 +5031,7 @@ class AlfaSniegas:
                                                    savininkas or None, None, None, None)
                 if not self.hwnd:
                     raise OSError(f"CreateWindowExW: {ctypes.get_last_error()}")
+                nepaslepti_per_peek(self.hwnd)
                 self.rodomas = False
             if not self.dc or (vw, vh) != (self.vw, self.vh):
                 self.naikinti_buferi()
@@ -6310,6 +6321,7 @@ class Sniegas:
         ex = GetWindowLong(h, GWL_EXSTYLE)
         # LAYERED+TRANSPARENT – pelė eina kiaurai; TOOLWINDOW – nėra Alt+Tab; NOACTIVATE – nevagia fokuso.
         SetWindowLong(h, GWL_EXSTYLE, ex | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE)
+        nepaslepti_per_peek(h)
         # SWP_SHOWWINDOW – tik kai turi būti matoma: kitaip pasikeitus ekranams per žaidimą perdanga iššoktų
         user32.SetWindowPos(h, HWND_TOPMOST, self.vx, self.vy, self.vw, self.vh,
                             SWP_NOACTIVATE | SWP_FRAMECHANGED | (SWP_SHOWWINDOW if self.rodoma else 0))
@@ -6537,6 +6549,7 @@ class Sniegas:
         Išdėstymas priklauso nuo sėklos: perkūrus (pvz. pasikeitus užduočių juostai) eglės lieka savo vietose,
         naujai išdėliojamos tik paspaudus „Išdėlioti iš naujo“."""
         S = STULPELIS
+        self.naikinti_egliu_paveikslelius()  # senų eglių paveikslėliai (uzdengti_eglemis) nebereikalingi
         if not hasattr(self, "egliu_sekla"):
             self.egliu_sekla = random.randrange(1 << 30)
         rnd = random.Random(self.egliu_sekla)
@@ -7037,16 +7050,9 @@ class Sniegas:
                 "spalva": random.choice(spalvos), "d": b["Pb"] * random.choice((1, 1, 2)),
                 "laikas": random.uniform(1.5, 2.5), "nusileido": False, "sena": None, "l": b["l"], "rr": b["rr"]})
 
-    def zemes_virsus(self, c):
-        """Matomo sniego aukštis ekrano apačioje stulpelyje c: aukštesnysis iš pusnies ir priekinio kelio sniego.
-        Ant jo stovi seniai ir bumbuliukai (kitaip kelias, piešiamas ant jų, uždengdavo apačią)."""
-        kel = self.__dict__.get("kelias")
-        h = self.aukstis[c]
-        return kel[c] if kel and c < len(kel) and kel[c] > h else h
-
     def virsus_be_kruvu(self, c):
-        """Kur stovi ir rieda tai, kas pusnyse, už kelio (seniai, bumbuliukai, jų gabalai), stulpelyje c: kaip
-        zemes_virsus, bet buldozeriukų stumiamos krūvos jų nekelia ir nestumdo – krūva juda kelyje priešais juos
+        """Kur stovi ir rieda tai, kas pusnyse, už kelio (seniai, bumbuliukai, jų gabalai), stulpelyje c: aukštesnysis
+        iš pusnies ir kelio sniego, bet buldozeriukų stumiamos krūvos jų nekelia ir nestumdo – krūva juda kelyje priešais juos
        . Kelias be krūvų skaičiuojamas kartą per kadrą (kelias_be_kruvu)."""
         kel = self.__dict__.get("kelias")
         h = self.aukstis[c]
@@ -10575,16 +10581,30 @@ class Sniegas:
         Jam užsidarius perdanga vėl iškeliama (kelti_perdanga, ≤2 s)."""
         ph = self.__dict__.get("perdangos_hwnd")
         if not ph or not self.rodoma or h == ph or user32.GetAncestor(h, GA_ROOT) != h \
-                or not user32.IsWindowVisible(h) or not self.sistemos_iskylantis(h):
+                or not user32.IsWindowVisible(h) or paslepta_dwm(h) or not self.sistemos_iskylantis(h):
             return
         sh = lango_staciakampis(h)
-        if not sh:
+        # 0×0 (ar vieno taško) langas – ne atidarytas meniu, o nematomas pagalbinis: Windows 11 užduočių juostos
+        # „Xaml_WindowedPopupClass“ 0×0 ties (0, 0), ne „visada viršuje“, giliai po programų langais. Pakišta po juo
+        # perdanga atsidurdavo po atidarytais langais – užvedus pelę ant užduočių juostos sniegas sumirksėdavo.
+        if not sh or sh[2] - sh[0] < 2 or sh[3] - sh[1] < 2:
             return
         pid = wintypes.DWORD()
         user32.GetWindowThreadProcessId(h, ctypes.byref(pid))
         jo_pid = pid.value
         w, n = user32.GetWindow(h, GW_HWNDPREV), 0
         while w and n < 3000:  # ar perdanga – aukščiau jo?
+            # Virš jo – darbalaukis: langas yra UŽ darbalaukio (Windows 11 užduočių juostos patarimų ir miniatiūrų
+            # „Xaml_WindowedPopupClass“ – kol nerodomi), ne atidarytas meniu. Pakišta po juo perdanga atsidurdavo
+            # po darbalaukiu – užvedus pelę ant užduočių juostos visas sniegas sumirksėdavo (darbalaukis – to paties
+            # explorer proceso, todėl žemiau esantis tikrinimas jo nepaisė).
+            if w != ph and lango_klase(w) in ("Progman", "WorkerW") and user32.IsWindowVisible(w):
+                klase = lango_klase(h)
+                pranesta = self.__dict__.setdefault("uz_darbalaukio_pranesta", set())
+                if klase not in pranesta:
+                    pranesta.add(klase)
+                    ZURNALAS.rasyti(f"iškylantis langas „{klase}“ – už darbalaukio, perdanga nekeliama po juo")
+                return
             if w == ph:
                 # Nebūtinai „visada viršuje“ langas – tada ir perdanga juo nebebus (ji lieka virš visų įprastų
                 # langų, nes šis meniu – aukščiausias iš jų); ją vėl iškels kelti_perdanga, meniu užsidarius.
@@ -10600,6 +10620,22 @@ class Sniegas:
                                     f"perkelta po juo")
                 except Exception:
                     pass
+                # Patikrinimas iškart (tame pačiame pranešime – ekrane dar nespėja pasikeisti): jei pakišta perdanga
+                # atsidūrė po darbalaukiu ar dideliu langu, sniegas dingtų – grąžinama į viršų
+                try:
+                    dengia, virs = self.dengia_perdanga(ph, h)
+                    klase = lango_klase(h)
+                    pranesta = self.__dict__.setdefault("iskylanciu_pranesta", set())
+                    if klase not in pranesta:  # diagnostikai – kartą kiekvienai klasei: kur jis, kas virš perdangos
+                        pranesta.add(klase)
+                        virsuje = "taip" if GetWindowLong(h, GWL_EXSTYLE) & WS_EX_TOPMOST else "ne"
+                        ZURNALAS.rasyti(f"  „{klase}“: {sh[2] - sh[0]}×{sh[3] - sh[1]} ties ({sh[0]}, {sh[1]}), "
+                                        f"visada viršuje: {virsuje} | virš perdangos: {virs or '–'}")
+                except Exception:
+                    dengia = ""
+                if dengia:
+                    self.grazinti_virsuje()
+                    ZURNALAS.rasyti(f"  pakišta perdanga būtų uždengta ({dengia}) – grąžinta į viršų")
                 return
             # Jei virš jo yra įprastas (ne „visada viršuje“) KITOS programos langas, kuris jį dengia, – tai ne
             # atidarytas meniu, o koks nors pagalbinis apvalkalo langas apačioje: perdangos nekišame po juo, kitaip
@@ -10618,6 +10654,32 @@ class Sniegas:
                         pass
                     return
             w, n = user32.GetWindow(w, GW_HWNDPREV), n + 1
+
+    def dengia_perdanga(self, ph, h):
+        """Kas virš (ką tik pakištos) perdangos: (dengia, virš). dengia – darbalaukis arba didelis (≥ ketvirčio ekrano)
+        matomas ne „visada viršuje“ langas (ne pats h): tada sniegas dingtų. virš – pirmi matomi langai virš
+        perdangos (diagnostikai)."""
+        dengia, virs, w, n = [], [], user32.GetWindow(ph, GW_HWNDPREV), 0
+        pid = wintypes.DWORD()
+        while w and n < 3000:
+            n += 1
+            if w not in self.senio_hwnd and user32.IsWindowVisible(w) and not paslepta_dwm(w):
+                user32.GetWindowThreadProcessId(w, ctypes.byref(pid))
+                if pid.value != os.getpid():
+                    klase = lango_klase(w)
+                    st = lango_staciakampis(w)
+                    virsuje = bool(GetWindowLong(w, GWL_EXSTYLE) & WS_EX_TOPMOST)
+                    apr = (f"„{klase}“ ({proceso_vardas(pid.value) or '?'}, {st[2] - st[0]}×{st[3] - st[1]}"
+                           f"{', visada viršuje' if virsuje else ''})" if st else f"„{klase}“")
+                    if len(virs) < 6:
+                        virs.append(apr)
+                    didelis = st is not None and (st[2] - st[0]) * (st[3] - st[1]) >= self.vw * self.vh / 4
+                    if w != h and (klase in ("Progman", "WorkerW") or (didelis and not virsuje)):
+                        dengia.append(apr)
+                        if len(dengia) >= 3:
+                            break
+            w = user32.GetWindow(w, GW_HWNDPREV)
+        return ", ".join(dengia), ", ".join(virs)
 
     def grazinti_virsuje(self):
         """Perdanga buvo pakišta po ne „visada viršuje“ meniu (po_iskylancio) ir taip neteko „visada viršuje“
@@ -12779,7 +12841,6 @@ class Sniegas:
         if nauja_sekla:
             self.egliu_sekla = random.randrange(1 << 30)
         self.kurti_egles()
-        self.naikinti_egliu_paveikslelius()
         self.pilnas_perpiesimas = True
 
     def ribu_tikrinimas(self, iki):
