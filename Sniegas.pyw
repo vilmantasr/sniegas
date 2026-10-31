@@ -23,6 +23,9 @@ kas minutę viena suvestinės eilutė (kadrai, darbo laikas, procesorius, atmint
 perpiešti) ir visi įvykiai bei klaidos. Programos lūžiai užrašomi visada.
 """
 
+# Python 3.15+: šie moduliai įkeliami tik tada, kai pirmą kartą prireikia (PEP 810); senesnis Python šį sąrašą
+# ignoruoja ir įkelia iš karto, kaip anksčiau.
+__lazy_modules__ = ["base64", "bisect", "platform", "re", "subprocess", "traceback", "webbrowser"]
 import base64
 import bisect
 import ctypes
@@ -36,6 +39,7 @@ import platform
 import random
 import re
 import struct
+import subprocess
 import sys
 import tempfile
 import threading
@@ -44,12 +48,18 @@ import traceback
 import webbrowser
 import zlib
 from ctypes import wintypes
+from operator import itemgetter
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-VERSIJA = "12.24"
-DATA = "2026-10-30"
+try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktinai nepakeisi; senesniame – įprastas
+    frozendict
+except NameError:
+    frozendict = dict
+
+VERSIJA = "12.25"
+DATA = "2026-10-31"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -71,7 +81,14 @@ def T(tekstas):
     return EN.get(tekstas, tekstas) if KALBA == "en" else tekstas
 
 
-EN = {
+EN = frozendict({
+    "Profilis…": "Profile…",
+    "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Byla – šalia žurnalo.":
+        "Performance profile (Python 3.15+): the program restarts and records which of its parts use the most CPU time. The file is saved next to the log.",
+    "Programa bus paleista iš naujo su našumo profiliuotuvu. Naudokite ją kaip įprastai 1–3 minutes, tada išjunkite (piktograma prie laikrodžio → „Išjungti“). Profilis bus įrašytas čia:":
+        "The program will restart with the performance profiler. Use it as usual for 1–3 minutes, then quit it (icon next to the clock → “Exit”). The profile will be saved here:",
+    "Tęsti?": "Continue?",
+    "Nepavyko paleisti profiliuotuvo.": "Could not start the profiler.",
     "Ramus vakaras": "Calm evening",
     "Pūga": "Blizzard",
     "Šventė": "Celebration",
@@ -502,7 +519,7 @@ EN = {
     "Atverti": "Open",
     "Žurnalo dar nėra.": "There is no log yet.",
     "Nepavyko atverti žurnalo.": "Could not open the log.",
-}
+})
 
 # Sukompiliuotos (PyInstaller) programos __file__ rodo į laikiną išpakavimo aplanką – nustatymai ten pradingtų.
 SUKOMPILIUOTA = getattr(sys, "frozen", False)
@@ -548,6 +565,44 @@ def rasti_nustatymu_byla():
 
 NUSTATYMU_BYLA = rasti_nustatymu_byla()
 DIAGNOSTIKOS_BYLA = NUSTATYMU_BYLA.with_name("sniegas_diagnostika.log")
+PROFILIO_BYLA = NUSTATYMU_BYLA.with_name("sniegas_profilis.txt")
+# Našumo profilis (Python 3.15+, profiling.sampling): programa paleidžiama iš naujo per šį paleidiklį – jis paleidžia
+# profiliuotuvą, o šiam pasibaigus (naudotojas išjungia programą) suvestinę įrašo tekstu šalia žurnalo.
+PROFILIUOTI_GALIMA = sys.version_info >= (3, 15) and not getattr(sys, "frozen", False)
+PROFILIO_PALEIDIKLIS = r"""
+import io, os, platform, pstats, subprocess, sys, time
+skriptas, isvestis = sys.argv[1], sys.argv[2]
+dvejetaine, klaidos = isvestis + ".pstats", isvestis + ".klaidos"
+pradzia = time.strftime("%Y-%m-%d %H:%M:%S")
+with open(klaidos, "w", encoding="utf-8") as kl:
+    subprocess.run([sys.executable, "-m", "profiling.sampling", "run", "--mode", "wall", "--pstats", "-o", dvejetaine,
+                    skriptas, "--laukti", "--profiliuojama"], stdout=kl, stderr=kl, creationflags=0x08000000)
+s = io.StringIO()
+s.write(f"Sniegas: našumo profilis {pradzia} – {time.strftime('%H:%M:%S')} | Python {sys.version.split()[0]} | "
+        f"{platform.platform()} | {platform.processor()}\n")
+try:
+    st = pstats.Stats(dvejetaine, stream=s)
+    st.strip_dirs()
+    s.write("\nRežimas: sieninis laikas (wall) – į jį patenka ir Windows (GDI) darbas branduolyje; laukimas tarp kadrų "
+            "matomas kaip Misc.mainloop.\n")
+    s.write("\n=== Daugiausia laiko pačioje funkcijoje (tottime; GDI ir kt. kvietimai – jas kviečiančioje) ===\n")
+    st.sort_stats("tottime").print_stats(60)
+    s.write("\n=== Su viskuo, ką funkcija iškviečia (cumtime) ===\n")
+    st.sort_stats("cumtime").print_stats(40)
+except Exception as e:
+    s.write(f"\nNepavyko perskaityti profilio: {e!r}\n")
+    try:
+        s.write(open(klaidos, encoding="utf-8", errors="replace").read()[-6000:])
+    except OSError:
+        pass
+with open(isvestis, "w", encoding="utf-8") as f:
+    f.write(s.getvalue())
+for b in (dvejetaine, klaidos):
+    try:
+        os.remove(b)
+    except OSError:
+        pass
+"""
 
 
 class Zurnalas:
@@ -719,14 +774,14 @@ SNAIGES_SESELIS = "#a9c8ea"
 GILUMO_RIBA = 0.58
 
 # „SNIEGAS“ pixel art raidėmis (lango „Apie“ pavadinimas): 7 eilučių raidės, „#“ – taškas
-PIKS_RAIDES = {
+PIKS_RAIDES = frozendict({
     "S": (".###.", "#...#", "#....", ".###.", "....#", "#...#", ".###."),
     "N": ("#...#", "##..#", "#.#.#", "#..##", "#...#", "#...#", "#...#"),
     "I": ("###", ".#.", ".#.", ".#.", ".#.", ".#.", "###"),
     "E": ("#####", "#....", "#....", "####.", "#....", "#....", "#####"),
     "G": (".###.", "#...#", "#....", "#.###", "#...#", "#...#", ".###."),
     "A": (".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"),
-}
+})
 
 # Paruoštukai: pritaikius keičiami tik čia išvardyti nustatymai, kiti (spalvos, dydžiai…) lieka
 # naudotojo. Bet visi 6 ekrano objektai (eglės, girliandos, seniai, buldozeriukai, bumbuliukai, fejerverkai) nustatomi kiekviename – kitaip rezultatas
@@ -765,9 +820,9 @@ PARUOSTUKAI = (
 
 
 # Objekto nustatymai – paruoštukas juos nustato tik tada, kai tą objektą įjungia (išjungto nekeičia)
-PARUOSTUKU_OBJEKTU_NUSTATYMAI = {"egles": ("egliu_kiekis", "egliu_lemputes", "egliu_mirksi", "egliu_burbuliukai"),
+PARUOSTUKU_OBJEKTU_NUSTATYMAI = frozendict({"egles": ("egliu_kiekis", "egliu_lemputes", "egliu_mirksi", "egliu_burbuliukai"),
                                   "sniego_senis": ("senio_kiekis", "senio_stovi"),
-                                  "ekskavatoriai": ("ekskavatoriu_kiekis",), "bumbulai": ("bumbulu_kiekis",)}
+                                  "ekskavatoriai": ("ekskavatoriu_kiekis",), "bumbulai": ("bumbulu_kiekis",)})
 
 
 def paruostuko_nustatymai(nust):
@@ -787,7 +842,7 @@ def paruostuko_nustatymai(nust):
     return nust
 
 
-NUMATYTI = {
+NUMATYTI = frozendict({
     # Kiekviena skiltis įjungiama / išjungiama varnele savo pavadinime: snaiges, vejas_ijungtas,
     # kaupimasis, fejerverkai, egles, girliandos, ekskavatoriai, bumbulai, sniego_senis.
     "snaiges": True,
@@ -859,10 +914,10 @@ NUMATYTI = {
     "ekskavatoriu_kiekis": 2,
     "ekskavatoriu_dydis": 100,
     "be_apribojimu": False,  # išplėstos ribos (RIBOS_LAISVOS) – savo rizika
-}
+})
 
 # Skaitinių nustatymų ribos – bendros nustatymų langui ir bylos skaitymui (ranka pataisyta byla nesugadins programos)
-RIBOS = {
+RIBOS = frozendict({
     "greitis": (20, 300), "dydis": (50, 250), "vejas": (0, 10), "gusiai": (0, 10),
     "svyravimas": (0, 200), "plasnojimas": (0, 200),
     "gusio_stiprumas": (0, 10),
@@ -874,10 +929,10 @@ RIBOS = {
     "senio_kiekis": (1, 5), "senio_dydis": (50, 200),
     "ekskavatoriu_kiekis": (1, 6), "ekskavatoriu_dydis": (50, 200), "girliandu_dydis": (50, 200), "girliandu_kiekis": (4, 40),
     "girliandu_mirksejimas": (0, 300), "glotniu_astrumas": (0, 100),
-}
+})
 # „Išplėstos ribos“: ribos išplečiamos, bet ne iki begalybės – kitaip vienas per didelis skaičius užšaldytų programą
 # (pvz. 100 000 snaigių – ~3 s vienam kadrui) ar suėstų gigabaitus atminties (bumbuliukų piešinių juostos).
-RIBOS_LAISVOS = {
+RIBOS_LAISVOS = frozendict({
     "greitis": (5, 1000), "dydis": (10, 1000), "vejas": (0, 50), "gusiai": (0, 10),
     "svyravimas": (0, 400), "plasnojimas": (0, 400),
     "gusio_stiprumas": (0, 50),
@@ -889,13 +944,13 @@ RIBOS_LAISVOS = {
     "senio_kiekis": (1, 20), "senio_dydis": (20, 400),
     "ekskavatoriu_kiekis": (1, 30), "ekskavatoriu_dydis": (20, 600), "girliandu_dydis": (20, 600), "girliandu_kiekis": (2, 150),
     "girliandu_mirksejimas": (0, 1000), "glotniu_astrumas": (0, 100),
-}
+})
 # Eglės žemesnės nei 16 px nebūna (šablonas – 16 langelių, langelis ≥ 1 px), plotis – tik EGLIU_PLOCIAI (69–100):
 # todėl ir ribos tokios.
 ISPEJIMO_SPALVA = "#b35c00"  # nustatymo pavadinimas – šia spalva, kai jo reikšmė (dalinai) neveikia; kodėl – patarime
 # Nustatymų aprašai – patarime ant pavadinimo, laukelio ir juostos. Tekstas arba keli tekstai (kiekvienas verčiamas
 # atskirai).
-APRASAI = {
+APRASAI = frozendict({
     "dydis": "Snaigių dydis, % įprasto.",
     "greitis": "Kaip greitai snaigės krenta: 100 – įprastai, 200 – dvigubai greičiau.",
     "max_aukstis": "Kiek daugiausia sniego susikaupia ekrano apačioje (pusnys – atskiri kalneliai, ne lygus sluoksnis).",
@@ -963,7 +1018,7 @@ APRASAI = {
     "vejas": "Ramiu metu vėjas kas 5–12 s pasirenkamas iš naujo: nuo 0 iki 0,7 šios reikšmės (kintančios krypties – kartais trumpam ir atgal). Gūsio metu – tiek, kiek „Gūsio stiprumas“.",
     "bumbulu_greitis": ("Kaip stipriai bumbuliukai retkarčiais pastumiami, kai beveik sustoja. Mažai – dažniau guli vietoje, daug – nuolat rieda. Nuokalnėmis ir pučiant vėjui jie rieda vienodai.",
                         "0 – visai nepastumiami (rieda tik nuokalnėmis ir pučiant vėjui)."),
-}
+})
 
 MAKS_SNAIGIU_LAISVAI = 5000  # ir vienos rūšies, ir iš viso – virš to kadrai jau labai lėti
 SNAIGIU_STILIAI = ("pikseliai", "iprastos")
@@ -982,7 +1037,7 @@ GUSIO_KILIMAS = 100  # %, kaip greitai vėjas stiprėja
 GUSIO_RIMIMAS = 100  # %, kaip greitai silpsta
 # Kurie nustatymai priklauso kuriai skilčiai (raktas – skilties įjungimo varnelė, ji pati nekeičiama): mygtukas ↺
 # skilties pavadinime grąžina tik juos į numatytuosius.
-SKILCIU_NUSTATYMAI = {
+SKILCIU_NUSTATYMAI = frozendict({
     "snaiges": ("tipai", "greitis", "svyravimas", "plasnojimas", "snaigiu_stilius", "snaiges_sukasi", "sniego_konturas",
                 "sniegas_blizga", "snaiges_glotnios", "glotniu_astrumas", "dydis"),
     "vejas_ijungtas": ("vejas", "gusiai", "gusio_stiprumas", "vejo_kryptis"),
@@ -996,12 +1051,12 @@ SKILCIU_NUSTATYMAI = {
     "sniego_senis": ("senio_kiekis", "senio_dydis", "senio_stovi", "sniegas_ant_senio", "senio_lemputes",
                      "senio_lempuciu_animacija"),
     "ekskavatoriai": ("ekskavatoriu_kiekis", "ekskavatoriu_dydis"),
-}
+})
 # Lemputės ant senio šluotos: kaip šviečia
 SENIO_LEMPUCIU_ANIMACIJOS = ("mirksi", "lieja", "bega", "sviecia")
 SENIO_LEMPUCIU_TEKSTAI = ("Mirksi", "Lėtai įsižiebia ir užgęsta", "Bėga iš apačios į viršų", "Šviečia nemirksėdamos")
-TEKSTINES_REIKSMES = {"snaigiu_stilius": SNAIGIU_STILIAI, "kryzelis": KRYZELIO_VEIKSMAI, "kalba": KALBOS,
-                      "vejo_kryptis": VEJO_KRYPTYS, "senio_lempuciu_animacija": SENIO_LEMPUCIU_ANIMACIJOS}
+TEKSTINES_REIKSMES = frozendict({"snaigiu_stilius": SNAIGIU_STILIAI, "kryzelis": KRYZELIO_VEIKSMAI, "kalba": KALBOS,
+                      "vejo_kryptis": VEJO_KRYPTYS, "senio_lempuciu_animacija": SENIO_LEMPUCIU_ANIMACIJOS})
 MAKS_SNAIGIU_TIPO = 1000
 # Iš viso snaigių – daugiau procesorius nebespėja: ~20–30 µs vienai snaigei per kadrą, 30 kadrų/s → ~1000
 MAKS_SNAIGIU_IS_VISO = 1000
@@ -1053,6 +1108,8 @@ ISKYLANTYS_LANGAI = {
     "Windows.UI.Core.CoreWindow", "XamlExplorerHostIslandWindow", "#32768", "TaskListThumbnailWnd",
     "tooltips_class32",
 }
+# Patarimai, kurie z tvarkoje būna po atidarytais langais (bet ekrane – virš visko): juos keliame virš perdangos
+PAKELIAMI_PATARIMAI = {"Xaml_WindowedPopupClass", "tooltips_class32"}
 # Kiti tokie langai atpažįstami pagal procesą (užduočių juosta, „Start“, paieška…): mažas iškylantis langas be
 # antraštės. Pati užduočių juosta, darbalaukis ir failų naršyklės langai – ne iškylantys.
 SISTEMOS_PROCESAI = {"explorer.exe", "shellhost.exe", "shellexperiencehost.exe", "startmenuexperiencehost.exe",
@@ -1516,7 +1573,7 @@ class PaslinktasPiesejas(GdiPiesejas):
 
 # ---------------------------------------------------------------- pixel art buldozeriukai (sniego valytuvai)
 # Nustatymų raktai likę „ekskavatoriai…“ – kad neprapultų jau išsaugoti nustatymai.
-EKSKAV_SPALVOS = {"D": "#3b3b3b", "d": "#808080", "B": "#9fd3ff", "R": "#ff6a00"}  # korpusas (Y, y) – žemiau
+EKSKAV_SPALVOS = frozendict({"D": "#3b3b3b", "d": "#808080", "B": "#9fd3ff", "R": "#ff6a00"})  # korpusas (Y, y) – žemiau
 # Korpuso spalvos (šviesi, tamsi) – kiekvienas buldozeriukas savos: pirmas geltonas, kiti – kaip tikros technikos
 # spalvos (raudona, žalia, oranžinė, mėlyna). Švyturėlis visiems tas pats.
 EKSKAV_KORPUSAI = (("#f4b400", "#b07800"), ("#d8392b", "#8c1f15"), ("#3f9e4d", "#236330"),
@@ -2038,8 +2095,8 @@ def _stulpelis(r, kampas):
     return [(x * ca - y * sa, x * sa + y * ca) for x, y in taskai]
 
 
-SNAIGIU_FORMOS = {"plokstele": _plokstele, "sektorine": _sektorine, "zvaigzdine_plokstele": _zvaigzdine_plokstele,
-                  "dvylikasake": _dvylikasake, "stulpelis": _stulpelis}
+SNAIGIU_FORMOS = frozendict({"plokstele": _plokstele, "sektorine": _sektorine, "zvaigzdine_plokstele": _zvaigzdine_plokstele,
+                  "dvylikasake": _dvylikasake, "stulpelis": _stulpelis})
 
 
 def formos_taskai(rusis, forma, r, kampas=0.0):
@@ -2065,8 +2122,8 @@ def kristalo_taskai(r, spinduliai, sakos, kampas=0.0):
     return pts
 
 
-LEMPUCIU_SPALVOS = {"#ff4d4d": "#5e2020", "#ffd23f": "#5e4f1a", "#4dff88": "#1f5e36",
-                    "#4db8ff": "#1f455e", "#ff9f40": "#5e3e1b"}  # įjungta: išjungta
+LEMPUCIU_SPALVOS = frozendict({"#ff4d4d": "#5e2020", "#ffd23f": "#5e4f1a", "#4dff88": "#1f5e36",
+                    "#4db8ff": "#1f455e", "#ff9f40": "#5e3e1b"})  # įjungta: išjungta
 BURBULIUKU_SPALVOS = ("#e63946", "#f4c430", "#3a86ff", "#c0c7d1", "#9b5de5")
 
 
@@ -2346,14 +2403,20 @@ def girliandu_zingsnis(girliandos, dt, greitis, atspindziai=True):
     return pasikeite
 
 
-def piesti_girlianda(p, g, sritis):
-    """Piešia tik tai, kas patenka į sritį – kad mirktelėjus vienai lemputei nereikėtų perpiešti visos girliandos."""
+def piesti_girliandos_laida(p, g, sritis):
+    """Tik laidas (be lempučių), tik tai, kas patenka į sritį."""
     l, t, r, b = sritis
     laidas, ys = g["laidas"], g["laido_y"]  # laidas surikiuotas pagal y – imama tik srities atkarpa
     d0 = laidas[0][2] if laidas else 0
     for x, y, d, spalva in laidas[bisect.bisect_right(ys, t - d0):bisect.bisect_left(ys, b)]:
         if t - d < y < b and l - d < x < r:
             p.staciakampis(x, y, x + d, y + d, spalva)
+
+
+def piesti_girlianda(p, g, sritis):
+    """Piešia tik tai, kas patenka į sritį – kad mirktelėjus vienai lemputei nereikėtų perpiešti visos girliandos."""
+    l, t, r, b = sritis
+    piesti_girliandos_laida(p, g, sritis)
     lygiai, fazes = g["mirk"]["lygiai"], g["mirk"]["blyksnio_fazes"]
     kryptis = "desinen" if g["kaire"] else "kairen"
     for j, (x0, y0, spalva, rb) in enumerate(g["vietos"]):
@@ -2385,7 +2448,7 @@ def piesti_egle(p, e, n):
 
 
 # ---------------------------------------------------------------- pixel art eglutės
-PIKS_SPALVOS = {"G": "#18a020", "g": "#0a5c14", "n": "#5c3010", "W": SNIEGAS, "w": "#a9c8ea"}
+PIKS_SPALVOS = frozendict({"G": "#18a020", "g": "#0a5c14", "n": "#5c3010", "W": SNIEGAS, "w": "#a9c8ea"})
 
 # '1' – lemputė, 'o' – burbuliukas
 PIKS_EGLE = [
@@ -2524,7 +2587,7 @@ def transponuoti(rastas):
 
 # Pixel art snaigės sukasi šuoliukais: kaitaliojami du piešiniai. Šešiakampėms (Žvaigždutė, Plunksninė)
 # pasukimas 90° atrodo kaip 30°, todėl antras piešinys – tas pats, apverstas per įstrižainę; kitos nupieštos ranka.
-PIKS_SNAIGES_PASUKTOS = {
+PIKS_SNAIGES_PASUKTOS = frozendict({
     3: transponuoti(PIKS_SNAIGES[3]),
     4: [".W.W.", "W.W.W", ".WwW.", "W.W.W", ".W.W."],
     5: ["W.....W", ".W.W.W.", "..WWW..", ".WWwWW.", "..WWW..", ".W.W.W.", "W.....W"],
@@ -2535,11 +2598,11 @@ PIKS_SNAIGES_PASUKTOS = {
     9: transponuoti(PIKS_SNAIGES[9]),
     11: transponuoti(PIKS_SNAIGES[11]),
     12: transponuoti(PIKS_SNAIGES[12]),  # stulpelis vartosi
-}
+})
 # Pixel art langelio dydis (taškais, kai ekrano mastelis 1 ir dydis 100 %) parinktas taip, kad pixel art snaigės
 # būtų tokio pat skersmens kaip įprastos: didžiausia (Plunksninė) – 11 langelių, įprasta – 2 × 9,5 taško.
 PIKS_SNAIGES_LANGELIS = 2 * 9.5 / 11
-PIKS_SUKIMO_ZINGSNIS = {3: 30.0, 4: 22.5, 5: 45.0, 6: 45.0, 7: 30.0, 8: 30.0, 9: 30.0, 11: 15.0, 12: 90.0}  # kiek laipsnių „pasisuka“ vienu šuoliuku
+PIKS_SUKIMO_ZINGSNIS = frozendict({3: 30.0, 4: 22.5, 5: 45.0, 6: 45.0, 7: 30.0, 8: 30.0, 9: 30.0, 11: 15.0, 12: 90.0})  # kiek laipsnių „pasisuka“ vienu šuoliuku
 
 
 def piks_tinklelis(eilutes, pakeitimai=None):
@@ -2792,8 +2855,8 @@ def blyksnio_tinklelis(n, kadras):
 BUMBULU_DINGIMAI = ("susitraukia", "suduzta", "istirpsta", "ismenga")
 BUMBULU_DINGIMU_PAVADINIMAI = ("Susitraukia", "Sudūžta", "Ištirpsta", "Įsmenga į sniegą")
 # kaip atsiranda, jei įjungtas atitinkamas dingimas (sudužęs – nukrenta iš dangaus)
-BUMBULU_ATSIRADIMAI = {"susitraukia": "isauga", "suduzta": "nukrenta", "istirpsta": "susidaro",
-                       "ismenga": "isnyra"}
+BUMBULU_ATSIRADIMAI = frozendict({"susitraukia": "isauga", "suduzta": "nukrenta", "istirpsta": "susidaro",
+                       "ismenga": "isnyra"})
 TIRPIMO_KADRAI = 6
 
 
@@ -3026,7 +3089,7 @@ def sluoksnio_atkarpos(h, a, b, slenkstis):
 
 # ---------------------------------------------------------------- pixel art fejerverkai
 # Kiekviena spalva – 5 atspalviai: įkaitęs, ryškus, pagrindinis, tamsus, gęstantis.
-FJ_PALETES = {
+FJ_PALETES = frozendict({
     "raudona": ("#fff0f0", "#ff5a5a", "#e8202c", "#9c1020", "#501018"),
     "oranžinė": ("#fff4dc", "#ffb048", "#ff7a14", "#b04c0a", "#5a2806"),
     "auksinė": ("#fffce4", "#ffe274", "#f8b800", "#a87000", "#5c3c04"),
@@ -3037,7 +3100,7 @@ FJ_PALETES = {
     "violetinė": ("#f8ecff", "#d488ff", "#a844dc", "#6a2a8c", "#361648"),
     "rožinė": ("#ffecf6", "#ff98cc", "#ff44a4", "#ac2a6c", "#561636"),
     "sidabrinė": ("#ffffff", "#f2f4ff", "#c8d0e4", "#8a92a6", "#464a56"),
-}
+})
 FJ_SPALVOS = tuple(k for k in FJ_PALETES if k not in ("auksinė", "sidabrinė"))
 FJ_SIGNALAS = ("#ffffff", "#ff7050", "#ff2a10", "#b01808", "#580c04")
 FJ_DUMAI = ("#a4acbc", "#8c94a4", "#727a8a", "#5a606e", "#444852")
@@ -4096,11 +4159,11 @@ def vejo_kreive(n):
 # Du apvalūs gumulai, galvoje – šakelės (SENIO_PUOSMENOS), mėlynas šalikas. Juda slysdamas pasilenkęs, už jo – sniego dulkės.
 # Pačiumpamas pele už šaliko (pakarpos) – kabo, apatinis gumulas švytuoja; paleistas nukrenta ir susispaudžia.
 SENIO_W, SENIO_H = 26, 36  # langeliais
-SENIO_SPALVOS = {"W": "#ffffff", "w": "#cddef0", "g": "#788ea8", "K": "#1e1e22", "O": "#f5801e", "o": "#be550f",
+SENIO_SPALVOS = frozendict({"W": "#ffffff", "w": "#cddef0", "g": "#788ea8", "K": "#1e1e22", "O": "#f5801e", "o": "#be550f",
                  "B": "#6e4826", "b": "#462c16", "R": "#c82832", "C": "#3478d2",
                  "c": "#18468c", "k": "#f4aaaf", "Y": "#ffd21a", "y": "#ff8a1a",
                  "T": "#8a5a2b", "Q": "#6e4826", "q": "#a0703a", "Z": "#5a3a1c",
-                 "L": "#2f9a44", "l": "#1d6a2c", "M": "#e02a2a", "m": "#9a1414"}  # šluota: kotas, rykštės; lapeliai, uogos
+                 "L": "#2f9a44", "l": "#1d6a2c", "M": "#e02a2a", "m": "#9a1414"})  # šluota: kotas, rykštės; lapeliai, uogos
 SENIO_RANKA_METANT = (23, 24)   # langelis, iš kurio išskrenda gniūžtė (žiūrint į dešinę)
 # Visas senis piešinyje nuleistas 1 langeliu (SENIO_POSLINKIS): apatinis gumulas baigdavosi priešpaskutinėje
 # eilutėje, o šluotos kotas – paskutinėje, todėl senis visada kabojo 1 langeliu virš sniego, „pasirėmęs ant šluotos“.
@@ -4715,28 +4778,28 @@ def senio_trumpo_veiksmo_trukme(s_):
 
 
 # Gniūžtės metimai: užsimojimo trukmė, greitis į priekį ir aukštyn (px/s, kai mastelis 1)
-METIMAI = {"silpnai": (0.25, (110, 190), (120, 200)), "vidutiniskai": (0.35, (260, 420), (180, 320)),
-           "stipriai": (0.55, (520, 720), (230, 360))}
-METIMU_SVORIAI = {"silpnai": 30, "vidutiniskai": 45, "stipriai": 25}
+METIMAI = frozendict({"silpnai": (0.25, (110, 190), (120, 200)), "vidutiniskai": (0.35, (260, 420), (180, 320)),
+           "stipriai": (0.55, (520, 720), (230, 360))})
+METIMU_SVORIAI = frozendict({"silpnai": 30, "vidutiniskai": 45, "stipriai": 25})
 # Konfeti rinkiniai (spalvos) ir šūvio formos
-KONFETI_RINKINIAI = {
+KONFETI_RINKINIAI = frozendict({
     "vaivorykste": KONFETI_SPALVOS,
     "auksas": ("#ffd700", "#f5c542", "#ffe680", "#c0c0c0", "#e8e8e8", "#b8860b"),
     "kaledos": ("#d62828", "#ff4d4d", "#1f9e3a", "#2ecc71", "#ffffff", "#ffd700"),
     "trispalve": ("#fdb913", "#006a44", "#c1272d"),
     "ledas": ("#ffffff", "#bfe6ff", "#5ac8fa", "#1e90ff", "#8fd3ff"),
     "rozine": ("#ff2d92", "#ff8fc7", "#af52de", "#ffb3e6", "#ffffff"),
-}
-KONFETI_FORMOS = {  # (kampai nuo horizonto, greitis, kiekis šūvyje, šūvių laikai)
+})
+KONFETI_FORMOS = frozendict({  # (kampai nuo horizonto, greitis, kiekis šūvyje, šūvių laikai)
     "platus": ((25, 80), (180, 360), 40, (0.3,)),
     "fontanas": ((72, 88), (260, 420), 40, (0.3,)),
     "dvigubas": ((40, 80), (170, 330), 26, (0.3, 0.58)),
-}
+})
 
 
 # Metaliniai (blizgantys) konfeti: (spalva, sužibimas). Kokia rinkinio dalis metalinė – KONFETI_METALAS (kitų – 12 %).
-KONFETI_METALAI = {"auksas": ("#e0b020", "#fff4b8"), "sidabras": ("#c4c9d2", "#ffffff")}
-KONFETI_METALAS = {"auksas": 0.45, "ledas": 0.3, "trispalve": 0.0}
+KONFETI_METALAI = frozendict({"auksas": ("#e0b020", "#fff4b8"), "sidabras": ("#c4c9d2", "#ffffff")})
+KONFETI_METALAS = frozendict({"auksas": 0.45, "ledas": 0.3, "trispalve": 0.0})
 
 
 @functools.lru_cache(maxsize=None)
@@ -4995,6 +5058,9 @@ def dib_sekcija(W, H):
         raise MemoryError(f"nepavyko sukurti {W}×{H} paveikslo")
     gdi32.SelectObject(dc, bmp)
     return dc, bmp, bits.value
+
+
+NULIAI = [0] * 256  # kaukės eilutei išvalyti (ALFA_KAUKE ≤ 256)
 
 
 class AlfaSniegas:
@@ -5347,7 +5413,18 @@ class AlfaSniegas:
                 for j in range(h):
                     o = j * KS
                     d = (ty + j) * vw + tx
-                    for i, v in enumerate(src[o:o + w]):
+                    eil = src[o:o + w]
+                    # Greitai (C lygiu): jei aukščiausias baitas visur 0, permatomas taškas lygus KEY – visa eilutė
+                    # permatoma (nieko neišpjauti) arba visa užpildyta (išpjauti visą). Profilis: kaukė užėmė ~10 %
+                    # glotnių snaigių laiko, didžioji dalis – eilutės, kurios ištisai viena ar kita.
+                    if max(eil) <= 0xFFFFFF:
+                        n_key = eil.count(KEY)
+                        if n_key == w:
+                            continue
+                        if not n_key:
+                            dst[d:d + w] = NULIAI[:w]
+                            continue
+                    for i, v in enumerate(eil):
                         if v & 0xFFFFFF != KEY:
                             dst[d + i] = 0
         self.d_kaukiu += 1
@@ -5389,7 +5466,8 @@ class AlfaSniegas:
         snaiges = sn.snaiges
         for toli in (True, False):
             kl_girl, kliutys = sn.alfa_kliutys(toli)
-            kl_virsus = min((k[1] for k in kliutys), default=vh)
+            # map + itemgetter – C lygiu (generatorius buvo ~5 % glotnių snaigių laiko, kai kliūčių šimtai)
+            kl_virsus = min(map(itemgetter(1), kliutys), default=vh)
             isp = []
             for f in snaiges:
                 if (f[SGYLIS] < GILUMO_RIBA) != toli:
@@ -6190,6 +6268,7 @@ class Sniegas:
         self.naikinti_ekskavatorius()
         self.naikinti_senius()
         self.naikinti_egliu_paveikslelius()
+        self.naikinti_girliandu_paveikslelius()
         try:
             # DC naikinami pirma – tada į juos parinkti pieštukai/teptukai atlaisvinami ir juos galima ištrinti
             self.naikinti_kadro_buferius()
@@ -6763,8 +6842,14 @@ class Sniegas:
                         self.piesti_sluoksni(st["h"], a, bb, st["l"], st["t"], 1.0, SNIEGO_KONTURAS)
             for g in getattr(self, "girliandos", ()):  # girliandos – ant viršaus (lyg kabėtų ant ekrano)
                 gl, gt, gr, gb = g["ribos"]
-                if gr > l and gl < r and gb > t and gt < b:
-                    piesti_girlianda(self.statinis, g, (l, t, r, b))
+                il, it, ir_, ib = max(l, gl), max(t, gt), min(r, gr), min(b, gb)
+                if il < ir_ and it < ib:
+                    pav = self.girliandos_paveikslelis(g)
+                    if pav is not None:
+                        msimg32.TransparentBlt(dc, il, it, ir_ - il, ib - it, pav["dc"], il - gl, it - gt,
+                                               ir_ - il, ib - it, PERMATOMA_RGB)
+                    else:
+                        piesti_girlianda(self.statinis, g, (l, t, r, b))
         finally:
             if sritis is not None:
                 gdi32.RestoreDC(dc, -1)
@@ -8328,7 +8413,12 @@ class Sniegas:
                     else:
                         sujungtos.append(q)
                 sritys = sujungtos
+            pav = self.girliandos_paveikslelis(g)
             for sr in sritys:
+                if pav is not None:  # vienas TransparentBlt (anksčiau – šimtai FillRect kiekvienai sričiai)
+                    msimg32.TransparentBlt(fdc, sr[0], sr[1], sr[2] - sr[0], sr[3] - sr[1], pav["dc"], sr[0] - gl,
+                                           sr[1] - gt, sr[2] - sr[0], sr[3] - sr[1], PERMATOMA_RGB)
+                    continue
                 gdi32.SaveDC(fdc)
                 try:
                     gdi32.IntersectClipRect(fdc, *sr)
@@ -8390,6 +8480,59 @@ class Sniegas:
         piesti_egle(PaslinktasPiesejas(self.g, d["dc"], el, et), e, n_egl)
         kesas[id(e)] = (e, raktas, d)
         return d
+
+    def girliandos_paveikslelis(self, g):
+        """Girlianda (laidas ir lemputės dabartinėje būsenoje) atskirame paveikslėlyje, permatomame fone: kas kadrą
+        ją uždengiant ant snaigių – vienas TransparentBlt sričiai. Profilis parodė, kad piešiant iš naujo
+        (stačiakampiais, kiekvienai sričiai) girliandos užimdavo ~ketvirtadalį viso kadro darbo.
+        Pasikeitusi lemputė perpiešiama tik ji: po ja grąžinamas laidas (iš atskiro laido paveikslėlio), tada
+        lemputė ir kaimynės, kurias ta sritis palietė."""
+        kesas = self.__dict__.setdefault("_girl_paveiksleliai", {})
+        v = kesas.get(id(g))
+        gl, gt, gr, gb = g["ribos"]
+        if v is None or v["g"] is not g:
+            gyvos = {id(x): x for x in getattr(self, "girliandos", None) or ()}
+            for k in [k for k, v_ in kesas.items() if gyvos.get(k) is not v_["g"]]:
+                v_ = kesas.pop(k)
+                self.naikinti_dc(v_["dc"])
+                self.naikinti_dc(v_["laidas"])
+            w, h = gr - gl, gb - gt
+            if w <= 0 or h <= 0:
+                return None
+            d, dl = self.naujas_dc(w, h), self.naujas_dc(w, h)
+            if not d["bmp"] or not dl["bmp"]:
+                self.naikinti_dc(d)
+                self.naikinti_dc(dl)
+                return None
+            for x in (d, dl):
+                user32.FillRect(x["dc"], ctypes.byref(wintypes.RECT(0, 0, w, h)), self.g.teptukas(PERMATOMA))
+            piesti_girliandos_laida(PaslinktasPiesejas(self.g, dl["dc"], gl, gt), g, g["ribos"])
+            gdi32.BitBlt(d["dc"], 0, 0, w, h, dl["dc"], 0, 0, SRCCOPY)
+            v = kesas[id(g)] = {"g": g, "dc": d, "laidas": dl, "bus": [None] * len(g["vietos"])}
+        lygiai, fazes, bus, vietos = g["mirk"]["lygiai"], g["mirk"]["blyksnio_fazes"], v["bus"], g["vietos"]
+        keisti = [j for j in range(len(vietos)) if bus[j] != (lygiai[j], fazes[j])]
+        if keisti:
+            dc, ldc = v["dc"]["dc"], v["laidas"]["dc"]
+            perpiesti = set(keisti)
+            for j in keisti:
+                l, t, r, b = vietos[j][3]
+                gdi32.BitBlt(dc, l - gl, t - gt, r - l, b - t, ldc, l - gl, t - gt, SRCCOPY)
+                for k, vt in enumerate(vietos):
+                    rb = vt[3]
+                    if k not in perpiesti and rb[2] > l and rb[0] < r and rb[3] > t and rb[1] < b:
+                        perpiesti.add(k)
+            p = PaslinktasPiesejas(self.g, dc, gl, gt)
+            kryptis = "desinen" if g["kaire"] else "kairen"
+            for j in sorted(perpiesti):
+                x0, y0, spalva, _ = vietos[j]
+                piks_piesti(p, girliandos_lemputes_tinklelis(spalva, lygiai[j], kryptis, fazes[j]), x0, y0, g["Pg"])
+                bus[j] = (lygiai[j], fazes[j])
+        return v["dc"]
+
+    def naikinti_girliandu_paveikslelius(self):
+        for v in self.__dict__.pop("_girl_paveiksleliai", {}).values():
+            self.naikinti_dc(v["dc"])
+            self.naikinti_dc(v["laidas"])
 
     def naikinti_egliu_paveikslelius(self):
         for _, _, d in self.__dict__.pop("_egliu_paveiksleliai", {}).values():
@@ -10529,6 +10672,27 @@ class Sniegas:
                 self.po_iskylancio(hwnd)
             except Exception:
                 pass
+        elif ivykis == EVENT_OBJECT_LOCATIONCHANGE and objektas == 0 and hwnd and hwnd not in self.senio_hwnd \
+                and hwnd not in Patarimas.hwnds:
+            # Windows 11 užduočių juostos patarimai („Show hidden icons“ ir kt.) – iš anksto sukurti 0×0 langai,
+            # parodomi tik pakeitus dydį ir vietą: nei EVENT_OBJECT_SHOW, nei „atidengimo“ nebūna, todėl jie likdavo
+            # po perdanga (už eglių). Tikrinami tik iškylančių langų klasių langai (klasė – iš podėlio).
+            try:
+                klases = self.__dict__.setdefault("_klasiu_kesas", {})
+                klase = klases.get(hwnd)
+                if klase is None:
+                    if len(klases) > 2000:
+                        klases.clear()
+                    klase = klases[hwnd] = lango_klase(hwnd)
+                if klase in ISKYLANTYS_LANGAI:
+                    if hwnd == self.__dict__.get("nuleista_po"):
+                        sh = lango_staciakampis(hwnd)
+                        if not sh or sh[2] - sh[0] < 2 or sh[3] - sh[1] < 2:  # patarimas „paslėptas“ – sutrauktas
+                            self.grazinti_virsuje()
+                    else:
+                        self.po_iskylancio(hwnd)
+            except Exception:
+                pass
         self._ivykiai_n += 1
         self._ivykiai_ms += (time.perf_counter() - t0) * 1000
 
@@ -10660,6 +10824,18 @@ class Sniegas:
                 if klase not in pranesta:
                     pranesta.add(klase)
                     ZURNALAS.rasyti(f"iškylantis langas „{klase}“ – už darbalaukio, perdanga nekeliama po juo")
+                return
+            if w == ph and lango_klase(h) in PAKELIAMI_PATARIMAI:
+                # Windows 11 užduočių juostos patarimai („Show hidden icons“…): ekrane jie virš visko, bet jų langas z
+                # tvarkoje – po atidarytais langais. Pakišta po juo perdanga atsidurdavo po tais langais (grąžinama į
+                # viršų), o virš jo – uždengdavo patarimą (už eglių). Todėl ne perdanga nuleidžiama, o patarimas
+                # pakeliamas virš jos („visada viršuje“): ekrane jis ir taip virš visko, perdanga nejudinama.
+                user32.SetWindowPos(h, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+                pranesta = self.__dict__.setdefault("pakelti_pranesta", set())
+                if h not in pranesta:
+                    pranesta.add(h)
+                    ZURNALAS.rasyti(f"iškylantis patarimas „{lango_klase(h)}“ ({sh[2] - sh[0]}×{sh[3] - sh[1]} ties "
+                                    f"({sh[0]}, {sh[1]})) – pakeltas virš perdangos")
                 return
             if w == ph:
                 # Nebūtinai „visada viršuje“ langas – tada ir perdanga juo nebebus (ji lieka virš visų įprastų
@@ -11000,6 +11176,23 @@ class Sniegas:
         self.paskutine_klaida = repr(reiksme)
         ZURNALAS.rasyti("KLAIDA (tkinter): " + "".join(traceback.format_exception(tipas, reiksme, eiga)))
 
+    def profiliuoti(self):
+        """Paleidžia programą iš naujo per profiliuotuvą (žr. PROFILIO_PALEIDIKLIS) ir šią kopiją išjungia."""
+        if not messagebox.askokcancel(PAVADINIMAS, T(
+                "Programa bus paleista iš naujo su našumo profiliuotuvu. Naudokite ją kaip įprastai 1–3 minutes, "
+                "tada išjunkite (piktograma prie laikrodžio → „Išjungti“). Profilis bus įrašytas čia:")
+                + f"\n\n{PROFILIO_BYLA}\n\n" + T("Tęsti?")):
+            return
+        try:
+            subprocess.Popen([sys.executable, "-c", PROFILIO_PALEIDIKLIS, os.path.abspath(__file__), str(PROFILIO_BYLA)],
+                             cwd=str(PROGRAMOS_APLANKAS), close_fds=True,
+                             creationflags=0x00000008 | 0x08000000)  # DETACHED_PROCESS | CREATE_NO_WINDOW
+        except Exception as e:
+            messagebox.showerror(PAVADINIMAS, T("Nepavyko paleisti profiliuotuvo.") + f"\n\n{e!r}")
+            return
+        ZURNALAS.rasyti("PROFILIS: programa paleidžiama iš naujo su profiliuotuvu", visada=True)
+        self.baigti()
+
     def atverti_zurnala(self):
         if not DIAGNOSTIKOS_BYLA.exists():
             messagebox.showinfo(PAVADINIMAS, T("Žurnalo dar nėra.") + f"\n\n{DIAGNOSTIKOS_BYLA}")
@@ -11281,8 +11474,14 @@ class Sniegas:
         kb.bind("<<ComboboxSelected>>", lambda e: self.pakeistas_kryzelis())
         self.patarimas_nustatymui(kb, "kryzelis")
         self.zymimasis(g, "diagnostika", "Diagnostikos žurnalas", 4)
-        ttk.Button(g, text=T("Atverti"), command=self.atverti_zurnala, width=10).grid(row=4, column=1, sticky="e",
-                                                                                     padx=4, pady=2)
+        zurn = ttk.Frame(g)
+        zurn.grid(row=4, column=1, sticky="e", padx=4, pady=2)
+        if PROFILIUOTI_GALIMA:
+            b = ttk.Button(zurn, text=T("Profilis…"), command=self.profiliuoti, width=10)
+            b.pack(side="left", padx=(0, 4))
+            Patarimas(b, T("Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys "
+                           "užima daugiausia procesoriaus laiko. Byla – šalia žurnalo."))
+        ttk.Button(zurn, text=T("Atverti"), command=self.atverti_zurnala, width=10).pack(side="left")
         # „Išplėstos ribos“ – čia, ne apatinėje mygtukų juostoje (ten atrodė kaip pagrindinis mygtukas)
         self.be_apribojimu_kint = tk.BooleanVar(value=self.n["be_apribojimu"])
         cb = ttk.Checkbutton(g, text=T("Išplėstos ribos"), variable=self.be_apribojimu_kint,
@@ -13632,9 +13831,21 @@ def main():
         f(PROGRAMOS_ID)
     except Exception:
         pass
-    mutex = kernel32.CreateMutexW(None, False, "Local\\" + PROGRAMOS_ID)  # laikomas iki programos pabaigos
-    try:
+    # --laukti: paleista iš kitos kopijos (pvz., profiliavimui) – ji dar baigia darbą, todėl palaukiama iki 15 s
+    laukti_iki = time.monotonic() + (15.0 if "--laukti" in sys.argv else 0.0)
+    while True:
+        ctypes.set_last_error(0)  # kartojant – kad neliktų ankstesnio bandymo ERROR_ALREADY_EXISTS
+        mutex = kernel32.CreateMutexW(None, False, "Local\\" + PROGRAMOS_ID)  # laikomas iki programos pabaigos
         klaida = ctypes.get_last_error()
+        if not (klaida == ERROR_ALREADY_EXISTS or (not mutex and klaida == 5)) or time.monotonic() >= laukti_iki:
+            break
+        if mutex:
+            kernel32.CloseHandle(mutex)
+        time.sleep(0.25)
+    if "--profiliuojama" in sys.argv:
+        ZURNALAS.rasyti(f"PROFILIS: programa veikia su profiliuotuvu – išjungus profilis bus įrašytas į {PROFILIO_BYLA}",
+                        visada=True)
+    try:
         # ERROR_ACCESS_DENIED (5) be rankenos – mutex sukūrė kita, administratoriaus teisėmis veikianti kopija
         if klaida == ERROR_ALREADY_EXISTS or (not mutex and klaida == 5):
             nustatyti_kalba(kalba_is_nustatymu())
