@@ -47,7 +47,8 @@ Paruoštas `Sniegas.exe` bus aplanke `dist`.
 
 - Nustatymai saugomi šalia programos, faile `sniegas_nustatymai.json`. Jei ten rašyti negalima (pvz., `Program Files`), jie saugomi `%APPDATA%\Sniegas`.
 - Nustatymus galima eksportuoti ir importuoti skiltyje „Kita“.
-- Diagnostikos žurnalas įjungiamas skiltyje „Kita“ (numatytai jis išjungtas). Žurnalas `sniegas_diagnostika.log` rašomas šalia nustatymų.
+- Diagnostikos žurnalas įjungiamas skiltyje „Diagnostika“ (numatytai jis išjungtas). Žurnalas `sniegas_diagnostika.log` rašomas šalia nustatymų.
+- Ten pat – „Našumo testas…“ (~5 min): programa paeiliui įjungia įvairius nustatymus ir matuoja, kiek kiekvienas kainuoja (kadro laikas, procesorius, NVIDIA vaizdo plokštės galia). Rezultatai prirašomi į `sniegas_nasumas.txt` šalia nustatymų, jūsų nustatymai po testo grąžinami.
 - Su Python 3.15 ar naujesniu ten pat yra mygtukas „Profilis…“: programa paleidžiama iš naujo su našumo profiliuotuvu, o ją išjungus šalia nustatymų įrašomas `sniegas_profilis.txt` – kurios programos dalys užima daugiausia laiko.
 
 ## Autoriai

@@ -25,7 +25,7 @@ perpiešti) ir visi įvykiai bei klaidos. Programos lūžiai užrašomi visada.
 
 # Python 3.15+: šie moduliai įkeliami tik tada, kai pirmą kartą prireikia (PEP 810); senesnis Python šį sąrašą
 # ignoruoja ir įkelia iš karto, kaip anksčiau.
-__lazy_modules__ = ["base64", "bisect", "platform", "re", "subprocess", "traceback", "webbrowser"]
+__lazy_modules__ = ["base64", "bisect", "platform", "re", "shutil", "subprocess", "traceback", "webbrowser"]
 import base64
 import bisect
 import ctypes
@@ -38,6 +38,7 @@ import os
 import platform
 import random
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -58,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.25"
+VERSIJA = "12.26"
 DATA = "2026-10-31"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -82,6 +83,45 @@ def T(tekstas):
 
 
 EN = frozendict({
+    "Našumo testas…": "Performance test…",
+    "~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo grąžinami.":
+        "Spends ~5 min trying various settings one by one and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterwards.",
+    "Našumo testas truks ~{m} min: programa paeiliui įjungs įvairius nustatymus ir matuos, kiek jie kainuoja. Tuo metu geriau nieko nedaryti kompiuteriu. Nustatymų langas bus paslėptas, o jūsų nustatymai po testo grąžinami. Rezultatai bus įrašyti čia:":
+        "The performance test takes ~{m} min: the program switches through various settings and measures what they cost. Better not to use the computer meanwhile. The settings window will be hidden and your settings restored afterwards. Results will be saved here:",
+    "Pradėti?": "Start?",
+    "Našumo testas baigtas. Atverti rezultatus?": "The performance test is finished. Open the results?",
+    "Programa paslėpta (bazė)": "Program hidden (baseline)",
+    "Jūsų nustatymai": "Your settings",
+    "Tik sniegas, 60 k/s": "Snow only, 60 fps",
+    "Tik sniegas, 30 k/s": "Snow only, 30 fps",
+    "Tik sniegas, 60 k/s, dalinis kopijavimas": "Snow only, 60 fps, partial copying",
+    "+ glotnios snaigės": "+ smooth flakes",
+    "+ eglės": "+ trees",
+    "+ girliandos": "+ light strings",
+    "+ bumbuliukai": "+ baubles",
+    "+ sniego seniai": "+ snowmen",
+    "+ buldozeriukai": "+ bulldozers",
+    "Viskas (be fejerverkų), glotnios": "Everything (no fireworks), smooth",
+    "našumo testas": "performance test",
+    "Ekranai": "Screens",
+    "Vaizdo plokštė": "Graphics card",
+    "nežinoma (galia matuojama tik NVIDIA su nvidia-smi)": "unknown (power is measured only on NVIDIA with nvidia-smi)",
+    "Kiekvienas etapas: {a} s įsibėgėjimas, {b} s matavimas. Kadro darbas – ms per kadrą (vidurkis ir 95 % kadrų ne ilgiau), CPU – viso proceso, % vieno branduolio.":
+        "Each stage: {a} s warm-up, {b} s measurement. Frame work – ms per frame (average and the 95th percentile), CPU – whole process, % of one core.",
+    "Piešimas = statinis (pusnų, kelio, eglių perpiešimas) + atstat. (fono atstatymas) + judantys objektai.":
+        "Drawing = static (redrawing drifts, road, trees) + restore (background restore) + moving objects.",
+    "Etapas": "Stage",
+    "darbas": "work",
+    "fizika": "physics",
+    "piešimas": "drawing",
+    "ekranas": "screen",
+    "statinis": "static",
+    "Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji.":
+        "In the stages (except “Your settings”), amounts, sizes, speeds and heights are the defaults.",
+    "atstat.": "restore",
+    "Kaina, palyginti su „{p}“:": "Cost compared with “{p}”:",
+    "kadrą": "frame",
+    "Sniegas vaizdo plokštei (prieš paslėptą programą): {w} W": "Snow for the graphics card (vs. program hidden): {w} W",
     "Profilis…": "Profile…",
     "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Byla – šalia žurnalo.":
         "Performance profile (Python 3.15+): the program restarts and records which of its parts use the most CPU time. The file is saved next to the log.",
@@ -243,6 +283,7 @@ EN = frozendict({
         "The file has extended limits turned on – they allow much larger amounts and sizes, the computer may lag."
         "\n\nTurn them on? (No – values will be clamped to the normal limits.)",
     "Kita": "Other",
+    "Diagnostika": "Diagnostics",
     "Kadrų per sekundę": "Frames per second",
     "Slėpti sniegą, kai kita programa per visą ekraną": "Hide snow when another app is full screen",
     "Paleisti kartu su Windows": "Start with Windows",
@@ -489,7 +530,7 @@ EN = frozendict({
     "Buldozeriukų dydis, % įprasto.":
         "Bulldozer size, % of normal.",
     "60 – sklandžiau, bet procesorius dirba maždaug dvigubai daugiau.": "60 is smoother, but uses about twice the CPU.",
-    "30 – mažiausia apkrova.": "30 uses the least CPU.",
+    "30 – mažiausia apkrova: vaizdo plokštė lieka ramybės būsenoje.": "30 uses the least CPU, and the graphics card stays idle.",
     "Svyravimas į šonus, %": "Side-to-side sway, %",
     "Plasnojimas, %": "Flutter, %",
     "Kaip toli snaigės krisdamos siūbuoja į šonus – kristalai labiausiai (kaip lapelis), smulkūs taškeliai – mažiau. "
@@ -566,6 +607,14 @@ def rasti_nustatymu_byla():
 NUSTATYMU_BYLA = rasti_nustatymu_byla()
 DIAGNOSTIKOS_BYLA = NUSTATYMU_BYLA.with_name("sniegas_diagnostika.log")
 PROFILIO_BYLA = NUSTATYMU_BYLA.with_name("sniegas_profilis.txt")
+# Kaip kadras kopijuojamas į ekraną: „auto“ (pagal išmatuotą kainą), „dalinis“ arba „pilnas“ – tik bandymams
+KOPIJAVIMO_REZIMAS = os.environ.get("SNIEGAS_KOPIJAVIMAS", "auto").strip().lower()
+NASUMO_BYLA = NUSTATYMU_BYLA.with_name("sniegas_nasumas.txt")
+# s kiekvienam našumo testo etapui; matavimas 20 s, ne 10: per 10 s rezultatą ±0,3 ms keisdavo tai, kur tuo metu
+# rieda bumbuliukai ar vaikšto seniai (po eglėmis, per kelio sniegą)
+NASUMO_ISIBEGEJIMAS, NASUMO_MATAVIMAS = 4.0, 20.0
+# Šių nustatymų našumo testo etapai nekeičia (kiti – numatytieji, kad paleidimus būtų galima palyginti)
+NASUMO_ISLAIKOMI = frozenset(("kalba", "diagnostika", "kryzelis", "slepti_pilname_ekrane", "be_apribojimu"))
 # Našumo profilis (Python 3.15+, profiling.sampling): programa paleidžiama iš naujo per šį paleidiklį – jis paleidžia
 # profiliuotuvą, o šiam pasibaigus (naudotojas išjungia programą) suvestinę įrašo tekstu šalia žurnalo.
 PROFILIUOTI_GALIMA = sys.version_info >= (3, 15) and not getattr(sys, "frozen", False)
@@ -592,7 +641,8 @@ try:
 except Exception as e:
     s.write(f"\nNepavyko perskaityti profilio: {e!r}\n")
     try:
-        s.write(open(klaidos, encoding="utf-8", errors="replace").read()[-6000:])
+        with open(klaidos, encoding="utf-8", errors="replace") as kl:
+            s.write(kl.read()[-6000:])
     except OSError:
         pass
 with open(isvestis, "w", encoding="utf-8") as f:
@@ -658,7 +708,8 @@ SKILCIU_RAKTAI = ("snaiges", "vejas_ijungtas", "kaupimasis", "fejerverkai", "egl
 _DANGUS_SK = ("Snaigės", "Vėjas", "Sniego kaupimasis")  # sniegas ir oras – kairėje, melsvai
 _PUOSMENOS_SK = ("Eglutės", "Girliandos", "Fejerverkai", "Buldozeriukai", "Bumbuliukai", "Sniego senis")  # dešinėje
 SKILCIU_SPALVOS = dict({k: ("#eaf2fb", "#1d4f91") for k in _DANGUS_SK},
-                       **{k: ("#acc0af", "#243508") for k in _PUOSMENOS_SK}, Kita=("#f1f1f1", "#444444"))
+                       **{k: ("#acc0af", "#243508") for k in _PUOSMENOS_SK}, Kita=("#f1f1f1", "#444444"),
+                       Diagnostika=("#f1f1f1", "#444444"))
 SKILTIES_TAMSI_TEKSTAS, SKILTIES_TAMSI_PILKA = "#eef3e4", "#8d9a78"  # tekstas tamsiame skilties fone
 # Sniego blizgesys: šviesi šerdis ir žydri spinduliai – grynai baltas ant balto sniego nesimatytų.
 BLIZG_SERDIS, BLIZG_SPINDULIAI = "#fffbe6", "#9fd6ff"
@@ -895,7 +946,9 @@ NUMATYTI = frozendict({
     "girliandu_kiekis": 18,  # lempučių vienoje ekrano pusėje
     "girliandu_atspindziai": True,  # šviečiančių lempučių stikle kartais blyksteli atspindys
     "girliandu_mirksejimas": 100,  # mirksėjimo greitis, %; 0 – šviečia nemirksėdamos
-    "fps": 60,  # sklandžiau: lėta snaigė juda po ~0,5 taško per kadrą, o ne netolygiais 0–2 taškų šuoliukais
+    # 30: našumo testas (RTX 4070) – su 60 vaizdo plokštė nebegrįžta į ramybės dažnį (+~3 W), procesorius dirba
+    # dvigubai daugiau; sklandesniam judėjimui (lėta snaigė – po ~0,5 taško per kadrą) – 60
+    "fps": 30,
     "fejerverkai": False,
     "fejerverku_intervalas": 60,  # min; paleidžiama kas tiek minučių nuo vidurnakčio (60 – pilnomis valandomis)
     "fejerverku_trukme": 30,  # s
@@ -1647,23 +1700,32 @@ def kauburio_profilis(V, H_maks, S):
 KRASTO_NUOLYDIS = 1.2
 
 
-def nuslinkti(h, a, b, riba, remia):
+def nuslinkti(h, a, b, riba, remia, ribos=None):
     """Viena slinkimo perėja stulpeliams a…b-1 (lyginant su kairiuoju kaimynu): kur gretimų stulpelių skirtumas
     didesnis už ribą, sniegas pusiau perpilamas į žemesnį – stati siena per keliolika kadrų virsta šlaitu. remia –
-    stulpeliai, į kuriuos remiasi verstuvas (ten nepilama). Grąžina pakitusių stulpelių (nuo, iki) arba None."""
+    stulpeliai, į kuriuos remiasi verstuvas (ten nepilama). ribos – stulpelių sniego ribos (kelio duobutės prie
+    eglių kamienų): kur pačios ribos šlaitas statesnis, toks šlaitas ir leidžiamas – kitaip sniegas nuolat
+    pildydavo duobutę, o tirpimas ją vėl išlygindavo (žemė perpiešta beveik kas kadrą). Grąžina pakitusių
+    stulpelių (nuo, iki) arba None."""
     pa = pb = None
     for c in range(max(1, a), b):
         d = h[c] - h[c - 1]
         if d > riba:
             if c in remia:
                 continue
-            m = (d - riba) / 2
+            r_ = riba if ribos is None else max(riba, ribos[c] - ribos[c - 1])
+            if d <= r_:
+                continue
+            m = (d - r_) / 2
             h[c] -= m
             h[c - 1] += m
         elif d < -riba:
             if c - 1 in remia:
                 continue
-            m = (-d - riba) / 2
+            r_ = riba if ribos is None else max(riba, ribos[c - 1] - ribos[c])
+            if -d <= r_:
+                continue
+            m = (-d - r_) / 2
             h[c - 1] -= m
             h[c] += m
         else:
@@ -1783,6 +1845,19 @@ def ekskav_stiklo_juostos(w, h, blyksi=False):
         return []
     virsus, vidurys, apacia = EKSKAV_BLYKSNIS if blyksi else EKSKAV_STIKLAS
     return [(0, w, y, virsus if y < h / 3 else vidurys if y < 2 * h / 3 else apacia) for y in range(h)]
+
+
+@functools.lru_cache(maxsize=32)
+def ekskav_stiklo_blokai(w, h, blyksi=False):
+    """Tas pats stiklas, bet gretimos tos pačios spalvos eilutės sujungtos: ((x1, x2, y1, y2, spalva), …) – ekrane
+    3 FillRect vietoj vieno kiekvienai eilutei (buldozeriukų stiklas profilyje kainavo ~0,1 ms/kadrą)."""
+    bl = []
+    for x1, x2, y, spalva in ekskav_stiklo_juostos(w, h, blyksi):
+        if bl and bl[-1][4] == spalva and bl[-1][0] == x1 and bl[-1][1] == x2 and bl[-1][3] == y:
+            bl[-1][3] = y + 1
+        else:
+            bl.append([x1, x2, y, y + 1, spalva])
+    return tuple(map(tuple, bl))
 
 
 def ekskav_stiklo_vieta(Pe, kaire):
@@ -5648,6 +5723,7 @@ class Sniegas:
         self.b_fizika = self.b_buferis = self.b_ekranas = 0.0  # kadro laiko skaidinys (būsenos eilutei)
         self.b_atstatymas = 0.0
         self._atstatymo_ms = 0.0  # paskutinio kadro fono atstatymas (kopijavimas iš statinio buferio), ms
+        self._statinio_ms = 0.0  # paskutinio kadro statinio sluoksnio perpiešimas (pusnys, kelias, eglės…), ms
         self.b_kopijos = 0
         self._ekrano_ms, self._ekrano_kv = 0.0, 0  # paskutinio kadro kopijavimas į ekraną: ms ir BitBlt kiekis
         # Išmatuotos kopijavimo į ekraną kainos (slenkantys vidurkiai): vieno mažo stačiakampio ir viso kadro.
@@ -5779,6 +5855,8 @@ class Sniegas:
     def issaugoti(self):
         """Atomiškai: laikina byla įrašoma iki disko (fsync) ir pakeičia senąją. Jei bylą trumpam laiko atidariusi
         kita programa (antivirusinė, OneDrive, paieškos indeksas), keitimas pakartojamas."""
+        if self.__dict__.get("testas"):  # našumo testo laikini nustatymai neišsaugomi
+            return
         self.atnaujinti_paruostukus()  # bet koks pakeitimas (ir ne per pakeista()) – paruoštuko žymė teisinga
         laikina = NUSTATYMU_BYLA.with_suffix(NUSTATYMU_BYLA.suffix + ".tmp")
         try:
@@ -6600,6 +6678,8 @@ class Sniegas:
         for g in getattr(self, "girliandos", ()):
             self.nesvarios_sritys.append(g["ribos"])
         self.girliandos = []
+        # senųjų paveikslėliai (girliandos_paveikslelis) – atlaisvinami ir girliandas išjungus, ne tik pakeitus
+        self.naikinti_girliandu_paveikslelius()
         if not self.n["girliandos"] or not self.monitoriai:
             return
         Pg = self.girliandu_Pg()
@@ -7730,6 +7810,11 @@ class Sniegas:
         if getattr(self, "senio_sprite", None):
             self.naikinti_dc(self.senio_sprite)
         self.senio_sprite = None
+        self.naikinti_senio_vaizdus()
+
+    def naikinti_senio_vaizdus(self):
+        for _, d in self.__dict__.pop("_senio_vaizdai", {}).values():
+            self.naikinti_dc(d)
 
     def kurti_senius(self):
         """Sniego seniai (mažyliai) slysta ekrano apačioje ir langų viršumi. Pele pačiumpami už šaliko:
@@ -7741,6 +7826,7 @@ class Sniegas:
         likti = getattr(self, "seniai", [])
         if getattr(self, "senio_sprite", None):
             self.naikinti_dc(self.senio_sprite)
+        self.naikinti_senio_vaizdus()  # sudėti senių paveikslėliai – iš senos juostos
         Ps = senio_pikselis(self.P, self.n["senio_dydis"])
         W, H, n = round(SENIO_W * Ps), round(SENIO_H * Ps), len(SENIO_KADRAI)  # kadro dydis juostoje, px
         kiek = self.n["senio_kiekis"]
@@ -8457,6 +8543,24 @@ class Sniegas:
         v = kesas.get(id(e))
         if v is not None and v[0] is e and v[1] == raktas:
             return v[2]
+        if v is not None and v[0] is e and v[1][0] == raktas[0] and v[1][2:] == raktas[2:] and raktas[3] \
+                and v[1][1] is not None and raktas[1] is not None and len(v[1][1]) == len(raktas[1]):
+            # Mirktelėjo lemputės – perpiešiami tik jų langeliai (ir sniegas ant jų), ne visa eglė (~80 FillRect)
+            el, et = e["ribos"][:2]
+            p = PaslinktasPiesejas(self.g, v[2]["dc"], el, et)
+            s, x0, y0, seni, nauji = e["s"], e["x0"], e["y0"], v[1][1], raktas[1]
+            sniegas = n_egl.get("sniegas_ant_egliu", False)
+            for r, c, spalva, j in e["lemp"]:
+                if seni[j] != nauji[j]:
+                    p.staciakampis(x0 + round(c * s), y0 + round(r * s), x0 + round((c + 1) * s),
+                                   y0 + round((r + 1) * s), LEMPUCIU_LYGIAI[spalva][nauji[j]])
+                    for r2, c2, dalis, kr, ds in (e.get("snieg", ()) if sniegas else ()):
+                        if r2 == r and c2 == c:  # kaip piesti_egle
+                            xa, xb, ya = x0 + round((c + kr) * s), x0 + round((c + ds) * s), y0 + round(r * s)
+                            if xb > xa:
+                                p.staciakampis(xa, ya, xb, ya + max(1, round(s * dalis)), SNIEGAS)
+            kesas[id(e)] = (e, raktas, v[2])
+            return v[2]
         # kuriama / perpiešiama (retai): eglės sukurtos iš naujo – senųjų paveikslėliai atlaisvinami
         gyvos = {id(x): x for x in self.egles}
         for k in [k for k, v_ in kesas.items() if gyvos.get(k) is not v_[0]]:
@@ -8521,18 +8625,58 @@ class Sniegas:
                     rb = vt[3]
                     if k not in perpiesti and rb[2] > l and rb[0] < r and rb[3] > t and rb[1] < b:
                         perpiesti.add(k)
-            p = PaslinktasPiesejas(self.g, dc, gl, gt)
             kryptis = "desinen" if g["kaire"] else "kairen"
+            atl = self.girl_lempuciu_atlasas(kryptis, g["Pg"])
+            p = None
             for j in sorted(perpiesti):
                 x0, y0, spalva, _ = vietos[j]
-                piks_piesti(p, girliandos_lemputes_tinklelis(spalva, lygiai[j], kryptis, fazes[j]), x0, y0, g["Pg"])
+                if atl is not None:  # paruošta lemputė – vienas TransparentBlt (piešiant – ~10 FillRect)
+                    ax = self.girl_lemputes_vieta(atl, spalva, lygiai[j], kryptis, fazes[j])
+                    msimg32.TransparentBlt(dc, x0 - gl, y0 - gt, atl["lw"], atl["lh"], atl["d"]["dc"], ax, 0,
+                                           atl["lw"], atl["lh"], PERMATOMA_RGB)
+                else:
+                    p = p or PaslinktasPiesejas(self.g, dc, gl, gt)
+                    piks_piesti(p, girliandos_lemputes_tinklelis(spalva, lygiai[j], kryptis, fazes[j]), x0, y0,
+                                g["Pg"])
                 bus[j] = (lygiai[j], fazes[j])
         return v["dc"]
+
+    def girl_lempuciu_atlasas(self, kryptis, Pg):
+        """Visų girliandos lempučių variantų (spalva × ryškumas × atspindžio fazė) juosta vienai krypčiai ir dydžiui;
+        lemputės nupiešiamos, kai pirmąkart prireikia."""
+        atlasai = self.__dict__.setdefault("_girl_atlasai", {})
+        raktas = (kryptis, Pg)
+        atl = atlasai.get(raktas)
+        if atl is None:
+            t = girliandos_lemputes_tinklelis(0, 0, kryptis, 0)
+            lw, lh = round(len(t[0]) * Pg), round(len(t) * Pg)
+            vietu = len(GIRL_SPALVOS) * GIRL_LYGIAI * 3
+            d = self.naujas_dc(lw * vietu, lh)
+            if not d["bmp"]:
+                self.naikinti_dc(d)
+                atlasai[raktas] = False
+                return None
+            user32.FillRect(d["dc"], ctypes.byref(wintypes.RECT(0, 0, lw * vietu, lh)), self.g.teptukas(PERMATOMA))
+            atl = atlasai[raktas] = {"d": d, "lw": lw, "lh": lh, "Pg": Pg, "nupiesta": set()}
+        return atl or None
+
+    def girl_lemputes_vieta(self, atl, spalva, lygis, kryptis, faze):
+        """Lemputės x atlase (nupiešiama pirmą kartą)."""
+        i = (spalva * GIRL_LYGIAI + lygis) * 3 + faze
+        ax = i * atl["lw"]
+        if i not in atl["nupiesta"]:
+            piks_piesti(GdiPiesejas(self.g, atl["d"]["dc"]), girliandos_lemputes_tinklelis(spalva, lygis, kryptis, faze),
+                        ax, 0, atl["Pg"])
+            atl["nupiesta"].add(i)
+        return ax
 
     def naikinti_girliandu_paveikslelius(self):
         for v in self.__dict__.pop("_girl_paveiksleliai", {}).values():
             self.naikinti_dc(v["dc"])
             self.naikinti_dc(v["laidas"])
+        for atl in self.__dict__.pop("_girl_atlasai", {}).values():
+            if atl:
+                self.naikinti_dc(atl["d"])
 
     def naikinti_egliu_paveikslelius(self):
         for _, _, d in self.__dict__.pop("_egliu_paveiksleliai", {}).values():
@@ -8636,6 +8780,58 @@ class Sniegas:
         st = s_.get("st")
         return st["t"] if st is not None else None
 
+    def piesti_senio_puosmenas(self, dc, ox, oy, nr, puosmena, spalva, tuta, sniegas, Ps):
+        """Ant senio juostos kadro (ox, oy – jo kairysis viršutinis kampas): šakelės galvoje, 2-o ir kitų senių
+        sagos, tūtos spalvos ir pirmi sniegas langelių sniego (ant galvos, šakelių, rankų, šluotos)."""
+        n = len(SENIO_KADRAI)
+        poza, kadras = SENIO_KADRAI[nr % n]
+        i_kaire = nr >= n
+        X = senio_x(senio_poslinkis(poza, kadras), i_kaire, Ps)  # kaip juostoje
+        FillRect, RECT, byref, tept = user32.FillRect, wintypes.RECT, ctypes.byref, self.g.teptukas
+
+        def L(v):  # langelio riba px – kaip piks_piesti (Ps gali būti trupmeninis)
+            return round(v * Ps)
+        if puosmena != "plika":  # šakelės galvoje (juostoje senis be jų)
+            for x, y, w, sp in senio_puosmenos_langeliai(poza, kadras, i_kaire, puosmena):
+                FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + w, y), oy + L(y + 1))), tept(sp))
+        if spalva:  # 2-o ir kitų senių sagos – savos spalvos
+            for x, y, w, spalvos in senio_bumbulo_langeliai(poza, kadras, i_kaire):
+                FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + w, y), oy + L(y + 1))),
+                         tept(spalvos[spalva]))
+        if tuta:  # juostoje – 0-ė tūta; kitos spalvos užpiešiamos
+            for x, y, spalvos in senio_tutos_langeliai(poza, kadras, i_kaire):
+                FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + 1, y), oy + L(y + 1))),
+                         tept(spalvos[tuta]))
+        if sniegas:
+            baltas = tept(SNIEGAS)
+            for x, y, _ in senio_sniego_langeliai(poza, kadras, i_kaire, puosmena)[:sniegas]:
+                FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + 1, y), oy + L(y + 1))), baltas)
+
+    def senio_vaizdas(self, i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps):
+        """i-ojo senio dabartinis kadras su puošmenomis atskirame paveikslėlyje (fonas – kaip juostos)."""
+        kesas = self.__dict__.setdefault("_senio_vaizdai", {})
+        sp = self.senio_sprite
+        raktas = (id(sp), nr, puosmena, spalva, tuta, sniegas, W, H)
+        v = kesas.get(i)
+        if v is not None and v[0] == raktas:
+            return v[1]
+        if v is not None and (v[1]["w"], v[1]["h"]) == (W, H):
+            d = v[1]
+        else:
+            if v is not None:
+                self.naikinti_dc(v[1])
+                kesas.pop(i, None)
+            d = self.naujas_dc(W, H)
+            if not d["bmp"]:
+                self.naikinti_dc(d)
+                return None
+            d["w"], d["h"] = W, H
+        n = len(SENIO_KADRAI)
+        gdi32.BitBlt(d["dc"], 0, 0, W, H, sp["dc"], nr % n * W, nr // n * H, SRCCOPY)
+        self.piesti_senio_puosmenas(d["dc"], 0, 0, nr, puosmena, spalva, tuta, sniegas, Ps)
+        kesas[i] = (raktas, d)
+        return d
+
     def piesti_senius(self, i_langa, visas):
         if not self.senio_sprite or not (self.seniai or self.senio_daleles):
             return
@@ -8650,40 +8846,29 @@ class Sniegas:
             if s_["busena"] != "nera" and s_["y"] is not None:
                 nr = self.senio_kadras(s_)
                 x0, y0 = int(s_["x"] - W / 2), int(s_["y"]) - H + 1
-                nauja = self.permatomas_kopijavimas((W, H), x0, y0, self.senio_sprite["dc"],
-                                                    nr % n * W, nr // n * H,  # juostoje – 2 eilutės (kryptys)
-                                                    y_max=self.senio_apacia(s_))
                 X = senio_x(senio_poslinkis(*SENIO_KADRAI[nr % n]), nr >= n, Ps)  # kaip juostoje
-                spalva = i % len(SENIO_SAGOS)
-                puosmena = self.senio_puosmena(s_)
-                if nauja and puosmena != "plika":  # šakelės galvoje (juostoje senis be jų)
-                    poza, kadras = SENIO_KADRAI[nr % n]
-                    for x, y, w, sp in senio_puosmenos_langeliai(poza, kadras, nr >= n, puosmena):
-                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(x0 + X(x, y), y0 + L(y),
-                                                                             x0 + X(x + w, y), y0 + L(y + 1))),
-                                        self.g.teptukas(sp))
-                if nauja and spalva:  # 2-o ir kitų senių sagos – savos spalvos
-                    poza, kadras = SENIO_KADRAI[nr % n]
-                    for x, y, w, spalvos in senio_bumbulo_langeliai(poza, kadras, nr >= n):
-                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(x0 + X(x, y), y0 + L(y),
-                                                                             x0 + X(x + w, y), y0 + L(y + 1))),
-                                        self.g.teptukas(spalvos[spalva]))
-                tuta = senio_tuta(s_)
-                if nauja and tuta:  # juostoje – 0-ė tūta; kitos spalvos užpiešiamos
-                    poza, kadras = SENIO_KADRAI[nr % n]
-                    for x, y, spalvos in senio_tutos_langeliai(poza, kadras, nr >= n):
-                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y),
-                                                                             y0 + L(y + 1))),
-                                        self.g.teptukas(spalvos[tuta]))
+                puosmena, spalva, tuta = self.senio_puosmena(s_), i % len(SENIO_SAGOS), senio_tuta(s_)
                 lygis = s_.get("sniegas", 0.0) * SENIO_SNIEGO_DALIS
-                if nauja and lygis > 0:  # sniegas ant galvos, šakelių, rankų, šluotos
+                sniegas = 0  # kiek sniego langelių (jie surikiuoti pagal slenkstį) jau padengta
+                if lygis > 0:
                     poza, kadras = SENIO_KADRAI[nr % n]
-                    baltas = self.g.teptukas(SNIEGAS)
-                    for x, y, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, puosmena):
+                    for _, _, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, puosmena):
                         if slenkstis >= lygis:
                             break
-                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y),
-                                                                             y0 + L(y + 1))), baltas)
+                        sniegas += 1
+                # Senis su šakelėmis, sagomis, tūta ir sniegu – vienas paveikslėlis, perpiešiamas tik pasikeitus kadrui
+                # ar puošmenoms: kas kadrą – vienas TransparentBlt, ne dešimtys FillRect (našumo testas: 5 seniai
+                # pridėdavo ~1,8 ms per kadrą)
+                vaizdas = self.senio_vaizdas(i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps)
+                if vaizdas is not None:
+                    nauja = self.permatomas_kopijavimas((W, H), x0, y0, vaizdas["dc"], 0, 0,
+                                                        y_max=self.senio_apacia(s_))
+                else:  # nepavyko sukurti – kaip anksčiau: juostos kadras ir puošmenos ant viršaus
+                    nauja = self.permatomas_kopijavimas((W, H), x0, y0, self.senio_sprite["dc"],
+                                                        nr % n * W, nr // n * H,  # juostoje – 2 eilutės (kryptys)
+                                                        y_max=self.senio_apacia(s_))
+                    if nauja:
+                        self.piesti_senio_puosmenas(self.fdc, x0, y0, nr, puosmena, spalva, tuta, sniegas, Ps)
                 if nauja and self.n["senio_lemputes"]:  # girliandos lemputės ant šluotos (ir apsnigtos – matosi)
                     poza, kadras = SENIO_KADRAI[nr % n]
                     lemp = senio_sluotos_lemputes(poza, kadras, nr >= n)
@@ -9223,7 +9408,7 @@ class Sniegas:
         rem = set()
         for pav in zemes:
             rem |= remia(pav, 0)
-        ab = nuslinkti(kel, 1, n, riba, rem)
+        ab = nuslinkti(kel, 1, n, riba, rem, self.kelio_ribos())
         if ab:
             self.pazymeti_zeme(ab[0] - 1, ab[1] + 2)
         # Ir langų viršuje: ten buldozeriukų krūvos irgi lieka stačia siena: apsisukus
@@ -9469,8 +9654,8 @@ class Sniegas:
             e["stiklo_faze"] = random.uniform(0, EKSKAV_BLYKSNIO_PERIODAS)
         blyksi = (time.perf_counter() + e["stiklo_faze"]) % EKSKAV_BLYKSNIO_PERIODAS < 0.12
         FillRect, RECT, tept = user32.FillRect, wintypes.RECT, self.g.teptukas
-        for x1, x2, y, spalva in ekskav_stiklo_juostos(w, h, blyksi):
-            rr = self.ribos(x0 + sx1 + x1, y0 + sy1 + y, x0 + sx1 + x2, y0 + sy1 + y + 1)
+        for x1, x2, y1, y2, spalva in ekskav_stiklo_blokai(w, h, blyksi):
+            rr = self.ribos(x0 + sx1 + x1, y0 + sy1 + y1, x0 + sx1 + x2, y0 + sy1 + y2)
             if rr:
                 FillRect(self.fdc, ctypes.byref(RECT(*rr)), tept(spalva))
 
@@ -9844,6 +10029,9 @@ class Sniegas:
                 self.d_kopijos += self._ekrano_kv
                 self.kadru_skaitliklis += 1
                 darbas = langu_ms + (t2 - t0) * 1000  # be stabtelėjimo įrašymo į žurnalą – tai ne kadro darbas
+                matas = self.__dict__.get("testo_matas")
+                if matas is not None:  # našumo testas
+                    matas.append((darbas, fizika, atstatymas + buferis, ekranas, self._statinio_ms, atstatymas))
                 self.darbo_ms += darbas
                 self.d_kadrai += 1
                 self.d_darbas += darbas
@@ -10351,7 +10539,8 @@ class Sniegas:
 
         # Mirksinčios lemputės: kiekviena eglė savo ritmu; perpiešiamos tik pasikeitusių eglių sritys.
         if n["egles"] and n["egliu_lemputes"] and n["egliu_mirksi"] and self.egles:
-            # pasikeitus lemputėms perpiešiama visa eglė (dalinis perpiešimas Windows sistemoje „nukirpdavo“ eglių dalis)
+            # pasikeitus lemputėms perpiešiama visa eglė – vienu stačiakampiu pigiau nei kiekvienos lemputės langelis
+            # atskirai (patikrinta: kelios sritys – daugiau GDI kvietimų); eglės paveikslėlyje perpiešiamos tik lemputės
             for e, _ in mirksejimo_zingsnis(self.egles, dt):
                 self.nesvarios_sritys.append(e["ribos"])
         if getattr(self, "girliandos", None):  # girliandose perpiešiamos tik pasikeitusios lemputės
@@ -10436,8 +10625,10 @@ class Sniegas:
             self.nesvarus_langai = []
             self.nesvarios_sritys = []
             self.papildomos = []
+            s0 = time.perf_counter()
             self.perpiesti_statini(None)
             a0 = time.perf_counter()
+            self._statinio_ms = (a0 - s0) * 1000
             BitBlt(fdc, 0, 0, self.vw, self.vh, sdc, 0, 0, SRCCOPY)
             self._atstatymo_ms = ms = (time.perf_counter() - a0) * 1000
             self.kaina_pilno_atst = ms if self.kaina_pilno_atst is None else self.kaina_pilno_atst * 0.7 + ms * 0.3
@@ -10448,9 +10639,11 @@ class Sniegas:
             if kaupimas:
                 self.statinio_skaitliklis = 0
             # 1) atstatome kadro buferį iš statinio ten, kur buvo snaigės ar pasikeitė sniegas
+            s0 = time.perf_counter()
             statiniai = self.surinkti_statinius(kaupimas) + self.papildomos
             self.papildomos = []
             a0 = time.perf_counter()
+            self._statinio_ms = (a0 - s0) * 1000
             atstatyti = list(statiniai)
             for f in self.snaiges:
                 s = f[SSENA]
@@ -10560,6 +10753,13 @@ class Sniegas:
                 visas = dalinis > self.kaina_pilno * 1.15
                 if visas and self.pilni_is_eiles >= 60 and dalinis < self.kaina_pilno * 3:
                     visas = False
+            # Bandymui (vaizdo plokštės apkrovai palyginti): SNIEGAS_KOPIJAVIMAS=dalinis – visada tik pasikeitę
+            # stačiakampiai (DWM gauna mažiau pikselių, bet daugiau kvietimų), =pilnas – visada visas kadras
+            rezimas = self.__dict__.get("kopijavimo_rezimas") or KOPIJAVIMO_REZIMAS  # našumo testas – savo
+            if rezimas == "dalinis":
+                visas = plotas > self.vw * self.vh // 2
+            elif rezimas == "pilnas":
+                visas = True
         if visas:
             self.d_pilni += 1
         else:
@@ -11091,7 +11291,7 @@ class Sniegas:
                         f"{'Games' if getattr(self, 'mmcss', None) else 'ne'} | ekrano ritmas (DWM): "
                         f"{getattr(getattr(self, 'ekrano_ritmas', None), 'veikia', '?')} | perdanga {self.perdangos_hwnd:#x}/"
                         f"{self.piesimo_hwnd:#x} | langų pranešimai: {len(getattr(self, '_kabliukai', []))}/3 | "
-                        f"nustatymai: {json.dumps(self.n, ensure_ascii=False)}")
+                        f"kopijavimas į ekraną: {KOPIJAVIMO_REZIMAS} | nustatymai: {json.dumps(self.n, ensure_ascii=False)}")
 
     def ijungta_diagnostika(self):
         """Įjungus veikiant – iškart antraštė (versija, ekranai, nustatymai), skaitikliai nuo nulio, o pirmoji
@@ -11175,6 +11375,216 @@ class Sniegas:
         """Klaidos tkinter atgaliniuose kvietimuose (mygtukai, laikmačiai) – kitaip jos dingsta be pėdsakų."""
         self.paskutine_klaida = repr(reiksme)
         ZURNALAS.rasyti("KLAIDA (tkinter): " + "".join(traceback.format_exception(tipas, reiksme, eiga)))
+
+    # ------------------------------------------------------------ našumo testas
+
+    def nasumo_etapai(self):
+        """(pavadinimas, nustatymų pakeitimai arba None – programa paslėpta, kopijavimo režimas)."""
+        baze = dict(snaiges=True, egles=False, girliandos=False, bumbulai=False, sniego_senis=False,
+                    ekskavatoriai=False, fejerverkai=False, snaiges_glotnios=False, fps=60)
+        visi = dict(baze, egles=True, girliandos=True, bumbulai=True, sniego_senis=True, ekskavatoriai=True,
+                    snaiges_glotnios=True)
+        return [(T("Programa paslėpta (bazė)"), None, None),
+                (T("Jūsų nustatymai"), {}, None),
+                (T("Tik sniegas, 60 k/s"), baze, None),
+                (T("Tik sniegas, 30 k/s"), dict(baze, fps=30), None),
+                (T("Tik sniegas, 60 k/s, dalinis kopijavimas"), baze, "dalinis"),
+                (T("+ glotnios snaigės"), dict(baze, snaiges_glotnios=True), None),
+                (T("+ eglės"), dict(baze, egles=True), None),
+                (T("+ girliandos"), dict(baze, girliandos=True), None),
+                (T("+ bumbuliukai"), dict(baze, bumbulai=True), None),
+                (T("+ sniego seniai"), dict(baze, sniego_senis=True), None),
+                (T("+ buldozeriukai"), dict(baze, ekskavatoriai=True), None),
+                (T("Viskas (be fejerverkų), glotnios"), visi, None)]
+
+    def nasumo_testas(self):
+        """~5 min: kiekvienas etapas – nustatymai pritaikomi, 4 s įsibėgėjimas, 20 s matuojama (kadro darbas,
+        procesorius, NVIDIA vaizdo plokštės galia per nvidia-smi, jei ji yra). Pabaigoje nustatymai grąžinami,
+        rezultatai – sniegas_nasumas.txt šalia žurnalo."""
+        if self.__dict__.get("testas"):
+            return
+        etapai = self.nasumo_etapai()
+        trukme = round(len(etapai) * (NASUMO_ISIBEGEJIMAS + NASUMO_MATAVIMAS) / 60, 1)
+        if not messagebox.askokcancel(PAVADINIMAS, T(
+                "Našumo testas truks ~{m} min: programa paeiliui įjungs įvairius nustatymus ir matuos, kiek jie "
+                "kainuoja. Tuo metu geriau nieko nedaryti kompiuteriu. Nustatymų langas bus paslėptas, o jūsų "
+                "nustatymai po testo grąžinami. Rezultatai bus įrašyti čia:").format(m=trukme)
+                + f"\n\n{NASUMO_BYLA}\n\n" + T("Pradėti?")):
+            return
+        stabdyti = threading.Event()
+        exe = shutil.which("nvidia-smi") or str(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32"
+                                                 / "nvidia-smi.exe")
+        gpu_pav, meginiai = "", []
+        if os.path.exists(exe):
+            try:
+                gpu_pav = subprocess.run([exe, "--query-gpu=name", "--format=csv,noheader"], capture_output=True,
+                                         text=True, timeout=5, creationflags=0x08000000).stdout.strip().splitlines()[0]
+            except Exception as e:
+                ZURNALAS.rasyti(f"našumo testas: nvidia-smi neveikia: {e!r}")
+                exe = None
+        else:
+            exe = None
+        if exe:
+            # kas sekundę po vieną užklausą (ne „-lms“ ciklas: į kanalą nvidia-smi rašo buferiu, eilutės ateitų
+            # pavėluotai ir laikai nesutaptų su etapais)
+            def matuoti_gpu():
+                while not stabdyti.is_set():
+                    try:
+                        isv = subprocess.run([exe, "--query-gpu=power.draw,clocks.gr", "--format=csv,noheader,nounits"],
+                                             capture_output=True, text=True, timeout=3, creationflags=0x08000000).stdout
+                        w, mhz = (float(x) for x in isv.splitlines()[0].split(",")[:2])
+                        meginiai.append((time.perf_counter(), w, mhz))
+                    except Exception:
+                        pass
+                    stabdyti.wait(1.0)
+            threading.Thread(target=matuoti_gpu, daemon=True).start()
+        self.testas = {"pradiniai": self.n, "etapai": etapai, "rez": [], "stabdyti": stabdyti, "gpu": gpu_pav,
+                       "meginiai": meginiai, "pradzia": time.strftime("%Y-%m-%d %H:%M:%S"),
+                       "paslepe": self.vartotojas_paslepe}
+        ZURNALAS.rasyti(f"NAŠUMO TESTAS pradėtas ({len(etapai)} etapų; vaizdo plokštė: {gpu_pav or '–'})")
+        self.root.withdraw()  # peržiūrų animacijos netrukdo matuoti
+        self.testo_etapas(0)
+
+    def testo_etapas(self, i):
+        testas = self.__dict__.get("testas")
+        if not testas:
+            return
+        if i >= len(testas["etapai"]):
+            self.testo_pabaiga()
+            return
+        _, pakeitimai, rezimas = testas["etapai"][i]
+        self.kopijavimo_rezimas = rezimas
+        self.vartotojas_paslepe = pakeitimai is None
+        nauji = {k: (list(v) if isinstance(v, list) else v) for k, v in testas["pradiniai"].items()}
+        if pakeitimai:
+            # Matavimo etapai – su numatytaisiais kiekiais, dydžiais, greičiais ir aukščiais, ne su vartotojo: kitaip
+            # pakeitus, pvz., senių kiekį ar pusnų aukštį, testų nebegalima palyginti tarpusavyje
+            nauji.update({k: (list(v) if isinstance(v, list) else v) for k, v in NUMATYTI.items()
+                          if k not in NASUMO_ISLAIKOMI})
+        nauji.update(pakeitimai or {})
+        # Kiekvienas etapas – iš tos pačios pradžios: sniegas – kaip po ilgo darbo (pusnys, kelias ir langai pilni;
+        # kitaip vėlesni etapai būdavo brangesni – pusnys augo per visą testą, o nuvalius daiktai atrodė pigesni nei
+        # iš tikrųjų), atsitiktinumas – tas pats (bumbuliukų, senių, snaigių vietos kaskart vienodos)
+        random.seed(1000 + i)
+        self.taikyti_nustatymus(nauji)
+        self.testo_sniegas()
+        self.taikyti_matomuma()
+        self.root.after(int(NASUMO_ISIBEGEJIMAS * 1000), lambda: self.testo_matuoti(i))
+
+    def testo_sniegas(self):
+        """Našumo testui: sniegas ekrano apačioje, ant kelio ir langų – iki ribų (kaip po ilgo darbo)."""
+        self.nuvalyti()
+        k = self.k
+        if kaupia(self.n, "kaupti_apacioje"):
+            riba = self.n["max_aukstis"] * k
+            self.aukstis = [riba * p for p in self.zemes_profilis]
+            self.kelias = list(self.kelio_ribos())
+        if kaupia(self.n, "kaupti_languose"):
+            riba = self.n["max_aukstis_languose"] * k
+            for st in self.langai.values():
+                st["h"][:] = [riba * p for p in st["profilis"]]
+        for s_ in getattr(self, "seniai", ()):
+            s_["y_fiks"] = None
+        self.pilnas_perpiesimas = True
+
+    def testo_matuoti(self, i):
+        testas = self.__dict__.get("testas")
+        if not testas:
+            return
+        b = proceso_busena()
+        testas["matas0"] = (time.perf_counter(), b[3] if b else None)
+        self.testo_matas = []
+        self.root.after(int(NASUMO_MATAVIMAS * 1000), lambda: self.testo_irasyti(i))
+
+    def testo_irasyti(self, i):
+        testas = self.__dict__.get("testas")
+        if not testas:
+            return
+        t1, b = time.perf_counter(), proceso_busena()
+        t0, cpu0 = testas["matas0"]
+        kadrai, self.testo_matas = self.testo_matas or [], None
+        trukme = max(1e-6, t1 - t0)
+        gpu = [(w, mhz) for t, w, mhz in list(testas["meginiai"]) if t0 <= t <= t1]
+
+        def vid(sar):
+            return sum(sar) / len(sar) if sar else None
+        darbai = sorted(k[0] for k in kadrai)
+        testas["rez"].append({
+            "pav": testas["etapai"][i][0], "ks": len(kadrai) / trukme if kadrai else None,
+            "darbas": vid(darbai), "p95": darbai[int(len(darbai) * 0.95)] if darbai else None,
+            "fizika": vid([k[1] for k in kadrai]), "piesimas": vid([k[2] for k in kadrai]),
+            "ekranas": vid([k[3] for k in kadrai]),
+            "statinis": vid([k[4] for k in kadrai]), "atstatymas": vid([k[5] for k in kadrai]),
+            "cpu": (b[3] - cpu0) / trukme * 100 if b and cpu0 is not None else None,
+            "w": vid([g[0] for g in gpu]), "mhz": vid([g[1] for g in gpu])})
+        self.testo_etapas(i + 1)
+
+    def testo_pabaiga(self):
+        testas = self.__dict__.pop("testas", None)
+        if not testas:
+            return
+        self.kopijavimo_rezimas = None
+        self.vartotojas_paslepe = testas["paslepe"]
+        random.seed()  # vėl tikras atsitiktinumas
+        testas["stabdyti"].set()
+        self.taikyti_nustatymus(testas["pradiniai"])  # ir išsaugo (testas jau baigtas)
+        self.taikyti_matomuma()
+        tekstas = self.nasumo_ataskaita(testas)
+        try:  # prirašoma prie ankstesnių – kelis paleidimus galima palyginti (naujausias – apačioje)
+            with open(NASUMO_BYLA, "a", encoding="utf-8") as f:
+                if f.tell():
+                    f.write("\n" + "=" * 100 + "\n\n")
+                f.write(tekstas)
+            irasyta = True
+        except OSError as e:
+            ZURNALAS.rasyti(f"KLAIDA: našumo testo rezultatai neįrašyti: {e!r}")
+            irasyta = False
+        ZURNALAS.rasyti("NAŠUMO TESTAS baigtas:\n" + tekstas)
+        self.rodyti_nustatymus()
+        if irasyta and messagebox.askyesno(PAVADINIMAS, T("Našumo testas baigtas. Atverti rezultatus?")
+                                           + f"\n\n{NASUMO_BYLA}"):
+            try:
+                os.startfile(NASUMO_BYLA)
+            except Exception:
+                pass
+
+    def nasumo_ataskaita(self, testas):
+        rez = testas["rez"]
+
+        def f(v, fmt):
+            return "–" if v is None else format(v, fmt)
+        eil = [f"Sniegas {VERSIJA} – {T('našumo testas')} {testas['pradzia']} | Python {sys.version.split()[0]} | "
+               f"{platform.platform()} | {platform.processor()}",
+               f"{T('Ekranai')}: {self.diag_ekranai()} @ {ekrano_daznis()} Hz | {T('Vaizdo plokštė')}: "
+               f"{testas['gpu'] or T('nežinoma (galia matuojama tik NVIDIA su nvidia-smi)')}",
+               T("Kiekvienas etapas: {a} s įsibėgėjimas, {b} s matavimas. Kadro darbas – ms per kadrą (vidurkis ir "
+                 "95 % kadrų ne ilgiau), CPU – viso proceso, % vieno branduolio.").format(
+                   a=int(NASUMO_ISIBEGEJIMAS), b=int(NASUMO_MATAVIMAS)),
+               T("Piešimas = statinis (pusnų, kelio, eglių perpiešimas) + atstat. (fono atstatymas) + judantys "
+                 "objektai."),
+               T("Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji."), ""]
+        plotis = max(len(r["pav"]) for r in rez) + 2 if rez else 20
+        plociai = (6, 7, 6, 7, 8, 8, 8, 8, 6, 6, 5)
+        antr = ("k/s", T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atstat."), T("ekranas"),
+                "CPU %", "GPU W", "MHz")
+        eil.append(f"{T('Etapas'):<{plotis}}" + " ".join(f"{a:>{w}}" for a, w in zip(antr, plociai)))
+        for r in rez:
+            reiksmes = (f(r["ks"], ".1f"), f(r["darbas"], ".2f"), f(r["p95"], ".1f"), f(r["fizika"], ".2f"),
+                        f(r["piesimas"], ".2f"), f(r.get("statinis"), ".2f"), f(r.get("atstatymas"), ".2f"),
+                        f(r["ekranas"], ".2f"), f(r["cpu"], ".0f"), f(r["w"], ".1f"),
+                        f(r["mhz"], ".0f"))
+            eil.append(f"{r['pav']:<{plotis}}" + " ".join(f"{v:>{w}}" for v, w in zip(reiksmes, plociai)))
+        if len(rez) > 2:
+            baze = rez[2]
+            eil += ["", T("Kaina, palyginti su „{p}“:").format(p=baze["pav"])]
+            for r in rez[3:]:
+                dd = r["darbas"] - baze["darbas"] if r["darbas"] is not None and baze["darbas"] is not None else None
+                dw = r["w"] - baze["w"] if r["w"] is not None and baze["w"] is not None else None
+                eil.append(f"  {r['pav']:<{plotis}}{f(dd, '+.2f'):>7} ms/{T('kadrą')}   {f(dw, '+.1f'):>6} W")
+            if rez[0]["w"] is not None and baze["w"] is not None:
+                eil.append("  " + T("Sniegas vaizdo plokštei (prieš paslėptą programą): {w} W").format(
+                    w=f(baze["w"] - rez[0]["w"], "+.1f")))
+        return "\n".join(eil) + "\n"
 
     def profiliuoti(self):
         """Paleidžia programą iš naujo per profiliuotuvą (žr. PROFILIO_PALEIDIKLIS) ir šią kopiją išjungia."""
@@ -11449,7 +11859,7 @@ class Sniegas:
         v = self.kint["fps"] = tk.IntVar(value=self.n["fps"])
         kadrai = ttk.Frame(g)
         kadrai.grid(row=0, column=1, sticky="w", padx=4, pady=1)
-        patarimai = {30: "30 – mažiausia apkrova.",
+        patarimai = {30: "30 – mažiausia apkrova: vaizdo plokštė lieka ramybės būsenoje.",
                      60: "60 – sklandžiau, bet procesorius dirba maždaug dvigubai daugiau.",
                      120: "120 – tik 120 Hz ar greitesniam ekranui (60 Hz ekrane veiks kaip 60). "
                           "Procesorius dirba maždaug 4 kartus daugiau nei su 30."}
@@ -11473,30 +11883,39 @@ class Sniegas:
         kb.grid(row=3, column=1, sticky="w", padx=4, pady=(2, 0))
         kb.bind("<<ComboboxSelected>>", lambda e: self.pakeistas_kryzelis())
         self.patarimas_nustatymui(kb, "kryzelis")
-        self.zymimasis(g, "diagnostika", "Diagnostikos žurnalas", 4)
-        zurn = ttk.Frame(g)
-        zurn.grid(row=4, column=1, sticky="e", padx=4, pady=2)
-        if PROFILIUOTI_GALIMA:
-            b = ttk.Button(zurn, text=T("Profilis…"), command=self.profiliuoti, width=10)
-            b.pack(side="left", padx=(0, 4))
-            Patarimas(b, T("Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys "
-                           "užima daugiausia procesoriaus laiko. Byla – šalia žurnalo."))
-        ttk.Button(zurn, text=T("Atverti"), command=self.atverti_zurnala, width=10).pack(side="left")
         # „Išplėstos ribos“ – čia, ne apatinėje mygtukų juostoje (ten atrodė kaip pagrindinis mygtukas)
         self.be_apribojimu_kint = tk.BooleanVar(value=self.n["be_apribojimu"])
         cb = ttk.Checkbutton(g, text=T("Išplėstos ribos"), variable=self.be_apribojimu_kint,
                              command=self.perjungti_apribojimus)
-        cb.grid(row=5, column=0, columnspan=2, sticky="w", padx=4, pady=2)
+        cb.grid(row=4, column=0, columnspan=2, sticky="w", padx=4, pady=2)
         Patarimas(cb, T("Leidžia nustatyti daug didesnius kiekius ir dydžius. Kompiuteris gali pradėti strigti."))
-        ttk.Label(g, text=T("Nustatymai")).grid(row=6, column=0, sticky="w", padx=4, pady=(2, 0))
+        ttk.Label(g, text=T("Nustatymai")).grid(row=5, column=0, sticky="w", padx=4, pady=(2, 0))
         bylos = ttk.Frame(g)
-        bylos.grid(row=6, column=1, sticky="e", padx=4, pady=(2, 0))
+        bylos.grid(row=5, column=1, sticky="e", padx=4, pady=(2, 0))
         b = ttk.Button(bylos, text=T("Eksportuoti…"), command=self.eksportuoti_nustatymus)
         b.pack(side="left", padx=(0, 4))
         Patarimas(b, T("Išsaugoti visus nustatymus į bylą (pvz., perkelti į kitą kompiuterį)."))
         b = ttk.Button(bylos, text=T("Importuoti…"), command=self.importuoti_nustatymus)
         b.pack(side="left")
         Patarimas(b, T("Įkelti nustatymus iš bylos. Kalba lieka dabartinė; byloje nesantys nustatymai – numatytieji."))
+        # Diagnostika ir našumas – atskirai nuo kasdienių nustatymų (jų reikia tik ieškant problemų)
+        g = ttk.LabelFrame(stulpeliai[1], text=T("Diagnostika"), padding=6)
+        g.pack(fill="x")
+        g.columnconfigure(1, weight=1)
+        self.zymimasis(g, "diagnostika", "Diagnostikos žurnalas", 0)
+        ttk.Button(g, text=T("Atverti"), command=self.atverti_zurnala, width=10).grid(row=0, column=1, sticky="e",
+                                                                                     padx=4, pady=2)
+        testai = ttk.Frame(g)
+        testai.grid(row=1, column=0, columnspan=2, sticky="w", padx=4, pady=(2, 0))
+        b = ttk.Button(testai, text=T("Našumo testas…"), command=self.nasumo_testas)
+        b.pack(side="left", padx=(0, 4))
+        Patarimas(b, T("~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir "
+                       "(jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo grąžinami."))
+        if PROFILIUOTI_GALIMA:
+            b = ttk.Button(testai, text=T("Profilis…"), command=self.profiliuoti)
+            b.pack(side="left")
+            Patarimas(b, T("Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys "
+                           "užima daugiausia procesoriaus laiko. Byla – šalia žurnalo."))
 
         self.kurti_egliu_skilti(stulpeliai[2])
         self.kurti_girliandu_skilti(stulpeliai[2])
@@ -13737,6 +14156,10 @@ class Sniegas:
         """Kiekvienas žingsnis atskirai – vieno klaida neturi palikti „vaiduoklio“ piktogramos ar neužsidarančios
         programos. root.destroy() – visada paskutinis."""
         self.baigiama = True
+        testas = self.__dict__.pop("testas", None)
+        if testas:  # išjungta testo metu – išsaugomi naudotojo nustatymai, ne testo
+            self.n = testas["pradiniai"]
+            testas["stabdyti"].set()
         if ZURNALAS.ijungtas and getattr(self, "d_kadrai", 0):
             self.diagnostikos_suvestine(paskutine=True)
         ZURNALAS.rasyti("===== BAIGTA (naudotojas)")
