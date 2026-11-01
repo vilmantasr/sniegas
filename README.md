@@ -65,12 +65,59 @@ Paruoštas `Sniegas.exe` bus aplanke `dist`.
 
 ## English
 
-Sniegas turns the Windows desktop into a winter scene: snow falls over windows and piles up on them and at the bottom of the screen.
+Sniegas turns the Windows desktop into a winter scene: snowflakes fall over your windows and pile up on top of them and at the bottom of the screen.
 
-Also:
+- Snowflakes fall and sway, carried by wind, gusts and eddies.
+- Optional smooth flake motion: smooth edges and even movement instead of pixel steps (uses more CPU).
+- Snow builds up at the bottom of the screen (above the taskbar) and on top of open windows.
+- Pixel art Christmas trees with blinking lights stand at the bottom.
+- Glass baubles roll through the snow.
+- Snowmen walk around; you can grab them by the scarf with the mouse.
+- Little bulldozers push the snow.
+- Light strings hang along the sides of the screen.
+- Fireworks are launched on a schedule.
+- Ready-made presets, from gentle snowfall to a blizzard.
+- Lithuanian or English interface (switch in the top right corner of the settings window).
 
-- optional smooth flake motion (smooth edges, even movement; uses more CPU);
-- pixel art trees, rolling baubles, snowmen you can grab by the scarf, little bulldozers, light strings and scheduled fireworks;
-- English interface available.
+### Requirements
 
-Requirements: Windows 10/11 and Python 3 with tkinter, with no extra packages. To run it: `py Sniegas.pyw`. License: GPL-3.0.
+- Windows 10 or 11.
+- Python 3 with tkinter (the standard installer from [python.org](https://www.python.org/)). No extra packages are needed.
+
+### Running
+
+```
+py Sniegas.pyw
+```
+
+Or double-click `Sniegas.pyw`. The program icon appears next to the clock; click it to open the settings.
+
+### Building an .exe
+
+To run the program without Python installed:
+
+```
+py -m pip install pyinstaller
+py Sniegas.pyw --ikona
+py -m PyInstaller --onefile --noconsole --icon sniegas.ico --name Sniegas Sniegas.pyw
+```
+
+The finished `Sniegas.exe` will be in the `dist` folder.
+
+### Settings and diagnostics
+
+- Settings are saved next to the program in `sniegas_nustatymai.json`. If that folder is not writable (e.g. `Program Files`), they go to `%APPDATA%\Sniegas`.
+- Settings can be exported and imported in the “Other” section.
+- The diagnostics log is turned on in the “Diagnostics” section (off by default). The log `sniegas_diagnostika.log` is written next to the settings.
+- The same section has “Performance test…” (~5 min): the program switches through various settings and measures what each one costs (frame time, CPU, NVIDIA graphics card power). Results are appended to `sniegas_nasumas.txt` next to the settings; your own settings are restored afterwards.
+- With Python 3.15 or newer there is also “Profile…”: the program restarts under the performance profiler, and when you exit it writes `sniegas_profilis.txt` next to the settings, showing which parts of the program take the most time.
+
+### Authors
+
+- Author: Vilmantas Ramonas
+- Tester: Jonas Ramonas
+- Made with the help of Claude (Anthropic)
+
+### License
+
+[GNU General Public License v3.0](LICENSE) (GPL-3.0). You may freely use, modify and distribute the program, but modified versions must also be distributed as open source under the same license.
