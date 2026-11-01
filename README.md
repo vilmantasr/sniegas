@@ -16,7 +16,7 @@ Sniegas paverčia Windows darbalaukį žiema: snaigės krenta virš langų, kaup
 - Yra paruošti nustatymų rinkiniai: nuo ramaus snygio iki pūgos.
 - Sąsaja lietuvių arba anglų kalba.
 
-<img width="1494" height="1024" alt="Sniegas_v12 18_AVFTd9nE8L" src="https://github.com/user-attachments/assets/0d3b4a03-e5a9-407c-87ce-e7f353ebbc11" />
+<img width="1501" height="944" alt="sniegas1228" src="https://github.com/user-attachments/assets/9f70235b-58eb-447a-90e8-611247c405fd" />
 
 ## Reikalavimai
 
