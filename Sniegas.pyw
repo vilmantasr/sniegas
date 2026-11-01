@@ -59,8 +59,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.27"
-DATA = "2026-10-31"
+VERSIJA = "12.28"
+DATA = "2026-11-01"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -168,7 +168,6 @@ EN = frozendict({
     "Rodyti viską": "Show all",
     "Į sistemos dėklą": "To system tray",
     "Išjungti": "Exit",
-    "Atkurti numatytuosius": "Restore defaults",
     "Nustatymai…": "Settings…",
     # snaigės
     "Snaigės": "Snowflakes",
@@ -334,13 +333,13 @@ EN = frozendict({
     "⚠ Mažiausias aukštis ({a}) didesnis už didžiausią ({b}) – kitas pakoreguojamas po akimirkos.":
         "⚠ The minimum height ({a}) is above the maximum ({b}) – the other one is adjusted in a moment.",
     "Tai vienintelis pasirinktas – bent vienas turi likti.": "This is the only one selected – at least one must stay.",
-    "Lygus": "Plain", "Juosta": "Stripe", "Dvi juostos": "Two stripes", "Taškai": "Dots",
-    "Zigzagas": "Zigzag", "Langeliai": "Checks",
-    "Saulutė": "Sun", "Aušrinė": "Morning star", "Žiedelis": "Flower", "Rombai": "Rhombs",
+    "Lygus": "Plain", "Juosta": "Stripe", "Dvispalvis": "Two-tone",
+    "Apsnigtas viršus": "Snowy top",
     "Raštai ir spalvos": "Patterns and colors",
     "Raštas": "Pattern", "Spalva": "Color",
     "Raudona": "Red", "Žalia": "Green", "Auksinė": "Gold", "Mėlyna": "Blue", "Violetinė": "Purple",
-    "Sidabrinė": "Silver", "Rožinė": "Pink", "Turkio": "Teal",
+    "Sidabrinė": "Silver", "Rožinė": "Pink", "Turkio": "Teal", "Oranžinė": "Orange", "Bordo": "Burgundy",
+    "Žydra": "Sky blue", "Citrininė": "Lemon", "Perlinė": "Pearl", "Tamsiai mėlyna": "Navy",
     "naudojamas": "used", "nenaudojamas": "not used", "naudojama": "used", "nenaudojama": "not used",
     "Bumbuliukai išjungti – įjunkite skilties antraštėje.": "Baubles are off – turn them on in the section header.",
     "Išbarstyti iš naujo": "Scatter again",
@@ -417,8 +416,8 @@ EN = frozendict({
         "Pixel art trees along the bottom of the screens – with lights and ornaments.",
     "Retro lempučių girliandos ekrano kairėje ir dešinėje – nuo viršaus iki užduočių juostos.":
         "Retro bulb strings on the left and right of the screen – from the top down to the taskbar.",
-    "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. „Paleisti dabar“ veikia ir išjungus.":
-        "Firework shows by the clock: how often and how long – below. “Launch now” works even when off.",
+    "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. ▶ antraštėje paleidžia ir išjungus.":
+        "Firework shows by the clock: how often and how long – below. ▶ in the header launches one even when off.",
     "Kalėdiniai bumbuliukai, riedantys sniegu ekrano apačioje (ir ant langų).":
         "Christmas baubles rolling over the snow at the bottom of the screen (and on windows).",
     "Sniego senis ekrano apačioje. Pele jį galima pačiupti už šaliko ir nunešti.":
@@ -927,8 +926,8 @@ NUMATYTI = frozendict({
     "bumbulu_greitis": 20,
     "bumbulu_dingsta": True,
     "bumbulai_languose": True,  # rieda ir ant langų viršaus, nuo jų nurieda ir nukrenta
-    "bumbulu_rastai": [1] * 12,
-    "bumbulu_spalvos": [1] * 8,
+    "bumbulu_rastai": [1] * 4,
+    "bumbulu_spalvos": [1] * 14,
     "bumbulu_dingimai": [1] * 4,
     "egles": True,
     "egliu_kiekis": 9,
@@ -1031,7 +1030,7 @@ APRASAI = frozendict({
     "kaupimasis": "Sniegas kaupiasi ekrano apačioje ir (ar) ant langų. Išjungus – sukauptas sniegas dingsta ir nebesikaupia.",
     "egles": "Pixel art eglutės ekranų apačioje – su lemputėmis ir papuošimais.",
     "girliandos": "Retro lempučių girliandos ekrano kairėje ir dešinėje – nuo viršaus iki užduočių juostos.",
-    "fejerverkai": "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. „Paleisti dabar“ veikia ir išjungus.",
+    "fejerverkai": "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. ▶ antraštėje paleidžia ir išjungus.",
     "bumbulai": "Kalėdiniai bumbuliukai, riedantys sniegu ekrano apačioje (ir ant langų).",
     "sniego_senis": "Sniego senis ekrano apačioje. Pele jį galima pačiupti už šaliko ir nunešti.",
     "ekskavatoriai": "Buldozeriukai, kurie važinėja ir stumia sniegą – ekrano apačioje ir ant langų.",
@@ -1910,7 +1909,8 @@ class ParuostukoPlyta:
                            font=("Segoe UI", 8), anchor="w")
         # vienoje eilutėje – kad stulpelis nepailgėtų; plytelės ištempiamos per likusį aukštį
         self.l1.pack(side="left")
-        self.l2.pack(side="left", padx=(8, 0))
+        if aprasymas:  # be aprašymo (jis – patarime) plytelė siauresnė
+            self.l2.pack(side="left", padx=(8, 0))
         for w in (self.remas, self.l1, self.l2):
             w.bind("<Button-1>", lambda e: self.invoke())
             w.bind("<Enter>", lambda e: self._spalva(self.uzvesta))
@@ -1964,6 +1964,8 @@ class Patarimas:
         w.bind("<Enter>", self.uzvesta, add="+")
         for ivykis in ("<Leave>", "<ButtonPress>", "<FocusOut>", "<Destroy>"):
             w.bind(ivykis, self.slepti, add="+")
+        for vaikas in w.winfo_children():  # spustelėjus vidinį valdiklį (pvz., paruoštuko pavadinimą) – irgi slepiama
+            vaikas.bind("<ButtonPress>", self.slepti, add="+")
         w.bind("<FocusIn>", self.fokusas, add="+")
         if id(w.tk) not in Patarimas._susieti_interpretatoriai:  # vienas bendras klavišų stebėjimas programai
             Patarimas._susieti_interpretatoriai.add(id(w.tk))
@@ -2234,6 +2236,58 @@ def atkurimo_ikonos_pikseliai(dydis, fonas, spalva, ss=3):
         e = []
         for px in range(dydis):
             n = sum(viduje(px + (i + 0.5) / ss, py + (j + 0.5) / ss) for i in range(ss) for j in range(ss)) / (ss * ss)
+            e.append("#%02x%02x%02x" % tuple(round(a + (b - a) * n) for a, b in zip(f0, f1)))
+        eil.append("{" + " ".join(e) + "}")
+    return " ".join(eil)
+
+
+def _atkarpa(x, y, x1, y1, x2, y2, plotis):
+    """Ar taškas (x, y) – ne toliau kaip plotis / 2 nuo atkarpos."""
+    dx, dy = x2 - x1, y2 - y1
+    t = max(0.0, min(1.0, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy or 1)))
+    return math.hypot(x - x1 - t * dx, y - y1 - t * dy) <= plotis / 2
+
+
+def _ivaizdis(x, y, taskai):
+    """Ar taškas iškiliame daugiakampyje (viršūnės – bet kuria kryptimi)."""
+    z = [(x2 - x1) * (y - y1) - (y2 - y1) * (x - x1) >= 0 for (x1, y1), (x2, y2) in zip(taskai, taskai[1:] + taskai[:1])]
+    return all(z) or not any(z)
+
+
+def _lauzte(x, y, taskai, plotis):
+    return any(_atkarpa(x, y, *a, *b, plotis) for a, b in zip(taskai, taskai[1:]))
+
+
+# Skilčių veiksmų ikonos (šalia ↺ antraštėje), 16 × 16 vienetų: viduje(x, y) – ar taškas ikonoje
+SKILTIES_IKONOS = {
+    # išbarstyti / išdėlioti iš naujo: dvi susikertančios rodyklės (sumaišyti)
+    "isbarstyti": lambda x, y: (_lauzte(x, y, ((1.5, 4.5), (4.5, 4.5), (9.5, 11.5), (11, 11.5)), 1.7)
+                                or _lauzte(x, y, ((1.5, 11.5), (4.5, 11.5), (9.5, 4.5), (11, 4.5)), 1.7)
+                                or _ivaizdis(x, y, [(14.8, 4.5), (10.6, 1.6), (10.6, 7.4)])
+                                or _ivaizdis(x, y, [(14.8, 11.5), (10.6, 8.6), (10.6, 14.4)])),
+    # gūsis: trys vėjo linijos su užsiraičiusiais galais
+    "gusis": lambda x, y: (_lauzte(x, y, ((1.5, 5.5), (10.5, 5.5), (12.4, 4.6), (12.4, 3.2), (11, 2.7)), 1.6)
+                           or _atkarpa(x, y, 1.5, 8.5, 14.5, 8.5, 1.6)
+                           or _lauzte(x, y, ((1.5, 11.5), (8.5, 11.5), (10.4, 12.4), (10.4, 13.8), (9, 14.3)), 1.6)),
+    # nuvalyti: šluota
+    "nuvalyti": lambda x, y: (_atkarpa(x, y, 14, 1.5, 8.2, 8.2, 1.7)
+                              or _ivaizdis(x, y, [(5.4, 6.6), (10.8, 10.2), (8.6, 14.6), (1.8, 11.4)])),
+    "paleisti": lambda x, y: _ivaizdis(x, y, [(4.5, 2.5), (4.5, 13.5), (13.5, 8)]),  # ▶
+    "sustabdyti": lambda x, y: 4 <= x <= 12 and 4 <= y <= 12,  # ■
+}
+
+
+def ikonos_pikseliai(forma, dydis, fonas, spalva, ss=3):
+    """SKILTIES_IKONOS forma dydis × dydis taškų, glotniais kraštais (ss × ss taškų kiekvienam). PhotoImage.put()."""
+    f = dydis / 16.0
+    viduje = SKILTIES_IKONOS[forma]
+    f0, f1 = (tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) for h in (fonas, spalva))
+    eil = []
+    for py in range(dydis):
+        e = []
+        for px in range(dydis):
+            n = sum(viduje((px + (i + 0.5) / ss) / f, (py + (j + 0.5) / ss) / f)
+                    for i in range(ss) for j in range(ss)) / (ss * ss)
             e.append("#%02x%02x%02x" % tuple(round(a + (b - a) * n) for a, b in zip(f0, f1)))
         eil.append("{" + " ".join(e) + "}")
     return " ".join(eil)
@@ -2770,62 +2824,35 @@ def sukurti_piks_egle(x, y, aukstis, rnd, sab=2):
 BUMBULU_SPALVOS = (("#e63946", "#9e1b24", "#ff9aa0"), ("#2fa84f", "#196b2f", "#9ae6ad"),
                    ("#f4b400", "#a87400", "#ffe08a"), ("#3a86ff", "#1d4fb0", "#a3c6ff"),
                    ("#9b5de5", "#5c2e9e", "#d3b3f7"), ("#c9d1db", "#7d8896", "#ffffff"),
-                   ("#ff6fa8", "#b0306a", "#ffc0da"), ("#2a9d8f", "#16645b", "#86e3d8"))  # pagrindinė, šešėlis, blizgesys
+                   ("#ff6fa8", "#b0306a", "#ffc0da"), ("#2a9d8f", "#16645b", "#86e3d8"),
+                   ("#f77f00", "#a34f00", "#ffc078"), ("#8d1b3d", "#55102a", "#d77a97"),
+                   ("#7cc6f0", "#3f86b5", "#d9f1ff"), ("#f3e04a", "#a8960f", "#fff8b8"),
+                   ("#ece6dc", "#a9a093", "#ffffff"), ("#24477a", "#12243f", "#7c9fd1"))  # pagrindinė, šešėlis, blizgesys
+# šviesūs bumbuliukai (auksinis, sidabrinis, žydras, citrininis, perlinis) – su raudona juosta, kiti – su kreminė
+BUMBULU_RAUDONA_JUOSTA = frozenset((2, 5, 10, 11, 12))
+BUMBULU_SIDABRINE_KEPURE = frozenset((2, 8, 11))  # auksinis, oranžinis, citrininis – auksinė kepurėlė susilietų
+# Nustatymuose spalvos – dviem eilėmis: šiltos (raudonos–geltonos, perlinė), šaltos (žalios–mėlynos, violetinė,
+# sidabrinė). Indeksai nustatymuose – BUMBULU_SPALVOS tvarka (ji nekeičiama, kad seni nustatymai liktų teisingi)
+BUMBULU_SPALVU_TVARKA = (0, 9, 6, 8, 2, 11, 12, 1, 7, 10, 3, 13, 4, 5)
 BUMBULU_SNIEGAS = "#eef2f8"  # sniego spalva bumbuliuko atšvaite
-BUMBULU_SPALVU_PAVADINIMAI = ("Raudona", "Žalia", "Auksinė", "Mėlyna", "Violetinė", "Sidabrinė", "Rožinė", "Turkio")
-BUMBULU_RASTAI = ("vienspalvis", "juosta", "dvi_juostos", "taskai", "zigzagas", "langeliai", "zvaigzde", "snaige",
-                  "saulute", "ausrine", "rutele", "rombai")
-# paskutiniai keturi – baltiški ženklai: Saulutė, Aušrinė (aštuonkampė žvaigždė), keturlapis žiedelis, juostų rombai
-BUMBULU_RASTU_PAVADINIMAI = ("Lygus", "Juosta", "Dvi juostos", "Taškai", "Zigzagas", "Langeliai", "Žvaigždė", "Snaigė",
-                             "Saulutė", "Aušrinė", "Žiedelis", "Rombai")
+BUMBULU_SPALVU_PAVADINIMAI = ("Raudona", "Žalia", "Auksinė", "Mėlyna", "Violetinė", "Sidabrinė", "Rožinė", "Turkio",
+                              "Oranžinė", "Bordo", "Žydra", "Citrininė", "Perlinė", "Tamsiai mėlyna")
+# Raštai – stambūs, sukantis pikseliuose beveik nekintantys: taškai, žvaigždės, zigzagas ir kiti smulkūs raštai
+# vis keitė formą (12.28 jų atsisakyta; 21 raštas peržiūrėtas riedantis – palikti šie keturi)
+BUMBULU_RASTAI = ("vienspalvis", "juosta", "dvispalvis", "apsnigtas")
+BUMBULU_RASTU_PAVADINIMAI = ("Lygus", "Juosta", "Dvispalvis", "Apsnigtas viršus")
 BUMBULU_KADRAI = 8  # sukimosi kadrai
 BUMBULU_BLYKSNIAI = 3  # pradingimo / atsiradimo žiežirbų kadrai
 
 
 def _rasto_taskas(rastas, xr, yr, R):
     """Ar burbulo koordinačių taškas (xr, yr) priklauso raštui."""
-    r = math.hypot(xr, yr)
     if rastas == "juosta":
         return abs(yr) < R * 0.24
-    if rastas == "dvi_juostos":
-        return abs(abs(yr) - R * 0.42) < R * 0.13
-    if rastas == "taskai":
-        return any(math.hypot(xr - px, yr - py) < R * 0.18
-                   for px, py in ((0, 0), (R * 0.62, 0), (-R * 0.62, 0), (0, R * 0.62), (0, -R * 0.62)))
-    if rastas == "zigzagas":
-        return abs(yr - R * 0.3 * (abs(((xr / R * 2.5) % 2) - 1) * 2 - 1)) < R * 0.16
-    if rastas == "langeliai":
-        dydis = R * 0.55
-        return (math.floor(xr / dydis) + math.floor(yr / dydis)) % 2 == 0 and r < R * 0.8
-    if rastas == "zvaigzde":
-        kampas = math.atan2(yr, xr) + math.pi / 2
-        return r < R * (0.3 + 0.32 * max(0.0, math.cos(5 * kampas)))
-    if rastas == "snaige":
-        if r > R * 0.68:
-            return False
-        storis = max(0.55, R * 0.09)
-        return any(abs(xr * math.sin(a) - yr * math.cos(a)) < storis for a in (0, math.pi / 3, 2 * math.pi / 3))
-    if rastas == "saulute":  # Saulė: taškas centre, ratas ir aštuoni spinduliai-taškeliai
-        if r < R * 0.2 or R * 0.38 < r < R * 0.54:
-            return True
-        kampas = math.atan2(yr, xr) % (math.pi / 4)
-        return R * 0.66 < r < R * 0.86 and min(kampas, math.pi / 4 - kampas) * r < max(0.6, R * 0.1)
-    if rastas == "ausrine":  # Aušrinė (Auseklis) – aštuonkampė žvaigždė iš dviejų kvadratų, su akute viduryje
-        ax, ay = abs(xr), abs(yr)
-        return (max(ax, ay) <= R * 0.36 or ax + ay <= R * 0.56) and r > R * 0.15
-    if rastas == "rutele":  # Žiedelis: keturi rombo formos lapeliai aplink taškelį
-        if r < R * 0.16:
-            return True
-        for px, py in ((R * 0.46, 0), (-R * 0.46, 0), (0, R * 0.46), (0, -R * 0.46)):
-            ilg, plt = (R * 0.34, R * 0.24) if px else (R * 0.24, R * 0.34)
-            if abs(xr - px) / ilg + abs(yr - py) / plt <= 1:
-                return True
-        return False
-    if rastas == "rombai":  # tautinės juostos rombas su kryželiu viduje
-        ax, ay = abs(xr), abs(yr)
-        if R * 0.46 <= ax + ay <= R * 0.66:
-            return True
-        return ax + ay < R * 0.3 and (ax < R * 0.09 or ay < R * 0.09)
+    if rastas == "dvispalvis":  # apatinė pusė – puošimo spalva
+        return yr > R * 0.05
+    if rastas == "apsnigtas":  # viršus apsnigtas (kaip seni stikliniai žaisliukai), banguotas kraštas
+        return yr < -R * (0.28 + 0.12 * math.cos(xr / R * 7.0))
     return False
 
 
@@ -2849,7 +2876,7 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
     """Pixel art žaisliukas-burbulas: raštas ir kepurėlė sukasi kartu su juo, blizgesys lieka vietoje.
     langelis – tinklelio kraštinė (kad mažesni pradingimo kadrai būtų tame pačiame dydyje)."""
     pagr, tamsi, sviesi = BUMBULU_SPALVOS[spalva]
-    puosimas = "#d62828" if spalva in (2, 5) else "#fff4d6"
+    puosimas = "#d62828" if spalva in BUMBULU_RAUDONA_JUOSTA else "#fff4d6"
     k = kadras * 2 * math.pi / BUMBULU_KADRAI
     cs, sn = math.cos(k), math.sin(k)
     n = langelis or 2 * R + 5
@@ -2863,8 +2890,9 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
     lx, ly, lz = -0.55, -0.6, 0.58
     riba = R if R <= 4 else R - 0.2  # mažiems – klasikinis pixel art apskritimas (8 px: 4-6-8-8-8-8-6-4)
     # auksiniam bumbuliukui – sidabrinė kepurėlė (auksinė su juo susiliedavo)
-    kepure = ("#e8edf2", "#8a96a5") if spalva == 2 else ("#f2c94c", "#c99a00")
-    kep_plotis = 1.0 if R <= 4 else 1.7  # kepurėlė 2 ar 4 langelių pločio (mažam 4 – kaip stiklainio dangtelis)
+    kepure = ("#e8edf2", "#8a96a5") if spalva in BUMBULU_SIDABRINE_KEPURE else ("#f2c94c", "#c99a00")
+    # Kepurėlė – 2 × 2 langeliai (centras langelių sandūroje, todėl plotis tik lyginis): 4 × 3, kaip 12.23–12.27,
+    # atrodė per didelė (seniau, kai centras buvo langelio viduryje, – 3 × 2)
 
     def uz(px, py):
         return math.hypot(px, py) > riba
@@ -2874,7 +2902,7 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
             dx, dy = x + 1 - c, y + 1 - c  # centras – langelių sandūroje (lyginis skersmuo – be „spyglių“ ant ašių)
             xr, yr = dx * cs + dy * sn, -dx * sn + dy * cs  # taškas burbulo koordinatėse
             atstumas = math.hypot(dx, dy)
-            if R >= 3 and abs(xr) <= kep_plotis and -R - 1.8 <= yr <= -R + 0.9:  # auksinė kepurėlė
+            if R >= 3 and abs(xr) <= 1.0 and -R - 1.8 <= yr <= -R:  # auksinė kepurėlė
                 t[y][x] = kepure[abs(xr) > 0.9]
                 continue
             if atstumas > riba:
@@ -5843,8 +5871,10 @@ class Sniegas:
                 if isinstance(numatyta, list):
                     virsus = maks_tipo if raktas == "tipai" else 1
                     v = [min(virsus, max(0, int(x))) for x in v]
-                    if raktas == "bumbulu_rastai" and len(v) < len(numatyta):  # senesnė byla – nauji raštai įjungti
-                        v += [1] * (len(numatyta) - len(v))
+                    if raktas in ("bumbulu_rastai", "bumbulu_spalvos") and len(v) < len(numatyta):
+                        v += [1] * (len(numatyta) - len(v))  # senesnė byla – naujos spalvos (raštai) įjungtos
+                    if raktas == "bumbulu_rastai" and len(v) > len(numatyta):  # iki 12.28 – 12 raštų: lygus ir
+                        v = v[:2] + [1] * (len(numatyta) - 2)  # juosta lieka kaip buvo, nauji – įjungti
                     if raktas == "tipai" and len(v) < len(numatyta):  # senose bylose rūšių mažiau – trūkstamos numatytais
                         v += numatyta[len(v):]
                     if len(v) != len(numatyta):
@@ -5905,6 +5935,8 @@ class Sniegas:
                                      + f"\n\n{NUSTATYMU_BYLA}\n\n{e!r}")
 
     def atideti(self, vardas, ms, funkcija):
+        if vardas == "saugoti":  # paruoštukų ✓ ir ↺ žymeklis – iš karto, ne tik išsaugojus (po 1 s)
+            self.atnaujinti_paruostukus()
         senas = self.atidetos.get(vardas)
         if senas:
             self.root.after_cancel(senas)
@@ -7028,8 +7060,7 @@ class Sniegas:
         x = random.uniform(0, self.vw)
         y = random.uniform(-20, self.min_pagrindas * 0.95) if visame_ekrane else random.uniform(-40, -5)
         if rusis in ("kristalas", "kontura"):
-            r0, simetrija = forma[0], forma[1]
-            r = r0 * dk
+            r = forma[0] * dk
             # Posūkių taškai (Polyline) – tik prireikus (snaiges_posukiai): įprastos ir pikselinės snaigės piešiamos iš
             # atlaso, todėl jų dažniausiai nereikia. Anksčiau 20 posūkių skaičiuota kiekvienai snaigei (~0,4 ms vienai –
             # keičiant kiekį ar dydį šimtai ms). Kol nesuskaičiuoti – kortežas (pradinis kampas), ne None (kristalas)
@@ -9430,14 +9461,17 @@ class Sniegas:
         for pav in zemes:
             rem |= remia(pav, 0)
         # Ramus kelias (niekas jo nekeitė per pazymeti_zeme ir nėra ko nuslinkti) – šimtų stulpelių perėja
-        # praleidžiama. Snaigės kelyje stačių šlaitų nesukuria (nusodinti juos išlygina), o pakeitus visą kelią
-        # (naujas sąrašas) tikrinama iš naujo
-        if rem or self.__dict__.get("ramus_kelias") != id(kel):
-            ab = nuslinkti(kel, 1, n, riba, rem, self.kelio_ribos())
+        # praleidžiama. Snaigės kelyje stačių šlaitų nesukuria (nusodinti juos išlygina). Tikrinama iš naujo pakeitus
+        # visą kelią (naujas sąrašas) ar jo ribas (kelio_ribos – naujas sąrašas, pvz., išjungus ar perdėliojus egles:
+        # kitaip buvusių kamienų duobutės likdavo stačios). Laikomi patys sąrašai, ne id() – id gali kartotis.
+        ribos = self.kelio_ribos()
+        rk = self.__dict__.get("ramus_kelias")
+        if rem or rk is None or rk[0] is not kel or rk[1] is not ribos:
+            ab = nuslinkti(kel, 1, n, riba, rem, ribos)
             if ab:
                 self.pazymeti_zeme(ab[0] - 1, ab[1] + 2)
             elif not rem:
-                self.ramus_kelias = id(kel)
+                self.ramus_kelias = (kel, ribos)
         # Ir langų viršuje: ten buldozeriukų krūvos irgi lieka stačia siena: apsisukus
         # buldozeriukui ar jam nuvažiavus lange stūksojo verstuvo aukščio „pleištas“ su stačiu šonu. Tikrinami tik
         # langai, kuriuose buldozeriukai stūmė sniegą (st["kruvos"]), kol juose dar yra ką nuslinkti.
@@ -11862,8 +11896,7 @@ class Sniegas:
                 "Taškais 1920×1080 ekrane; didesniame – proporcingai daugiau (šiame ekrane ×{k}, t. y. iki {px} px).")
                 .format(k=f"{self.k:.2f}".rstrip("0").rstrip("."), px=round(self.n[raktas] * self.k)))
         self.slankiklis(g, "kaupimo_greitis", "Kaupimosi greitis, %", 4)
-        ttk.Button(g, text=T("Nuvalyti sniegą"), command=self.nuvalyti).grid(row=5, column=0, columnspan=2,
-                                                                         sticky="w", padx=4, pady=(4, 0))
+        self.skilties_ikona(g, "nuvalyti", T("Nuvalyti sniegą"), self.nuvalyti)
 
         # Paruoštukai – virš „Kita“; jų plytelės ištempiamos per
         # likusį stulpelio aukštį
@@ -11871,14 +11904,22 @@ class Sniegas:
         g.pack(fill="x")
         self.paruostuku_kint = tk.IntVar(value=-1)
         self.paruostuku_mygtukai = []
-        for i, apr, fonas, tekstas in PARUOSTUKU_PLYTOS:
+        # Plytelės – „Numatytasis“ per visą plotį, kiti dviem stulpeliais, tik pavadinimas (aprašymas – patarime):
+        # vienu stulpeliu su aprašymais
+        # skiltis buvo aukšta, o stulpelių aukščiai turi būti panašūs (kitaip kitų stulpelių skiltys ištempiamos)
+        g.columnconfigure((0, 1), weight=1, uniform="paruostukai")
+        for j, (i, apr, fonas, tekstas) in enumerate(PARUOSTUKU_PLYTOS):
             pav = NUMATYTUJU_PAV if i == NUMATYTIEJI else PARUOSTUKAI[i][0]
             veiksmas = self.atkurti_numatytuosius if i == NUMATYTIEJI else (lambda i=i: self.pritaikyti_paruostuka(i))
-            pl = ParuostukoPlyta(g, T(pav), T(apr), fonas, tekstas, lambda f=veiksmas: self.root.after_idle(f))
-            pl.remas.pack(fill="both", expand=True, pady=1)
-            Patarimas(pl.remas, (T("Grąžina visus nustatymus į numatytuosius (kalba lieka).") if i == NUMATYTIEJI else
-                                 T("Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka tavo."))
-                      + "\n" + T("Pažymėtas ✓ – šiuo metu galiojantis; pakeitus jo nustatymą, žymė dingsta."))
+            pl = ParuostukoPlyta(g, T(pav), "", fonas, tekstas, lambda f=veiksmas: self.root.after_idle(f))
+            # „Numatytasis“ (pirmas) – per visą plotį, kiti – po du eilutėje
+            eil, stulp = (0, 0) if j == 0 else ((j + 1) // 2, (j + 1) % 2)
+            pl.remas.grid(row=eil, column=stulp, columnspan=2 if j == 0 else 1, sticky="nsew", padx=1, pady=1)
+            g.rowconfigure(eil, weight=1)
+            Patarimas(pl.remas, lambda apr=apr, i=i: T(apr) + "\n\n" + (
+                T("Grąžina visus nustatymus į numatytuosius (kalba lieka).") if i == NUMATYTIEJI else
+                T("Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka tavo."))
+                + "\n" + T("Pažymėtas ✓ – šiuo metu galiojantis; pakeitus jo nustatymą, žymė dingsta."))
             pl.paruostukas = i
             self.paruostuku_mygtukai.append(pl)
 
@@ -11914,7 +11955,7 @@ class Sniegas:
         kb.grid(row=3, column=1, sticky="w", padx=4, pady=(2, 0))
         kb.bind("<<ComboboxSelected>>", lambda e: self.pakeistas_kryzelis())
         self.patarimas_nustatymui(kb, "kryzelis")
-        # „Išplėstos ribos“ – čia, ne apatinėje mygtukų juostoje (ten atrodė kaip pagrindinis mygtukas)
+        # „Išplėstos ribos“ – čia (anksčiau buvo apačioje greta pagrindinių mygtukų ir atrodė kaip vienas iš jų)
         self.be_apribojimu_kint = tk.BooleanVar(value=self.n["be_apribojimu"])
         cb = ttk.Checkbutton(g, text=T("Išplėstos ribos"), variable=self.be_apribojimu_kint,
                              command=self.perjungti_apribojimus)
@@ -11958,14 +11999,20 @@ class Sniegas:
         for stulpelis in stulpeliai:
             for j, w in enumerate(stulpelis.winfo_children()):
                 w.pack_configure(pady=(8 if j else 0, 0))
-        # puošmenų stulpeliai – vienodo aukščio: paskutinė skiltis ištempiama iki apačios (apačios sulygiuotos)
-        for stulpelis in stulpeliai[1:]:  # ir 2-asis (vėjas, kaupimasis, paruoštukai, kita)
+        # Stulpeliai – vienodo aukščio: paskutinė skiltis ištempiama iki apačios (apačios sulygiuotos). 2-ajame –
+        # paruoštukai. Kad puošmenų skiltyse apačioje neliktų didelio tuščio žalsvo ploto, „Diagnostika“ – 1-ajame
+        # stulpelyje (2-asis buvo daug aukštesnis už kitus); dabar ištempiama tik keliais taškais
+        for stulpelis in stulpeliai[1:]:
             stulpelis.grid_configure(sticky="ns")
             ist = self.paruostuku_remas if stulpelis is stulpeliai[1] else stulpelis.winfo_children()[-1]
             ist.pack_configure(fill="both", expand=True)
 
-        mygtukai = ttk.Frame(r, padding=(8, 0, 8, 8))
-        mygtukai.pack(fill="x")
+        # „Paslėpti viską“ – pirmojo stulpelio apačioje (po snaigėmis ten laisva vieta), ne atskiroje eilutėje per visą
+        # langą (ji buvo beveik tuščia ir tik didino lango aukštį). Mygtuko „Išjungti“ nebėra: išjungiama lango X
+        # (pagal „Išjungimo mygtukas“: klausti / išjungti) arba dėklo meniu „Išjungti“.
+        stulpeliai[0].grid_configure(sticky="ns")
+        mygtukai = ttk.Frame(stulpeliai[0])
+        mygtukai.pack(side="bottom", fill="x", pady=(8, 0))
         # pastovus plotis – kad keičiantis užrašui mygtukai nešokinėtų
         # Sniegas ir kiti efektai įjungiami varnelėmis skilčių pavadinimuose; čia – tik laikinas paslėpimas.
         self.rodymo_mygtukas = ttk.Button(mygtukai, text=T("Rodyti viską" if self.vartotojas_paslepe else "Paslėpti viską"),
@@ -11973,7 +12020,6 @@ class Sniegas:
         self.rodymo_mygtukas.pack(side="left")
         # Atskiro mygtuko „Į sistemos dėklą“ nebėra: tą patį daro „Sumažinti“ ir X.
         # „Išplėstos ribos“ – skiltyje „Kita“.
-        ttk.Button(mygtukai, text=T("Išjungti"), command=self.baigti).pack(side="right")
         self.atnaujinti_paruostukus()
 
         self.busena = ttk.Label(r, text="", anchor="w", relief="sunken", padding=(6, 2))
@@ -12033,7 +12079,7 @@ class Sniegas:
         g.sk_vardas = vardas
         v = tk.BooleanVar(value=self.n[raktas])
         self.kint[raktas] = v
-        antr = ttk.Frame(g)  # varnelė ir ↺ (skilties nustatymai – į numatytuosius)
+        antr = g.antr_remas = ttk.Frame(g)  # varnelė, ↺ (skilties nustatymai – į numatytuosius) ir veiksmų ikonos
         cb = ttk.Checkbutton(antr, text=T(vardas), variable=v, command=lambda: self.pakeista(raktas))
         cb.pack(side="left")
         self.patarimas_nustatymui(cb, raktas)
@@ -12424,9 +12470,7 @@ class Sniegas:
             pasirinkta(None)
         krypties_etikete.bind("<Double-Button-1>", numatytoji_kryptis)
         self.slankiklis(g, "gusiai", "Sūkuriai", 4)
-        b = ttk.Button(g, text=T("Gūsis dabar"), command=self.gusis_dabar)
-        b.grid(row=5, column=0, sticky="w", padx=4, pady=(4, 0))
-        self.valdikliai["gusis_dabar"] = b
+        self.valdikliai["gusis_dabar"] = self.skilties_ikona(g, "gusis", T("Gūsis dabar"), self.gusis_dabar)
 
         # Peržiūra juda, kol pelė virš vėjo skilties arba įvedama jos laukelyje (fokusas).
         self.vejo_fokusas = False
@@ -12567,16 +12611,16 @@ class Sniegas:
         # „Didysis šou! Liko…“, net minutėms 10 → 9), keitė to stulpelio plotį – pajudėdavo laukeliai ir mygtukas
         eil = ttk.Frame(g)
         eil.grid(row=5, column=0, columnspan=2, sticky="we", padx=4, pady=(4, 0))
-        b = self.fj_mygtukas = ttk.Button(eil, text=T("Paleisti dabar"), command=self.fejerverku_mygtukas,
-                                          width=max(len(T("Paleisti dabar")), len(T("Sustabdyti"))) + 2)
-        b.pack(side="right")
+        # Paleisti / sustabdyti – ikona antraštėje (▶ / ■), kaip kitų skilčių veiksmai
+        self.fj_mygtukas = self.skilties_ikona(g, "paleisti", lambda: T("Sustabdyti" if self.fj.aktyvus
+                                                                        else "Paleisti dabar"),
+                                               self.fejerverku_mygtukas, visada_aktyvus=True)
         ilgiausias = max(len(T("Didysis šou! Liko {m}:{s}").format(m=59, s="59")),
                          len(T("Kitas šou: {kada} (po {min} min)").format(
                              kada="23:59", min=self.leistinos("fejerverku_intervalas")[1])),
                          len(T("Išjungta")))
         self.fj_kitas = ttk.Label(eil, text="", width=ilgiausias + 1, anchor="w")
         self.fj_kitas.pack(side="left")
-        b.visada_aktyvus = True  # rankinis paleidimas veikia ir išjungus šou pagal laikrodį
         # peržiūra: visos rūšys paeiliui, mažu masteliu
         # vėjas – tas pats, kuris dabar pučia ekrane (peržiūros masteliu)
         self.fj_perziura = Fejerverkai(0.42, 2, rnd=random.Random(7), vejas=lambda: (
@@ -12602,7 +12646,7 @@ class Sniegas:
             c.delete("sou")
             if getattr(getattr(self, "fj", None), "aktyvus", False) and self.n["bumbulai"]:
                 W = pp("bumbulai")
-                yc = PERZ_ZEME // 2  # vidurinė juosta: viršuje – mygtukas „Išbarstyti iš naujo“, apačioje rieda bumbuliukai
+                yc = PERZ_ZEME // 2  # per dangaus vidurį – virš riedančių bumbuliukų
                 c.create_rectangle(0, yc - 9, W, yc + 9, fill="#12233f", outline="", tags="sou")
                 c.create_text(W // 2, yc, text=T("Per fejerverkus bumbuliukai slepiasi – pasirodys po šou"),
                               fill="#ffd166", font=("Segoe UI", 8), tags="sou")
@@ -12617,7 +12661,7 @@ class Sniegas:
                 self.valdiklio_busena(w, ijungta)
         self.zymeti_bumbulu_sou()
         if getattr(self, "fj_mygtukas", None) is not None:  # vykstant šou – „Sustabdyti“
-            self.fj_mygtukas.configure(text=T("Sustabdyti" if self.fj.aktyvus else "Paleisti dabar"))
+            self.fj_mygtukas.keisti_forma("sustabdyti" if self.fj.aktyvus else "paleisti")
         if self.fj.detales and self.fj.aktyvus:
             liko = max(0, int(self.fj.pabaiga - self.fj.laikas))
             self.fj_kitas.configure(text=T("Didysis šou! Liko {m}:{s}").format(m=liko // 60, s=f"{liko % 60:02d}"))
@@ -12766,24 +12810,27 @@ class Sniegas:
         self.slankiklis(g, "bumbulu_dydis", "Dydis, %", 7)
         self.slankiklis(g, "bumbulu_greitis", "Judrumas, %", 8)
 
-        # Raštai (2 eilės po 6) ir spalvos (1 eilė) – viename rėmelyje; paveikslėliai patys yra jungikliai
-        # (be varnelių po jais – kad skiltis nebūtų aukšta). Rašto pavadinimas – antraštėje užvedus pelę.
+        # Raštai ir spalvos – dviem eilėmis viename rėmelyje: kairėje 4 raštai (2 × 2), už skirtuko – 14 spalvų
+        # (2 × 7: viršuje šiltos, apačioje šaltos – BUMBULU_SPALVU_TVARKA). Paveikslėliai patys yra jungikliai (be varnelių
+        # po jais – kad skiltis nebūtų aukšta). Pavadinimas – antraštėje užvedus pelę.
         r = ttk.LabelFrame(g, text=T("Raštai ir spalvos"), padding=(4, 2))
         r.grid(row=9, column=0, columnspan=2, sticky="we", padx=4, pady=(6, 0))
         for i, pavadinimas in enumerate(BUMBULU_RASTU_PAVADINIMAI):
-            self.tipo_varnele(r, "bumbulu_rastai", i, 36,
-                              bumbulo_tinklelis(6, (i + 3) % len(BUMBULU_SPALVOS), BUMBULU_RASTAI[i], 0),
-                              pavadinimas, r).grid(row=i // 6, column=i % 6, padx=1, pady=1)
-        sp = ttk.Frame(r)
-        sp.grid(row=2, column=0, columnspan=6, sticky="w", pady=(3, 1))
-        for i, pavadinimas in enumerate(BUMBULU_SPALVU_PAVADINIMAI):
-            self.tipo_varnele(sp, "bumbulu_spalvos", i, 28, bumbulo_tinklelis(4, i, "vienspalvis", 0),
-                              pavadinimas, r).grid(row=0, column=i, padx=1)
+            # R = 4 (13 langelių × 2 px = 26 px – telpa į 28 px langelį, kaip spalvos; R = 6 – 34 px, buvo apkirpta)
+            self.tipo_varnele(r, "bumbulu_rastai", i, 28,
+                              bumbulo_tinklelis(4, (0, 3, 6, 4)[i % 4], BUMBULU_RASTAI[i], 0),
+                              pavadinimas, r).grid(row=i // 2, column=i % 2, padx=1, pady=1)
+        ttk.Separator(r, orient="vertical").grid(row=0, column=2, rowspan=2, sticky="ns", padx=5, pady=2)
+        drobes = {}
+        for i, pavadinimas in enumerate(BUMBULU_SPALVU_PAVADINIMAI):  # kuriama indeksų tvarka (tipu_varneles)
+            vieta = BUMBULU_SPALVU_TVARKA.index(i)
+            drobes[i] = self.tipo_varnele(r, "bumbulu_spalvos", i, 28, bumbulo_tinklelis(4, i, "vienspalvis", 0),
+                                          pavadinimas, r)
+            drobes[i].grid(row=vieta // 7, column=3 + vieta % 7, padx=1, pady=1)
+        for i in BUMBULU_SPALVU_TVARKA:  # Tab – ta pačia tvarka, kaip matyti (Canvas.lift – tai drobės objektams,
+            drobes[i].tk.call("raise", drobes[i]._w)  # todėl valdiklis keliamas tiesiogiai Tk komanda „raise“)
 
-        # peržiūros dešiniajame viršutiniame kampe (ten tik dangus) – ne atskira eilutė po skiltimi
-        mygtukas = ttk.Button(g, text=T("Išbarstyti iš naujo"), command=self.kurti_bumbulus)
-        mygtukas.place(in_=self.bumbulu_drobe, relx=1.0, x=-4, y=4, anchor="ne")
-        self.valdikliu_grupes["bumbulu_mygtukas"] = [mygtukas]
+        self.skilties_ikona(g, "isbarstyti", T("Išbarstyti iš naujo"), self.kurti_bumbulus)
         self.kurti_bumbulu_perziura()
         self.atnaujinti_bumbulu_valdiklius()
 
@@ -12807,7 +12854,7 @@ class Sniegas:
             "glotniu_astrumas": n["snaigiu_stilius"] != "pikseliai" and n["snaiges_glotnios"],
         }
         grupes = {"bumbulu_dingimai": bumb and n["bumbulu_dingsta"], "bumbulu_rastai": bumb,
-                  "bumbulu_spalvos": bumb, "bumbulu_mygtukas": bumb}
+                  "bumbulu_spalvos": bumb}
         for raktas, ijungta in taisykles.items():
             w = self.valdikliai.get(raktas)
             if w is not None:
@@ -13153,8 +13200,7 @@ class Sniegas:
             cb.grid(row=i // 2, column=i % 2, sticky="w", padx=(0, 12), pady=1)
             self.valdikliai[raktas] = cb
             self.patarimas_nustatymui(cb, raktas)
-        ttk.Button(g, text=T("Išdėlioti iš naujo"), command=lambda: self.perdelioti_egles(nauja_sekla=True)).grid(
-            row=10, column=0, columnspan=2, sticky="w", padx=4, pady=(6, 0))
+        self.skilties_ikona(g, "isbarstyti", T("Išdėlioti iš naujo"), lambda: self.perdelioti_egles(nauja_sekla=True))
         self.piesti_egliu_perziura()
         self.root.after(90, self.animuoti_perziura, self.sasajos_karta)
 
@@ -13940,8 +13986,9 @@ class Sniegas:
         nauji["kalba"] = self.n["kalba"]  # kalba – ne „nustatymas“, kurį norėtųsi atkurti
         self.taikyti_nustatymus(nauji)
 
-    def atkurimo_ikona(self, vardas):
-        """↺ ikona (neryški, pilkšva) skilties fone; dydis – pagal antraštės šriftą (didesniame ekrano maste – didesnė)."""
+    def atkurimo_ikona(self, vardas, forma=None, blyski=False):
+        """↺ (forma None) ar kita skilties antraštės ikona (SKILTIES_IKONOS) – neryški, pilkšva, skilties fone; dydis –
+        pagal antraštės šriftą (didesniame ekrano maste – didesnė). blyski – papilkėjusiai (išjungtai) būsenai."""
         fonas = SKILCIU_SPALVOS.get(vardas, (None, None))[0]
         if not fonas:
             fonas = ttk.Style(self.root).lookup("TFrame", "background") or "#f0f0f0"
@@ -13956,13 +14003,38 @@ class Sniegas:
                                 .metrics("linespace")))
         except tk.TclError:
             dydis = 16
+        if blyski:
+            pilka = _maisyti(pilka, fonas, 0.6)
         talpykla = self.__dict__.setdefault("_atkurimo_ikonos", {})
-        raktas = (dydis, fonas, pilka)
+        raktas = (dydis, fonas, pilka, forma)
         if raktas not in talpykla:
             img = tk.PhotoImage(master=self.root, width=dydis, height=dydis)
-            img.put(atkurimo_ikonos_pikseliai(dydis, fonas, pilka))
+            img.put(atkurimo_ikonos_pikseliai(dydis, fonas, pilka) if forma is None
+                    else ikonos_pikseliai(forma, dydis, fonas, pilka))
             talpykla[raktas] = img
         return talpykla[raktas]
+
+    def skilties_ikona(self, g, forma, patarimas, komanda, visada_aktyvus=False):
+        """Skilties veiksmas – ikona antraštėje už ↺ (vietoj mygtuko skilties apačioje: visose skiltyse vienodai,
+        skiltys žemesnės). Papilkėja kartu su skiltimi (nebent visada_aktyvus). Grąžina etiketę (ikoną keičia
+        .keisti_forma)."""
+        vardas = g.sk_vardas
+
+        def vaizdas(f):
+            return (self.atkurimo_ikona(vardas, f), "disabled", self.atkurimo_ikona(vardas, f, blyski=True))
+        at = ttk.Label(g.antr_remas, cursor="hand2", padding=(6, 0, 0, 0), image=vaizdas(forma))
+        at.pack(side="left")
+        at.visada_aktyvus = visada_aktyvus
+        at.keisti_forma = lambda f: at.configure(image=vaizdas(f))
+
+        def spausta(_):
+            if "disabled" not in at.state():
+                self.root.after_idle(komanda)
+        at.bind("<Button-1>", spausta)
+        # rankytė – tik veikiančiai (ttk.Label žymeklio pagal „disabled“ būseną nekeičia)
+        at.bind("<Enter>", lambda e: at.configure(cursor="" if "disabled" in at.state() else "hand2"), add="+")
+        Patarimas(at, patarimas)
+        return at
 
     def skiltis_pakeista(self, raktas):
         """Ar bent vienas skilties nustatymas skiriasi nuo numatytojo (↺ be pakeitimų nieko neklausia)."""
