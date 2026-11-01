@@ -1,4 +1,4 @@
-<img width="962" height="372" alt="explorer_8M7qv8u89v" src="https://github.com/user-attachments/assets/ea3878f2-5177-4645-9edb-dc5538f0e537" />
+<img width="1088" height="227" alt="explorer_ROP5IwwDRS" src="https://github.com/user-attachments/assets/e028fb94-d63d-4110-88d7-0e7f6cc26d78" />
 
 # Sniegas
 
