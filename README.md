@@ -10,7 +10,7 @@ Sniegas paverčia Windows darbalaukį žiema: snaigės krenta virš langų, kaup
 - Apačioje stovi pixel art eglutės su mirksinčiomis lemputėmis.
 - Sniegu rieda bumbuliukai.
 - Vaikšto sniego seniai. Juos galima pačiupti pele už šaliko.
-- Sniegą stumia buldozeriukai.
+- Sniegą stumia sniego valytuvai.
 - Ekrano šonuose kabo girliandos.
 - Pagal laikrodį danguje iššaunami fejerverkai.
 - Yra paruošti nustatymų rinkiniai: nuo ramaus snygio iki pūgos.
@@ -55,7 +55,7 @@ Paruoštas `Sniegas.exe` bus aplanke `dist`.
 
 - Autorius: Vilmantas Ramonas
 - Testuotojas: Jonas Ramonas
-- Sukurta su Claude (Anthropic) pagalba
+- Sukurta su Claude (Anthropic) ir Google Gemini pagalba
 
 ## Licencija
 
@@ -73,7 +73,7 @@ Sniegas turns the Windows desktop into a winter scene: snowflakes fall over your
 - Pixel art Christmas trees with blinking lights stand at the bottom.
 - Glass baubles roll through the snow.
 - Snowmen walk around; you can grab them by the scarf with the mouse.
-- Little bulldozers push the snow.
+- Snowplows push the snow.
 - Light strings hang along the sides of the screen.
 - Fireworks are launched on a schedule.
 - Ready-made presets, from gentle snowfall to a blizzard.
@@ -116,7 +116,7 @@ The finished `Sniegas.exe` will be in the `dist` folder.
 
 - Author: Vilmantas Ramonas
 - Tester: Jonas Ramonas
-- Made with the help of Claude (Anthropic)
+- Made with the help of Claude (Anthropic) and Google Gemini
 
 ### License
 
