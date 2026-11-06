@@ -59,8 +59,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.30"
-DATA = "2026-11-03"
+VERSIJA = "12.31"
+DATA = "2026-11-05"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -310,7 +310,7 @@ EN = frozendict({
     "Rieda ir pašokinėja (išjungus – tiesiog stovi)": "Roll and bounce (off – they just stand)",
     "Kartais pradingsta ir atsiranda kitur": "Sometimes vanish and reappear elsewhere",
     "Rieda ir ant langų (nuo jų nurieda ir nukrenta)": "Also roll on windows (and fall off them)",
-    "Susitraukia": "Shrink", "Sudūžta": "Shatter", "Ištirpsta": "Melt", "Įsmenga į sniegą": "Sink into snow",
+    "Susitraukia": "Shrink", "Sudūžta": "Shatter", "Ištirpsta": "Melt", "Įsminga į sniegą": "Sink into snow",
     "Kiek bumbuliukų": "Number of baubles",
     "Judrumas, %": "Liveliness, %",
     "Kaip stipriai bumbuliukai retkarčiais pastumiami, kai beveik sustoja. Mažai – dažniau guli vietoje, "
@@ -330,8 +330,10 @@ EN = frozendict({
     "Sumažinkite dydį arba lempučių kiekį.":
         "⚠ {k} bulbs are set, but at size {d} % only {n} fit on this screen – the rest are not shown. "
         "Reduce the size or the number of bulbs.",
-    "⚠ Mažiausias aukštis ({a}) didesnis už didžiausią ({b}) – kitas pakoreguojamas po akimirkos.":
-        "⚠ The minimum height ({a}) is above the maximum ({b}) – the other one is adjusted in a moment.",
+    "⚠ Šou ({t} s) ne trumpesnis už tarpą tarp jų ({m} min): kol vyksta šou, kitas praleidžiamas – "
+    "šou bus rečiau, nei nustatyta.":
+        "⚠ The show ({t} s) is not shorter than the gap between shows ({m} min): while a show runs the next one is "
+        "skipped – shows will be less frequent than set.",
     "Tai vienintelis pasirinktas – bent vienas turi likti.": "This is the only one selected – at least one must stay.",
     "Lygus": "Plain", "Juosta": "Stripe", "Dvispalvis": "Two-tone",
     "Apsnigtas viršus": "Snowy top",
@@ -348,9 +350,10 @@ EN = frozendict({
     "Kiek eglučių": "Number of trees",
     "Vienodo aukščio": "Same height",
     "   Aukštis, px": "   Height, px",
+    "Aukštis": "Height",
+    "Atsitiktinis": "Random",
+    "   Nuo–iki, px": "   From–to, px",
     "Atsitiktinio aukščio": "Random height",
-    "   Mažiausias, px": "   Minimum, px",
-    "   Didžiausias, px": "   Maximum, px",
     "Papuošimai": "Decorations",
     "Lemputės": "Lights",
     "Lemputės mirksi": "Lights blink",
@@ -553,7 +556,7 @@ EN = frozendict({
     "Pačiupk už šaliko!": "Grab the scarf!",
     "Kiek buldozeriukų": "Number of bulldozers",
     "Girliandos": "Light strings",
-    "Mirksėjimas, % (0 – nemirksi)": "Blinking, % (0 – steady)",
+    "Mirksėjimas, %": "Blinking, %",
     "Lempučių vienoje pusėje": "Bulbs on each side",
     "Atspindžiai stikle (kartais blyksteli)": "Glints on the glass (now and then)",
     "Atverti": "Open",
@@ -933,8 +936,8 @@ NUMATYTI = frozendict({
     "egles": True,
     "egliu_kiekis": 9,
     "egliu_atsitiktinis": True,
-    "egliu_aukstis": 45,
-    "egliu_min": 45,
+    "egliu_aukstis": 110,
+    "egliu_min": 60,
     "egliu_max": 120,
     "egliu_plotis_min": 69,  # siauriausių eglučių plotis, % įprastos: 69, 85 arba 100 (EGLIU_PLOCIAI)
     "egliu_lemputes": True,
@@ -976,7 +979,7 @@ RIBOS = frozendict({
     "gusio_stiprumas": (0, 10),
     "max_aukstis": (5, 200), "max_aukstis_languose": (2, 40), "kaupimo_greitis": (10, 500),
     "bumbulu_kiekis": (1, 12), "bumbulu_dydis": (40, 100), "bumbulu_greitis": (0, 300),
-    "egliu_kiekis": (1, 40), "egliu_aukstis": (16, 250), "egliu_min": (16, 250), "egliu_max": (16, 250),
+    "egliu_kiekis": (1, 40), "egliu_aukstis": (16, 250), "egliu_min": (16, 249), "egliu_max": (17, 250),
     "egliu_plotis_min": (69, 100),
     "fps": (30, 120), "fejerverku_intervalas": (1, 1440), "fejerverku_trukme": (10, 180),
     "senio_kiekis": (1, 5), "senio_dydis": (50, 200),
@@ -991,7 +994,7 @@ RIBOS_LAISVOS = frozendict({
     "gusio_stiprumas": (0, 50),
     "max_aukstis": (1, 1000), "max_aukstis_languose": (1, 300), "kaupimo_greitis": (1, 5000),
     "bumbulu_kiekis": (1, 40), "bumbulu_dydis": (10, 300), "bumbulu_greitis": (0, 1000),
-    "egliu_kiekis": (1, 200), "egliu_aukstis": (16, 1000), "egliu_min": (16, 1000), "egliu_max": (16, 1000),
+    "egliu_kiekis": (1, 200), "egliu_aukstis": (16, 1000), "egliu_min": (16, 999), "egliu_max": (17, 1000),
     "egliu_plotis_min": (69, 100),
     "fps": (30, 120), "fejerverku_intervalas": (1, 1440), "fejerverku_trukme": (5, 3600),
     "senio_kiekis": (1, 20), "senio_dydis": (20, 400),
@@ -1189,6 +1192,7 @@ WS_EX_NOACTIVATE = 0x08000000
 SWP_NOSIZE = 0x0001
 SWP_NOMOVE = 0x0002
 SWP_NOACTIVATE = 0x0010
+SWP_ASYNCWINDOWPOS = 0x4000  # kitos gijos (programos) langui – nelaukti, kol ji atsakys (pakibus – nepakimbame)
 SWP_FRAMECHANGED = 0x0020
 SWP_SHOWWINDOW = 0x0040
 DWMWA_EXTENDED_FRAME_BOUNDS = 9
@@ -2401,7 +2405,7 @@ GIRL_LEMPUTE = [  # žiūri žemyn: viršuje – tik mažytis laido spaustukas, 
 GIRL_SPALVOS = ("#ff2a2a", "#ffd21a", "#1fe060", "#2f8fff", "#ff8a1a")  # ryškus dažytas stiklas
 GIRL_LAIDAS, GIRL_LAIDAS2 = "#1d4d24", "#2f7a3a"  # susukto dvigyslio laido gyslos
 GIRL_ILGIS, GIRL_STORIS = len(GIRL_LEMPUTE), len(GIRL_LEMPUTE[0])
-GIRL_LYGIAI = 6  # ryškumo pakopos 0…5 (pixel art – be permatomumo)
+GIRL_LYGIAI = 16  # ryškumo pakopos 0…15 (pixel art – be permatomumo); su 6 lėti režimai blėso laiptais
 
 
 GIRL_BLYKSNIO_CENTRAS = (3, 2)  # eilutė, stulpelis „žemyn“ piešinyje – ten, kur stiklo atšvaitas
@@ -2441,8 +2445,9 @@ def girliandos_lemputes_tinklelis(spalva, lygis, kryptis, blyksnis=0):
 
 # Mirksėjimas kaip tikrų senų girliandų: kaitrinis siūlelis įkaista per ~0,07 s, o atvėsta per ~0,2 s (lemputė
 # užgęsta su „uodega“); „mirgančios“ lemputės turi savo bimetalinį jungiklį – kiekviena įsijungia ir išsijungia
-# netolygiais tarpais; kitus režimus kuria valdiklis (bėgantis, pakaitom, visa girlianda, lėtas kvėpavimas).
-GIRL_REZIMAI = ("mirgantis", "visa", "begantis", "pakaitom", "kvepuoja", "kibirkstys", "ramus")
+# netolygiais tarpais; kitus režimus kuria valdiklis (bėgantis, pakaitom, visa girlianda, lėtas kvėpavimas, kaip
+# tikrų valdiklių „Slo-glo“ ir „Slow fade“). „ramus“ – paskutinis (atsitiktinai pradedant jo nebūna).
+GIRL_REZIMAI = ("mirgantis", "visa", "begantis", "pakaitom", "kvepuoja", "kibirkstys", "lieja", "persilieja", "ramus")
 GIRL_IKAISTA, GIRL_ATVESTA = 0.07, 0.2
 
 
@@ -2480,6 +2485,11 @@ def girliandos_tikslai(m, dt):
         return [1.0 if j % 2 == faze else 0.0 for j in range(n)]
     if r == "kvepuoja":  # reguliatoriumi lėtai šviesėja ir tamsėja, banga slenka girlianda
         return [0.55 + 0.45 * math.sin(2 * math.pi * (t / 4.0 - j / 12)) for j in range(n)]
+    if r == "lieja":  # „Slo-glo“: visa girlianda kartu lėtai įsižiebia ir beveik užgęsta (~4 s)
+        return [0.05 + 0.95 * (0.5 - 0.5 * math.cos(2 * math.pi * t / 4.0))] * n
+    if r == "persilieja":  # „Slow fade“: dvi grupės (kas antra lemputė) lėtai persilieja – viena blėsta, kita šviesėja
+        a = 0.5 - 0.5 * math.cos(2 * math.pi * t / 5.0)
+        return [a if j % 2 else 1.0 - a for j in range(n)]
     return [1.0] * n
 
 
@@ -2956,18 +2966,18 @@ def blyksnio_tinklelis(n, kadras):
     return tuple(tuple(e) for e in t)
 
 
-BUMBULU_DINGIMAI = ("susitraukia", "suduzta", "istirpsta", "ismenga")
-BUMBULU_DINGIMU_PAVADINIMAI = ("Susitraukia", "Sudūžta", "Ištirpsta", "Įsmenga į sniegą")
+BUMBULU_DINGIMAI = ("susitraukia", "suduzta", "istirpsta", "isminga")
+BUMBULU_DINGIMU_PAVADINIMAI = ("Susitraukia", "Sudūžta", "Ištirpsta", "Įsminga į sniegą")
 # kaip atsiranda, jei įjungtas atitinkamas dingimas (sudužęs – nukrenta iš dangaus)
 BUMBULU_ATSIRADIMAI = frozendict({"susitraukia": "isauga", "suduzta": "nukrenta", "istirpsta": "susidaro",
-                       "ismenga": "isnyra"})
+                       "isminga": "isnyra"})
 TIRPIMO_KADRAI = 6
 
 
 def bumbulo_animacijos_trukme(anim, R):
     """Kiek trunka dingimas ar atsiradimas (ekrane ir peržiūroje – tas pats). R – bumbuliuko spindulys langeliais."""
     return {"susitraukia": 0.06 * (R - 1) + 0.08 * BUMBULU_BLYKSNIAI, "suduzta": 0.16, "istirpsta": 0.5,
-            "ismenga": 0.6, "isauga": 0.08 + 0.06 * (R - 1), "susidaro": 0.5, "isnyra": 0.6}[anim]
+            "isminga": 0.6, "isauga": 0.08 + 0.06 * (R - 1), "susidaro": 0.5, "isnyra": 0.6}[anim]
 
 
 @functools.lru_cache(maxsize=512)
@@ -5933,6 +5943,14 @@ class Sniegas:
             except (TypeError, ValueError, OverflowError):
                 blogi.append(raktas)
         n["egliu_plotis_min"] = egliu_plocio_zingsnis(n["egliu_plotis_min"])  # sena byla (60–100) – elgsena ta pati
+        if n["egliu_min"] >= n["egliu_max"]:  # mažiausias – visada mažesnis už didžiausią
+            iki = ribos["egliu_max"][1]
+            n["egliu_min"], n["egliu_max"] = sorted((n["egliu_min"], n["egliu_max"]))
+            if n["egliu_min"] == n["egliu_max"]:
+                if n["egliu_max"] < iki:
+                    n["egliu_max"] += 1
+                else:
+                    n["egliu_min"] -= 1
         if blogi:
             if importuojama is None:  # paleidžiant – jau vartotojo kalba (importuojant – dabartine sąsajos kalba)
                 nustatyti_kalba(n["kalba"])
@@ -6710,7 +6728,7 @@ class Sniegas:
         des = max(monitoriai, key=lambda m: m[0][2])
         return min(girl_telpa(m[1][1], m[1][3], Pg) for m in (kair, des))
 
-    ISPEJIMU_RAKTAI = ("gusio_stiprumas", "girliandu_kiekis", "egliu_min", "egliu_max")
+    ISPEJIMU_RAKTAI = ("gusio_stiprumas", "girliandu_kiekis", "fejerverku_intervalas", "fejerverku_trukme")
 
     def ispejimas(self, raktas):
         """Kodėl nustatymas (dalinai) neveikia – tekstas patarimui; None – viskas gerai."""
@@ -6726,10 +6744,10 @@ class Sniegas:
                 return T("⚠ Nustatyta {k} lempučių, bet šiame ekrane su dydžiu {d} % telpa tik {n} – daugiau nerodoma. "
                          "Sumažinkite dydį arba lempučių kiekį.").format(k=n["girliandu_kiekis"],
                                                                         d=n["girliandu_dydis"], n=telpa)
-        if raktas in ("egliu_min", "egliu_max") and n["egles"] and n["egliu_atsitiktinis"] \
-                and n["egliu_min"] > n["egliu_max"]:
-            return T("⚠ Mažiausias aukštis ({a}) didesnis už didžiausią ({b}) – kitas pakoreguojamas po akimirkos.").format(
-                a=n["egliu_min"], b=n["egliu_max"])
+        if raktas in ("fejerverku_intervalas", "fejerverku_trukme") and n["fejerverkai"] \
+                and n["fejerverku_trukme"] >= n["fejerverku_intervalas"] * 60:
+            return T("⚠ Šou ({t} s) ne trumpesnis už tarpą tarp jų ({m} min): kol vyksta šou, kitas praleidžiamas – "
+                     "šou bus rečiau, nei nustatyta.").format(t=n["fejerverku_trukme"], m=n["fejerverku_intervalas"])
         return None
 
     def atnaujinti_ispejimus(self):
@@ -6745,24 +6763,6 @@ class Sniegas:
                     w.configure(foreground=ISPEJIMO_SPALVA if self.ispejimas(raktas) else "")
                 except tk.TclError:
                     pass
-
-    def suderinti_egliu_ribas(self):
-        """Mažiausias eglių aukštis didesnis už didžiausią – kitas (ne ką tik keistas) pakoreguojamas, kad sutaptų.
-        Ne iškart: renkant skaičių („1“ → „15“ → „150“) tarpinės reikšmės kitos ribos nesugadina."""
-        try:
-            fokusas = self.root.focus_get()
-        except (tk.TclError, KeyError):
-            fokusas = None
-        if fokusas is not None and fokusas in (self.valdikliai.get("egliu_min"), self.valdikliai.get("egliu_max")):
-            self.atideti("egliu_ribos", 600, self.suderinti_egliu_ribas)  # dar renkama – palaukiama
-            return
-        a, b = self.n["egliu_min"], self.n["egliu_max"]
-        if a <= b:
-            return
-        if self.__dict__.get("paskutine_egliu_riba") == "egliu_max":
-            self.kint["egliu_min"].set(str(b))
-        else:
-            self.kint["egliu_max"].set(str(a))
 
     def kurti_girliandas(self):
         """Po girliandą kairiausio ekrano kairėje ir dešiniausio – dešinėje, nuo viršaus iki užduočių juostos.
@@ -7476,7 +7476,7 @@ class Sniegas:
         return None
 
     def bumbulo_pavirsius(self, b, x):
-        """Kur rutuliukas liečia paviršių: aukščiausias taškas po juo (jis remiasi į iškilimus, o ne įsmenga)."""
+        """Kur rutuliukas liečia paviršių: aukščiausias taškas po juo (jis remiasi į iškilimus, o ne įsminga)."""
         centras = self.bumbulo_atrama(b, x)
         if centras is None:
             return None
@@ -7687,7 +7687,7 @@ class Sniegas:
                 return pr_blyk + (0 if p < 0.5 else 1), 0, False
             if a == "istirpsta":
                 return pr_tirp + min(TIRPIMO_KADRAI - 1, int(p * TIRPIMO_KADRAI)), 0, False
-            return sukimasis, p * gylis, True  # įsmenga
+            return sukimasis, p * gylis, True  # įsminga
         if a == "isauga":
             if t < 0.08:
                 return pr_blyk, 0, False
@@ -7805,6 +7805,27 @@ class Sniegas:
 
     def leistinos(self, raktas):
         return (RIBOS_LAISVOS if self.n["be_apribojimu"] else RIBOS)[raktas]
+
+    def leistinos_dabar(self, raktas):
+        """Kaip leistinos, bet eglių mažiausias aukštis visada mažesnis už didžiausią (lygus – jau „vienodo aukščio“)."""
+        nuo, iki = self.leistinos(raktas)
+        if raktas == "egliu_min":
+            iki = min(iki, self.n["egliu_max"] - 1)
+        elif raktas == "egliu_max":
+            nuo = max(nuo, self.n["egliu_min"] + 1)
+        return nuo, iki
+
+    def egliu_ribu_laukeliai(self):
+        """Eglių aukščio laukelių rodyklės ir įvedimas – iki kitos ribos (mažiausias negali pasiekti didžiausio)."""
+        for raktas in ("egliu_min", "egliu_max"):
+            sb = self.__dict__.get("valdikliai", {}).get(raktas)
+            if sb is None:
+                continue
+            nuo, iki = self.leistinos_dabar(raktas)
+            try:
+                sb.configure(from_=nuo, to=iki, validatecommand=self.ribu_tikrinimas(iki))
+            except tk.TclError:
+                pass
 
     def maks_tipo(self):
         return MAKS_SNAIGIU_LAISVAI if self.n["be_apribojimu"] else MAKS_SNAIGIU_TIPO
@@ -7990,7 +8011,7 @@ class Sniegas:
     def senio_atramos_y(self, s_, Ps, y_centre):
         """Kur stovi senis: sniegas minkštas, sunki apatinė gniūžtė į jį įsispaudžia – remiasi ne į aukščiausią
         kauburį po savimi (taip senis „stovėdavo“ ant siauros smailės), o į sniego medianą po visu gniūžtės
-        pločiu. Siauras kauburys lieka už senio (įspaustas), nuolydyje senis įsmenga į aukštesnę pusę.
+        pločiu. Siauras kauburys lieka už senio (įspaustas), nuolydyje senis įsminga į aukštesnę pusę.
         Gniūžtė – ne piešinio viduryje (dešinėje šluota): jos vidurys – SENIO_GNIUZTE langeliai, pusplotis – 8."""
         S = STULPELIS
         lx = SENIO_GNIUZTE if s_.get("kryptis", 1) > 0 else SENIO_W - 1 - SENIO_GNIUZTE
@@ -8800,8 +8821,8 @@ class Sniegas:
             for j in sorted(perpiesti):
                 x0, y0, spalva, _ = vietos[j]
                 if atl is not None:  # paruošta lemputė – vienas TransparentBlt (piešiant – ~10 FillRect)
-                    ax = self.girl_lemputes_vieta(atl, spalva, lygiai[j], kryptis, fazes[j])
-                    msimg32.TransparentBlt(dc, x0 - gl, y0 - gt, atl["lw"], atl["lh"], atl["d"]["dc"], ax, 0,
+                    ax, ay = self.girl_lemputes_vieta(atl, spalva, lygiai[j], kryptis, fazes[j])
+                    msimg32.TransparentBlt(dc, x0 - gl, y0 - gt, atl["lw"], atl["lh"], atl["d"]["dc"], ax, ay,
                                            atl["lw"], atl["lh"], PERMATOMA_RGB)
                 else:
                     p = p or PaslinktasPiesejas(self.g, dc, gl, gt)
@@ -8819,25 +8840,27 @@ class Sniegas:
         if atl is None:
             t = girliandos_lemputes_tinklelis(0, 0, kryptis, 0)
             lw, lh = round(len(t[0]) * Pg), round(len(t) * Pg)
-            vietu = len(GIRL_SPALVOS) * GIRL_LYGIAI * 3
-            d = self.naujas_dc(lw * vietu, lh)
+            # eilutė – ryškumo pakopa, stulpeliai – spalva × atspindžio fazė: su 16 pakopų vienoje eilutėje juosta
+            # dideliame ekrane viršytų 32 767 px
+            vietu = len(GIRL_SPALVOS) * 3
+            d = self.naujas_dc(lw * vietu, lh * GIRL_LYGIAI)
             if not d["bmp"]:
                 self.naikinti_dc(d)
                 atlasai[raktas] = False
                 return None
-            user32.FillRect(d["dc"], ctypes.byref(wintypes.RECT(0, 0, lw * vietu, lh)), self.g.teptukas(PERMATOMA))
+            user32.FillRect(d["dc"], ctypes.byref(wintypes.RECT(0, 0, lw * vietu, lh * GIRL_LYGIAI)),
+                            self.g.teptukas(PERMATOMA))
             atl = atlasai[raktas] = {"d": d, "lw": lw, "lh": lh, "Pg": Pg, "nupiesta": set()}
         return atl or None
 
     def girl_lemputes_vieta(self, atl, spalva, lygis, kryptis, faze):
-        """Lemputės x atlase (nupiešiama pirmą kartą)."""
-        i = (spalva * GIRL_LYGIAI + lygis) * 3 + faze
-        ax = i * atl["lw"]
-        if i not in atl["nupiesta"]:
+        """Lemputės (x, y) atlase (nupiešiama pirmą kartą)."""
+        ax, ay = (spalva * 3 + faze) * atl["lw"], lygis * atl["lh"]
+        if (ax, ay) not in atl["nupiesta"]:
             piks_piesti(GdiPiesejas(self.g, atl["d"]["dc"]), girliandos_lemputes_tinklelis(spalva, lygis, kryptis, faze),
-                        ax, 0, atl["Pg"])
-            atl["nupiesta"].add(i)
-        return ax
+                        ax, ay, atl["Pg"])
+            atl["nupiesta"].add((ax, ay))
+        return ax, ay
 
     def naikinti_girliandu_paveikslelius(self):
         for v in self.__dict__.pop("_girl_paveiksleliai", {}).values():
@@ -10179,6 +10202,16 @@ class Sniegas:
                 f"rodoma {rodoma})")
 
     def kadras(self):
+        """Apsauga: jei kadras nulūžo dar nesuplanavęs kito (after – paskutinis kiekvieno kelio veiksmas),
+        kitas suplanuojamas čia – kitaip sniegas sustotų visam laikui be jokio pranešimo."""
+        try:
+            self._kadras()
+        except Exception:
+            ZURNALAS.rasyti("KLAIDA kadre (po apdorojimo):\n" + traceback.format_exc(), visada=True)
+            if not getattr(self, "baigiama", False):
+                self.root.after(100, self.kadras)
+
+    def _kadras(self):
         pradzia = time.perf_counter()
         intervalas = pradzia - self.paskutinis
         dt = min(0.1, intervalas)
@@ -11159,10 +11192,11 @@ class Sniegas:
         if iskyl:  # uždaryti (paslėpti) iškylantys langai pamirštami – atidarius vėl, minutė skaičiuojama iš naujo
             for hw in [hw for hw in iskyl if not user32.IsWindowVisible(hw) or paslepta_dwm(hw)]:
                 del iskyl[hw]
-        h = user32.GetWindow(self.perdangos_hwnd, GW_HWNDPREV)
+        h, n = user32.GetWindow(self.perdangos_hwnd, GW_HWNDPREV), 0
         pid = wintypes.DWORD()
         nekelti = self.__dict__.setdefault("nekelti_del", {})
-        while h:
+        while h and n < 3000:  # Z tvarka gali keistis einant – be ribos GetWindow gali sukti ratu (MSDN)
+            n += 1
             if user32.IsWindowVisible(h) and h not in self.senio_hwnd and nekelti.get(h, 0) < 3 \
                     and not GetWindowLong(h, GWL_EXSTYLE) & WS_EX_TRANSPARENT and not paslepta_dwm(h):
                 user32.GetWindowThreadProcessId(h, ctypes.byref(pid))
@@ -11250,7 +11284,8 @@ class Sniegas:
                 # tvarkoje – po atidarytais langais. Pakišta po juo perdanga atsidurdavo po tais langais (grąžinama į
                 # viršų), o virš jo – uždengdavo patarimą (už eglių). Todėl ne perdanga nuleidžiama, o patarimas
                 # pakeliamas virš jos („visada viršuje“): ekrane jis ir taip virš visko, perdanga nejudinama.
-                user32.SetWindowPos(h, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
+                user32.SetWindowPos(h, HWND_TOPMOST, 0, 0, 0, 0,
+                                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS)
                 pranesta = self.__dict__.setdefault("pakelti_pranesta", set())
                 if h not in pranesta:
                     pranesta.add(h)
@@ -11839,9 +11874,10 @@ class Sniegas:
             ZURNALAS.rasyti(f"KLAIDA #{self.d_klaidos}: {repr(e)}\n{traceback.format_exc()}")
         if not self.klaida_parodyta:
             self.klaida_parodyta = True
-            messagebox.showerror(PAVADINIMAS,
-                                 T("Įvyko klaida, bet programa bando dirbti toliau. "
-                                   "Jei sniegas elgiasi keistai – paleiskite programą iš naujo.") + f"\n\n{e!r}")
+            tekstas = T("Įvyko klaida, bet programa bando dirbti toliau. "
+                        "Jei sniegas elgiasi keistai – paleiskite programą iš naujo.") + f"\n\n{e!r}"
+            # ne kadro / laikmačio viduje: modalinis langas sustabdytų sniegą, kol jis atidarytas
+            self.root.after_idle(lambda: messagebox.showerror(PAVADINIMAS, tekstas))
 
     def isvalyti_busena(self):
         """Dukart spustelėjus būsenos juostą: klaida ir skaitikliai joje – nuo nulio (žurnalo skaitikliai lieka)."""
@@ -12536,7 +12572,7 @@ class Sniegas:
         self.papildomi_aprasai["girliandu_kiekis"] = lambda: None if self.girliandu_telpa() is None else T(
             "Šiame ekrane su dabartiniu dydžiu telpa iki {n} lempučių – daugiau nebus.").format(n=self.girliandu_telpa())
         self.slankiklis(g, "girliandu_dydis", "Dydis, %", 3)
-        self.slankiklis(g, "girliandu_mirksejimas", "Mirksėjimas, % (0 – nemirksi)", 4)
+        self.slankiklis(g, "girliandu_mirksejimas", "Mirksėjimas, %", 4)
         self.zymimasis(g, "girliandu_atspindziai", "Atspindžiai stikle (kartais blyksteli)", 5)
         self.girl_perziura = {"mirk": girliandos_valdiklis(random.Random(3), self.girl_perz_lemputes())}
         self.piesti_girl_perziura()
@@ -13006,6 +13042,7 @@ class Sniegas:
             "bumbulu_kiekis": bumb, "bumbulu_dydis": bumb, "bumbulu_greitis": juda,
             "gusis_dabar": n["gusio_stiprumas"] > 0,
             "sniegas_ant_senio": n["senio_stovi"],  # prisninga tik stovinčiam
+            "sniego_konturas": kaupia(n, "kaupti_apacioje"),  # pusnių ir kelio kontūras (ant langų – visada)
             "snaiges_glotnios": n["snaigiu_stilius"] != "pikseliai",  # pixel art – visada šuoliukais
             "glotniu_astrumas": n["snaigiu_stilius"] != "pikseliai" and n["snaiges_glotnios"],
         }
@@ -13157,7 +13194,7 @@ class Sniegas:
             x0 = int(b["x"] - b["c"] + pus)
             y0 = int(b["y"] - b["r"] - b["c"] + pus + zemyn) + 1
             piks_piesti(p, b["kadrai"][kadras], x0, y0, Pp)
-            if apkirpti:  # įsmenga / išnyra – dalis po sniegu
+            if apkirpti:  # įsminga / išnyra – dalis po sniegu
                 c.create_rectangle(x0, int(b["y"]) + 1, x0 + int(2 * b["c"]) + 1, H, fill=SNIEGAS, outline="")
         for sk in self.bumbulu_perz_skeveldros:
             if not (sk["laikas"] < 0.5 and int(sk["laikas"] * 12) % 2 == 0):  # prieš dingdamos pamirksi
@@ -13321,19 +13358,24 @@ class Sniegas:
         self.velykiu_paspaudimai = []
         self.egliu_drobe.grid(row=0, column=0, columnspan=2, pady=(0, 6))
         self.slankiklis(g, "egliu_kiekis", "Kiek eglučių", 2)
+        # Aukštis – dvi eilutės: pasirinkimas, o po juo – vienas aukštis arba „nuo–iki“ (rodoma tik viena)
         v = tk.BooleanVar(value=self.n["egliu_atsitiktinis"])
         self.kint["egliu_atsitiktinis"] = v
-        rb = ttk.Radiobutton(g, text=T("Vienodo aukščio"), variable=v, value=False,
-                             command=lambda: self.pakeista("egliu_atsitiktinis"))
-        rb.grid(row=3, column=0, sticky="w", padx=4)
-        self.patarimas_nustatymui(rb, "egliu_atsitiktinis")
+        et = ttk.Label(g, text=T("Aukštis"))
+        et.grid(row=3, column=0, sticky="w", padx=4, pady=1)
+        self.patarimas_nustatymui(et, "egliu_atsitiktinis")
+        budai = ttk.Frame(g)
+        budai.grid(row=3, column=1, sticky="w", padx=4, pady=1)
+        for reiksme, tekstas in ((False, "Vienodas"), (True, "Atsitiktinis")):
+            rb = ttk.Radiobutton(budai, text=T(tekstas), variable=v, value=reiksme,
+                                 command=lambda: self.pakeista("egliu_atsitiktinis"))
+            rb.pack(side="left", padx=(0, 8))
+            self.patarimas_nustatymui(rb, "egliu_atsitiktinis")
         self.slankiklis(g, "egliu_aukstis", "   Aukštis, px", 4)
-        rb = ttk.Radiobutton(g, text=T("Atsitiktinio aukščio"), variable=v, value=True,
-                             command=lambda: self.pakeista("egliu_atsitiktinis"))
-        rb.grid(row=5, column=0, sticky="w", padx=4)
-        self.patarimas_nustatymui(rb, "egliu_atsitiktinis")
-        self.slankiklis(g, "egliu_min", "   Mažiausias, px", 6)
-        self.slankiklis(g, "egliu_max", "   Didžiausias, px", 7)
+        self.skaiciu_pora(g, ("egliu_min", "egliu_max"), "   Nuo–iki, px", 4)
+        self.egliu_ribu_laukeliai()
+        self.egliu_aukscio_eilute()
+        g.grid_rowconfigure(5, minsize=6)  # tarpas po aukščio – atskiria jį nuo pločio
         ttk.Label(g, text=T("Eglių plotis")).grid(row=8, column=0, sticky="w", padx=4, pady=1)
         v = self.kint["egliu_plotis_min"] = tk.IntVar(value=egliu_plocio_zingsnis(self.n["egliu_plotis_min"]))
         plociai = ttk.Frame(g)
@@ -13353,7 +13395,7 @@ class Sniegas:
             v = tk.BooleanVar(value=self.n[raktas])
             self.kint[raktas] = v
             cb = ttk.Checkbutton(puosimas, text=T(tekstas), variable=v, command=lambda k=raktas: self.pakeista(k))
-            cb.grid(row=i // 2, column=i % 2, sticky="w", padx=(0, 12), pady=1)
+            cb.grid(row=i // 3, column=i % 3, sticky="w", padx=(0, 12), pady=1)  # trimis stulpeliais – eilute mažiau
             self.valdikliai[raktas] = cb
             self.patarimas_nustatymui(cb, raktas)
         self.skilties_ikona(g, "isbarstyti", T("Išdėlioti iš naujo"), lambda: self.perdelioti_egles(nauja_sekla=True))
@@ -13761,7 +13803,22 @@ class Sniegas:
         self.fj.pradeti_didiji(self.fejerverku_sritys())
         self.atnaujinti_fejerverku_valdiklius()
 
+    def egliu_aukscio_eilute(self):
+        """Vienodo aukščio – laukelis su juosta, atsitiktinio – „nuo–iki“ (toje pačioje eilutėje rodoma tik viena)."""
+        atsitiktinis = self.n["egliu_atsitiktinis"]
+        plotis = 0
+        for raktas, rodyti in (("egliu_aukstis", not atsitiktinis), ("egliu_min", atsitiktinis)):
+            et, sb = self.__dict__.get("etiketes", {}).get(raktas), self.__dict__.get("valdikliai", {}).get(raktas)
+            if et is None or sb is None:
+                continue
+            for w in (et, sb.master):
+                w.grid() if rodyti else w.grid_remove()
+            plotis = max(plotis, et.winfo_reqwidth() + 8)  # padx=4 iš abiejų pusių
+        if plotis:  # pavadinimų stulpelis – pagal ilgesnįjį iš abiejų, kad perjungiant niekas nepasislinktų
+            et.master.grid_columnconfigure(0, minsize=plotis)
+
     def atnaujinti_egliu_valdiklius(self):
+        self.egliu_aukscio_eilute()
         atsitiktinis = self.n["egliu_atsitiktinis"]
         rodyti = self.n["egles"]
         for raktas, ijungta in (("egliu_kiekis", rodyti), ("egliu_plotis_min", rodyti),
@@ -13811,7 +13868,8 @@ class Sniegas:
 
         def ratukas(e):
             if "disabled" not in sb.state():
-                v.set(str(max(nuo, min(iki, self.n[raktas] + (1 if e.delta > 0 else -1)))))
+                a, b = self.leistinos_dabar(raktas)
+                v.set(str(max(a, min(b, self.n[raktas] + (1 if e.delta > 0 else -1)))))
             return "break"
 
         sb.bind("<MouseWheel>", ratukas)
@@ -13827,6 +13885,43 @@ class Sniegas:
         # Tas pats patarimas ant pavadinimo, laukelio ir juostos: įspėjimas (jei oranžinis), ką daro, numatytoji
         for w in (etikete, sb, sb.slankiklis):
             Patarimas(w, lambda: self.slankiklio_patarimas(raktas))
+
+    def skaiciu_pora(self, tevas, raktai, tekstas, eil):
+        """Du skaičiaus laukeliai vienoje eilutėje („nuo [a] – [b]“), be juostų – kai vietos mažai. Elgiasi kaip
+        slankiklis(): rodyklės, ratukas, įvedimas, išėjus – parodoma pritaikyta reikšmė, patarimas su numatytąja."""
+        (nuo, _), (_, iki) = self.leistinos(raktai[0]), self.leistinos(raktai[1])
+        etikete = ttk.Label(tevas, text=f"{T(tekstas)} ({nuo}–{iki})")
+        etikete.grid(row=eil, column=0, sticky="w", padx=4, pady=1)
+        remas = ttk.Frame(tevas)
+        remas.grid(row=eil, column=1, sticky="w", padx=4, pady=1)
+        for i, raktas in enumerate(raktai):
+            if i:
+                ttk.Label(remas, text="–").pack(side="left", padx=4)
+            a, b = self.leistinos(raktas)
+            v = tk.StringVar(value=str(self.n[raktas]))
+            self.kint[raktas] = v
+            v.trace_add("write", lambda *_, r=raktas: self.pakeista(r))
+            sb = ttk.Spinbox(remas, from_=a, to=b, increment=1, width=4, textvariable=v, validate="key",
+                             validatecommand=self.ribu_tikrinimas(b))
+            sb.pack(side="left")
+            sb.bind("<FocusOut>", lambda e, r=raktas, v=v: v.set(str(self.n[r])))
+
+            def ratukas(e, r=raktas, v=v, sb=sb):
+                if "disabled" not in sb.state():
+                    a_, b_ = self.leistinos_dabar(r)
+                    v.set(str(max(a_, min(b_, self.n[r] + (1 if e.delta > 0 else -1)))))
+                return "break"
+            sb.bind("<MouseWheel>", ratukas)
+            self.valdikliai[raktas] = sb
+            self.etiketes[raktas] = etikete
+            Patarimas(sb, lambda r=raktas: self.slankiklio_patarimas(r))
+        Patarimas(etikete, lambda: "\n\n".join(filter(None, (self.slankiklio_patarimas(r) for r in raktai))))
+
+        def numatytosios(_):
+            if "disabled" not in self.valdikliai[raktai[0]].state():
+                for r in (raktai[1], raktai[0], raktai[1]):  # antra riba – dar kartą, jei pirmąkart apsiribojo
+                    self.kint[r].set(str(NUMATYTI[r]))
+        etikete.bind("<Double-Button-1>", numatytosios)
 
     def numatytoji_tekstu(self, raktas):
         v = NUMATYTI[raktas]
@@ -14016,8 +14111,17 @@ class Sniegas:
         except (tk.TclError, ValueError):
             return  # laukelis tuščias ar dar renkamas
         if raktas in RIBOS:
-            nuo, iki = self.leistinos(raktas)
+            nuo, iki = self.leistinos_dabar(raktas)
             nauja = max(nuo, min(iki, nauja))
+            if raktas in ("egliu_min", "egliu_max") and str(nauja) != self.kint[raktas].get():
+                # apribota (juosta nutempta už kitos ribos) – parodoma tikroji; renkant laukelyje – tik išėjus iš jo
+                # (kitaip „1“ → „15“ → „150“ nebūtų galima surinkti)
+                try:
+                    renkama = self.root.focus_get() is self.valdikliai.get(raktas)
+                except (tk.TclError, KeyError):
+                    renkama = False
+                if not renkama:
+                    self.root.after_idle(lambda r=raktas: self.kint[r].set(str(self.n[r])))
         if nauja == self.n[raktas]:
             return
         self.n[raktas] = nauja
@@ -14028,12 +14132,10 @@ class Sniegas:
                         "senio_stovi", "snaigiu_stilius", "snaiges_glotnios"):
             self.atnaujinti_bumbulu_valdiklius()  # priklausomi nustatymai papilkėja / atsiranda
         if raktas in ("vejas", "vejas_ijungtas", "gusio_stiprumas", "girliandos", "girliandu_kiekis", "girliandu_dydis",
-                      "egles", "egliu_atsitiktinis", "egliu_min", "egliu_max"):
+                      "fejerverkai", "fejerverku_intervalas", "fejerverku_trukme"):
             self.atnaujinti_ispejimus()
         if raktas in ("egliu_min", "egliu_max"):
-            self.paskutine_egliu_riba = raktas
-            if self.n["egliu_min"] > self.n["egliu_max"]:
-                self.atideti("egliu_ribos", 1200, self.suderinti_egliu_ribas)
+            self.egliu_ribu_laukeliai()
         if raktas == "senio_lemputes":
             self.atnaujinti_senio_valdiklius()
             if getattr(self, "senio_drobe", None) is not None:
@@ -14287,12 +14389,9 @@ class Sniegas:
         self.kurti_ekskavatorius()
         self.kurti_senius()
         self.apriboti_sniega()
-        # oranžiniai pavadinimai – pagal naujus nustatymus (ne per kurti_girliandas šalutinį poveikį); laukiantis eglių
-        # ribų suderinimas – nebereikalingas (atkurtos ribos savos)
-        senas_laikmatis = self.__dict__.get("atidetos", {}).pop("egliu_ribos", None)
-        if senas_laikmatis:
-            self.root.after_cancel(senas_laikmatis)
+        # oranžiniai pavadinimai – pagal naujus nustatymus (ne per kurti_girliandas šalutinį poveikį)
         self.atnaujinti_ispejimus()
+        self.egliu_ribu_laukeliai()
         # kaip pakeista(): išjungus sniegą ar kaupimąsi sukauptas sniegas nuvalomas (importuojant tai įmanoma)
         if senas["snaiges"] != self.n["snaiges"]:
             self.pritaikytas_sniegas()
