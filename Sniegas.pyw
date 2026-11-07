@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.33"
+VERSIJA = "12.34"
 DATA = "2026-11-07"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -1603,6 +1603,9 @@ def gauti_monitorius():
 # ---------------------------------------------------------------- piešimas: GDI ir tkinter drobė
 # Eglės piešiamos ta pačia funkcija ir ekrane (GDI), ir nustatymų peržiūroje (tkinter drobė).
 
+PRIEMONIU_RIBA = 300  # tiek GDI teptukų ir pieštukų laikoma podėlyje (Priemones.apriboti)
+
+
 class Priemones:
     """GDI pieštukai ir teptukai – sukuriami vieną kartą ir naudojami pakartotinai."""
 
@@ -1628,6 +1631,14 @@ class Priemones:
             gdi32.DeleteObject(h)
         self.piestukai.clear()
         self.teptukai.clear()
+
+    def apriboti(self, riba=PRIEMONIU_RIBA):
+        """Spalvų tarpinės reikšmės (senio lemputės, pereinamieji atspalviai) kuria vis naujus teptukus – be ribos
+        GDI objektų tik daugėtų (našumo teste 290 → 880). Viršijus ribą visi išmetami ir kuriami iš naujo.
+        Kviečiama tik kadro pradžioje: piešimo metu funkcijose laikomi teptukai turi likti galiojantys.
+        Į DC įstatytas objektas nesunaikinamas (DeleteObject tada nieko nedaro) – liktų tik vienas kitas."""
+        if len(self.teptukai) + len(self.piestukai) > riba:
+            self.naikinti()
 
 
 class GdiPiesejas:
@@ -10375,6 +10386,7 @@ class Sniegas:
                 t1 = time.perf_counter()
                 self._piesiama = True
                 try:
+                    self.g.apriboti()  # kadro pradžioje – ne piešimo metu
                     self.piesti()
                 finally:
                     self._piesiama = False
