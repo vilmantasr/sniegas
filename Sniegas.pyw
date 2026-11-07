@@ -59,8 +59,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.32"
-DATA = "2026-11-06"
+VERSIJA = "12.33"
+DATA = "2026-11-07"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -119,6 +119,16 @@ EN = frozendict({
     "Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji.":
         "In the stages (except “Your settings”), amounts, sizes, speeds and heights are the defaults.",
     "atstat.": "restore",
+    "pilni %": "full %",
+    "stač.": "rects",
+    "Atstat.: pilni % – kiek kadrų fonas atstatytas visas (viso buferio kopija), o ne tik pakitusiose vietose; stač. – "
+    "kiek stačiakampių atstatyta vidutiniškai (kai ne visas).":
+        "Restore: full % – share of frames where the whole background buffer was copied instead of only the changed "
+        "spots; rects – average number of rectangles restored (when not full).",
+    "Atstatymo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > viso kaina × 1,15 → visas):":
+        "Restore decision estimates at the end of each stage (rule: rects × one rect cost > full cost × 1.15 → full):",
+    "vieno stačiakampio {a} µs, viso buferio {b} ms, dalinis būtų ≈ {c} ms":
+        "one rectangle {a} µs, whole buffer {b} ms, partial would be ≈ {c} ms",
     "Kaina, palyginti su „{p}“:": "Cost compared with “{p}”:",
     "kadrą": "frame",
     "Sniegas vaizdo plokštei (prieš paslėptą programą): {w} W": "Snow for the graphics card (vs. program hidden): {w} W",
@@ -1485,6 +1495,40 @@ def lango_klase(hwnd):
     buf = ctypes.create_unicode_buffer(256)
     user32.GetClassNameW(hwnd, buf, 256)
     return buf.value
+
+
+DWMWA_WINDOW_CORNER_PREFERENCE = 33
+WINDOWS_11 = sys.platform == "win32" and sys.getwindowsversion().build >= 22000
+
+
+def lango_kampo_spindulys(hwnd):
+    """Windows 11 lango viršutinių kampų apvalinimo spindulys ekrano taškais (8 px × lango DPI / 96; programos
+    paprašytas „mažas“ – 4 px); 0 – kampai statūs (Windows 10, programa paprašė neapvalinti)."""
+    if not WINDOWS_11:
+        return 0
+    pref = ctypes.c_int(0)
+    try:
+        if dwmapi.DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ctypes.byref(pref), 4) != 0:
+            pref.value = 0
+    except Exception:
+        pref.value = 0
+    if pref.value == 1:  # DWMWCP_DONOTROUND
+        return 0
+    try:
+        dpi = user32.GetDpiForWindow(hwnd) or 96
+    except Exception:
+        dpi = 96
+    return round((4 if pref.value == 3 else 8) * dpi / 96)  # 3 – DWMWCP_ROUNDSMALL
+
+
+def lango_remelio_storis(hwnd):
+    """Lango viršutinio rėmelio storis ekrano taškais: 1 px × mastelis (175 % – 2 eilutės, patikrinta). Sniegas
+    guli ant lango turinio, o rėmelį uždengia – kitaip jis matosi tamsia linija po sniegu."""
+    try:
+        dpi = user32.GetDpiForWindow(hwnd) or 96
+    except Exception:
+        dpi = 96
+    return max(1, int(dpi / 96 + 0.5))
 
 
 def lango_staciakampis(hwnd):
@@ -5823,6 +5867,7 @@ class Sniegas:
         self.b_fizika = self.b_buferis = self.b_ekranas = 0.0  # kadro laiko skaidinys (būsenos eilutei)
         self.b_atstatymas = 0.0
         self._atstatymo_ms = 0.0  # paskutinio kadro fono atstatymas (kopijavimas iš statinio buferio), ms
+        self._atst_pilnas, self._atst_kiekis = False, 0  # paskutinio kadro: ar atstatytas visas buferis, stačiakampių
         self._statinio_ms = 0.0  # paskutinio kadro statinio sluoksnio perpiešimas (pusnys, kelias, eglės…), ms
         self.b_kopijos = 0
         self._ekrano_ms, self._ekrano_kv = 0.0, 0  # paskutinio kadro kopijavimas į ekraną: ms ir BitBlt kiekis
@@ -6889,11 +6934,16 @@ class Sniegas:
         priekyje, todėl prie jų sniego nekeičiame – jos nebeužpustomos."""
         self.zemes_profilis = kopu_profilis(len(self.aukstis), self.kopu_bangos, self.kopu_poslinkis, kalneliai=True)
 
-    def piesti_sluoksni(self, h, a, b, x0, pagrindas, slenkstis, konturas, spalvos=None):
+    def piesti_sluoksni(self, h, a, b, x0, pagrindas, slenkstis, konturas, spalvos=None, apacia=0, kampai=None):
         """Sniego sluoksnis su faktūra, kad nebūtų vientisas baltas blynas:
         – giliau sniegas melsvesnis (du klodai, jų ribos seka paviršių – matosi, kaip snigo sluoksniais);
         – šviesa iš viršaus kairės, todėl į dešinę besileidžiantys šlaitai – melsvame šešėlyje;
-        – viršuje – kontūras (jei įjungtas)."""
+        – viršuje – kontūras (jei įjungtas).
+        apacia – kiek eilučių sniegas tęsiasi žemiau pagrindo (paviršius nekinta). Languose nereikia: jų pagrindas
+        (st["t"]) jau yra po rėmeliu (lango_remelio_storis), tad sniegas rėmelį uždengia.
+        kampai – (spindulys, lango dešinys kraštas): Windows 11 lango kampai apvalūs, todėl sniegas ties lango
+        kraštais nebūna stačiai nukirptas ir nekybo ore virš apvalaus kampo – jo apačia apgaubia kampą, o viršutinis
+        išorinis kampas suapvalintas."""
         S = STULPELIS
         p = self.statinis
         baltas, klodai, seselis = spalvos or (SNIEGAS, SNIEGO_SLUOKSNIAI, SNIEGO_SESELIS)
@@ -6905,7 +6955,12 @@ class Sniegas:
                 virsus.append(x0 + q * S)
                 virsus.append(int(pagrindas - h[q]))
             virsus += (x0 + c2 * S, virsus[-1])  # paskutinis stulpelis irgi S pločio
-            p.poligonas([x0 + c1 * S, pagrindas] + virsus + [x0 + c2 * S, pagrindas], baltas)
+            apac = pagrindas + apacia
+            kairys, desinys = [x0 + c1 * S, apac], [x0 + c2 * S, apac]
+            R = kampai[0] if kampai else 0
+            if R > 0 and (c1 == 0 or c2 == nh):
+                kairys, desinys = self.sniegas_ant_kampu(virsus, c1 == 0, c2 == nh, x0, kampai[1], pagrindas, R, apac)
+            p.poligonas(kairys + virsus + desinys, baltas)
             # klodai: stulpeliai su vienodu viršumi sujungiami į vieną stačiakampį
             for dalis, spalva in ((0.42, klodai[0]), (0.18, klodai[1])):
                 pradzia, y0 = None, None
@@ -6913,7 +6968,7 @@ class Sniegas:
                     y = int(pagrindas - h[q] * dalis) if q < c2 and h[q] >= 5 * k else None
                     if y != y0:
                         if y0 is not None:
-                            p.staciakampis(x0 + pradzia * S, y0, x0 + q * S, pagrindas, spalva)
+                            p.staciakampis(x0 + pradzia * S, y0, x0 + q * S, apac, spalva)
                         pradzia, y0 = q, y
             # šešėlis: išlygintas nuolydis per ±3 stulpelius (pavieniai „laipteliai“ nešešėliuojami)
             # (kaimynai imami iš viso masyvo, ne iš perpiešiamos atkarpos – kitaip dalinis perpiešimas skirtųsi)
@@ -6926,6 +6981,44 @@ class Sniegas:
                         p.staciakampis(x0 + q * S, y, x0 + q * S + S, y + int(gylis) + 1, seselis)
             if konturas:
                 p.linija(virsus, konturas)
+
+    @staticmethod
+    def sniegas_ant_kampu(virsus, kaire, desine, L, Rx_langas, pagrindas, R, apac):
+        """Sniegas ant apvalaus lango kampo: viršutinis išorinis kampas suapvalinamas (virsus keičiamas vietoje),
+        apačia seka lango kampo lanką (sniegas jį apgaubia, o nekybo ore). Grąžina poligono pradžios ir pabaigos
+        taškus (kairėje – nuo vidaus į išorę, dešinėje – iš išorės į vidų)."""
+        def lankas(dx):  # kiek lango kraštas žemiau viršaus, kai nuo krašto – dx
+            return R - math.sqrt(max(0.0, R * R - (R - dx) ** 2)) if dx < R else 0.0
+        xs = virsus[0::2]
+        galai = []
+        if kaire:
+            galai.append((xs[0], 1))
+        if desine:
+            galai.append((xs[-1], -1))
+        for krastas, kryptis in galai:
+            i0 = 0 if kryptis > 0 else len(xs) - 1
+            storis = pagrindas - virsus[2 * i0 + 1]
+            r = min(float(R), storis * 0.8)
+            if r < 1:
+                continue
+            virsutine = virsus[2 * i0 + 1]
+            for i, x in enumerate(xs):
+                dx = (x - krastas) * kryptis
+                if 0 <= dx < r:
+                    y = virsutine + r - math.sqrt(max(0.0, r * r - (r - dx) ** 2))
+                    virsus[2 * i + 1] = max(virsus[2 * i + 1], int(round(y)))
+        kairys = [xs[0], apac]
+        if kaire:
+            kairys = []
+            for dx in range(int(R), -1, -1):
+                kairys += [L + dx, apac + int(round(lankas(dx)))]
+        desinys = [xs[-1], apac]
+        if desine:
+            desinys = []
+            Rx = xs[-1]
+            for x in range(Rx, Rx_langas - int(R) - 1, -1):
+                desinys += [x, apac + int(round(lankas(Rx_langas - x)))]
+        return kairys, desinys
 
     def egliu_kauke(self):
         """Žemės stulpeliai, kuriuos dengia eglės (bytearray; podėlyje, kol eglės nepasikeitė)."""
@@ -7012,7 +7105,9 @@ class Sniegas:
                     a = max(c1, (l - st["l"]) // S - 1)
                     bb = min(c2, (r - st["l"]) // S + 2)
                     if a < bb:
-                        self.piesti_sluoksni(st["h"], a, bb, st["l"], st["t"], 1.0, SNIEGO_KONTURAS)
+                        # st["t"] – po rėmeliu, todėl sniegas (iki jo, neįskaitytinai) uždengia ir rėmelį
+                        self.piesti_sluoksni(st["h"], a, bb, st["l"], st["t"], 1.0, SNIEGO_KONTURAS,
+                                             kampai=(st.get("R", 0), st["r"]))
             for c1, c2, pagrindas in self.zemes_ruozai:
                 a, bb = max(c1, a0), min(c2, b0)
                 if a < bb and pagrindas >= t and pagrindas - maks <= b:
@@ -10302,7 +10397,8 @@ class Sniegas:
                 darbas = langu_ms + (t2 - t0) * 1000  # be stabtelėjimo įrašymo į žurnalą – tai ne kadro darbas
                 matas = self.__dict__.get("testo_matas")
                 if matas is not None:  # našumo testas
-                    matas.append((darbas, fizika, atstatymas + buferis, ekranas, self._statinio_ms, atstatymas))
+                    matas.append((darbas, fizika, atstatymas + buferis, ekranas, self._statinio_ms, atstatymas,
+                                  self._atst_pilnas, self._atst_kiekis))
                 self.darbo_ms += darbas
                 self.d_kadrai += 1
                 self.d_darbas += darbas
@@ -10947,6 +11043,7 @@ class Sniegas:
                 for l, t, r, b in atstatyti:
                     BitBlt(fdc, l, t, r - l, b - t, sdc, l, t, SRCCOPY)
             self._atstatymo_ms = ms = (time.perf_counter() - a0) * 1000
+            self._atst_pilnas, self._atst_kiekis = pilnas_atst, len(atstatyti)  # našumo testui
             if pilnas_atst:
                 self.kaina_pilno_atst = ms if self.kaina_pilno_atst is None else self.kaina_pilno_atst * 0.7 + ms * 0.3
                 self.pilni_atst_is_eiles += 1
@@ -11466,6 +11563,28 @@ class Sniegas:
                     user32.SetWindowPos(hw, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
         Patarimas.perdanga_iskelta = True
 
+    def kampo_spindulys(self, hwnd, l, r, b):
+        """Lango kampo spindulys (lango_kampo_spindulys). Ir prie ekrano krašto pritemptų ar prilipdytų (Snap) langų
+        kampai Windows 11 apvalūs (patikrinta 26300); statūs – tik išdidintų, o jie sniego neturi."""
+        try:
+            R = lango_kampo_spindulys(hwnd)
+        except Exception:
+            R = 0
+        zinomi = self.__dict__.setdefault("_kampu_irasai", {})
+        if ZURNALAS.ijungtas and zinomi.get(hwnd) != R:  # kampų derinimui – kartą langui (ne kiekvieną pajudinimą)
+            zinomi[hwnd] = R
+            try:
+                wr = wintypes.RECT()
+                user32.GetWindowRect(hwnd, ctypes.byref(wr))
+                pref = ctypes.c_int(-1)
+                dwmapi.DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ctypes.byref(pref), 4)
+                ZURNALAS.rasyti(f"LANGAS {lango_klase(hwnd)}: dwm=({l},…,{r},{b}) virsus={lango_staciakampis(hwnd)} "
+                                f"GetWindowRect=({wr.left},{wr.top},{wr.right},{wr.bottom}) R={R} pref={pref.value} "
+                                f"dpi={user32.GetDpiForWindow(hwnd)} win11={WINDOWS_11}")
+            except Exception as e:
+                ZURNALAS.rasyti(f"LANGAS: derinimo įrašas nepavyko: {e!r}")
+        return R
+
     def perskaityti_langus(self):
         self.langai_judejo = False
         self.paskutinis_langu_skaitymas = time.perf_counter()
@@ -11492,17 +11611,21 @@ class Sniegas:
                                 break
                     if intervalai:
                         st = self.langai.get(hwnd)
-                        if st is not None and (st["l"], st["t"], st["r"]) != (cl, ct, cr):
+                        if st is not None and (st["l"], st["t"] - st.get("B", 0), st["r"]) != (cl, ct, cr):
                             self.nubyrinti(st)
                             self.langai.pop(hwnd, None)  # kad žemiau nebūtų nubyrintas antrą kartą
                             st = None
                         naujas = st is None
                         if naujas:
                             nst_ = max(1, (cr - cl) // S)
-                            st = {"l": cl, "t": ct, "r": cr, "h": [0.0] * nst_, "matomi": [], "nesvarus": False,
+                            # „t“ – lango turinio viršus (po rėmeliu): ant jo guli sniegas ir stovi seniai ir kt.
+                            B = lango_remelio_storis(hwnd)
+                            st = {"l": cl, "t": ct + B, "B": B, "r": cr, "h": [0.0] * nst_, "matomi": [], "nesvarus": False,
                                   "profilis": kopu_profilis(nst_, kopu_bangos(random, ((90 * self.k, 0.22),
-                                                                                       (35 * self.k, 0.12))))}
-                        st["sritis"] = (cl - 2, ct - int(maks_l) - 4, cr + 2, ct + 1)
+                                                                                       (35 * self.k, 0.12)))),
+                                  "R": self.kampo_spindulys(hwnd, l, r, b)}
+                        # apačioje – ir apvalinti kampai, kuriuos sniegas apgaubia (piesti_sluoksni)
+                        st["sritis"] = (cl - 2, st["t"] - int(maks_l) - 4, cr + 2, st["t"] + st.get("R", 0) + 2)
                         h = st["h"]
                         nst = len(h)
                         matomi = []
@@ -11513,7 +11636,7 @@ class Sniegas:
                             if c2 - c1 >= 4:
                                 matomi.append((c1, c2))
                                 kauke[c1:c2] = b"\x01" * (c2 - c1)
-                                segs.append((ct, cl + c1 * S, cl + c2 * S, h, cl, st))
+                                segs.append((st["t"], cl + c1 * S, cl + c2 * S, h, cl, st))
                         if matomi:
                             if naujas or matomi != st["matomi"]:
                                 for j in range(nst):
@@ -11796,6 +11919,10 @@ class Sniegas:
             "fizika": vid([k[1] for k in kadrai]), "piesimas": vid([k[2] for k in kadrai]),
             "ekranas": vid([k[3] for k in kadrai]),
             "statinis": vid([k[4] for k in kadrai]), "atstatymas": vid([k[5] for k in kadrai]),
+            # atstatymo sprendimas: kiek kadrų – visas buferis; kiek stačiakampių (kai dalinis); įverčiai pabaigoje
+            "pilni": vid([100.0 * k[6] for k in kadrai]), "stac": vid([k[7] for k in kadrai if not k[6]]),
+            "kaina_st": self.kaina_atstatymo * 1000, "kaina_pil": self.kaina_pilno_atst,
+            "stac_visi": vid([k[7] for k in kadrai]),
             "cpu": (b[3] - cpu0) / trukme * 100 if b and cpu0 is not None else None,
             "w": vid([g[0] for g in gpu]), "mhz": vid([g[1] for g in gpu])})
         self.testo_etapas(i + 1)
@@ -11843,16 +11970,18 @@ class Sniegas:
                    a=int(NASUMO_ISIBEGEJIMAS), b=int(NASUMO_MATAVIMAS)),
                T("Piešimas = statinis (pusnų, kelio, eglių perpiešimas) + atstat. (fono atstatymas) + judantys "
                  "objektai."),
+               T("Atstat.: pilni % – kiek kadrų fonas atstatytas visas (viso buferio kopija), o ne tik pakitusiose "
+                 "vietose; stač. – kiek stačiakampių atstatyta vidutiniškai (kai ne visas)."),
                T("Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji."), ""]
         plotis = max(len(r["pav"]) for r in rez) + 2 if rez else 20
-        plociai = (6, 7, 6, 7, 8, 8, 8, 8, 6, 6, 5)
-        antr = ("k/s", T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atstat."), T("ekranas"),
-                "CPU %", "GPU W", "MHz")
+        plociai = (6, 7, 6, 7, 8, 8, 8, 7, 6, 8, 6, 6, 5)
+        antr = ("k/s", T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atstat."), T("pilni %"),
+                T("stač."), T("ekranas"), "CPU %", "GPU W", "MHz")
         eil.append(f"{T('Etapas'):<{plotis}}" + " ".join(f"{a:>{w}}" for a, w in zip(antr, plociai)))
         for r in rez:
             reiksmes = (f(r["ks"], ".1f"), f(r["darbas"], ".2f"), f(r["p95"], ".1f"), f(r["fizika"], ".2f"),
                         f(r["piesimas"], ".2f"), f(r.get("statinis"), ".2f"), f(r.get("atstatymas"), ".2f"),
-                        f(r["ekranas"], ".2f"), f(r["cpu"], ".0f"), f(r["w"], ".1f"),
+                        f(r.get("pilni"), ".0f"), f(r.get("stac"), ".0f"), f(r["ekranas"], ".2f"), f(r["cpu"], ".0f"), f(r["w"], ".1f"),
                         f(r["mhz"], ".0f"))
             eil.append(f"{r['pav']:<{plotis}}" + " ".join(f"{v:>{w}}" for v, w in zip(reiksmes, plociai)))
         if len(rez) > 2:
@@ -11865,6 +11994,17 @@ class Sniegas:
             if rez[0]["w"] is not None and baze["w"] is not None:
                 eil.append("  " + T("Sniegas vaizdo plokštei (prieš paslėptą programą): {w} W").format(
                     w=f(baze["w"] - rez[0]["w"], "+.1f")))
+        # kodėl pasirinktas viso buferio / dalinis atstatymas – įverčiai, kuriais remiasi sprendimas
+        if any(r.get("kaina_pil") is not None for r in rez[1:]):
+            eil += ["", T("Atstatymo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > "
+                          "viso kaina × 1,15 → visas):")]
+            for r in rez[1:]:
+                if r.get("kaina_pil") is None or r.get("stac_visi") is None:
+                    continue
+                eil.append(f"  {r['pav']:<{plotis}}" + T("vieno stačiakampio {a} µs, viso buferio {b} ms, dalinis "
+                                                         "būtų ≈ {c} ms").format(
+                    a=f(r["kaina_st"], ".1f"), b=f(r["kaina_pil"], ".2f"),
+                    c=f(r["stac_visi"] * r["kaina_st"] / 1000, ".2f")))
         return "\n".join(eil) + "\n"
 
     def profiliuoti(self):
