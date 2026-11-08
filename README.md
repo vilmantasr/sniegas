@@ -55,7 +55,7 @@ Paruoštas `Sniegas.exe` bus aplanke `dist`.
 
 - Autorius: Vilmantas Ramonas
 - Testuotojas: Jonas Ramonas
-- Sukurta su Claude (Anthropic) ir Google Gemini pagalba
+- Sukurta padedant „Claude“ („Anthropic“) ir „Google Gemini“
 
 ## Licencija
 

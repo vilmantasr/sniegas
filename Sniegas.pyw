@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.36"
+VERSIJA = "12.37"
 DATA = "2026-11-08"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -83,17 +83,17 @@ def T(tekstas):
 
 
 EN = frozendict({
-    "Našumo testas truks ~{m} min: programa paeiliui įjungs įvairius nustatymus ir matuos, kiek jie kainuoja. Tuo metu geriau nieko nedaryti kompiuteriu. Nustatymų langas bus paslėptas, o jūsų nustatymai po testo grąžinami. Rezultatai bus įrašyti čia:":
-        "The performance test takes ~{m} min: the program switches through various settings and measures what they cost. Better not to use the computer meanwhile. The settings window will be hidden and your settings restored afterwards. Results will be saved here:",
+    "Našumo testas truks ~{m} min: programa paeiliui įjungs įvairius nustatymus ir matuos, kiek jie kainuoja. Tuo metu geriau nieko nedaryti kompiuteriu. Nustatymų langas bus paslėptas, o jūsų nustatymai po testo bus grąžinti. Rezultatai bus įrašyti čia:":
+        "The performance test takes ~{m} min: the program switches through various settings and measures what they cost. Better not to use the computer meanwhile. The settings window will be hidden and your settings restored afterward. Results will be saved here:",
     "Pradėti?": "Start?",
     "Programa paslėpta (bazė)": "Program hidden (baseline)",
     "Programa paslėpta (bazė, pabaigoje)": "Program hidden (baseline, at the end)",
     "Bazės (pradžioje ir pabaigoje) skiriasi {d} W – vaizdo plokštė testo pradžioje dar nebuvo nusiraminusi; imama mažesnioji.":
         "The baselines (start and end) differ by {d} W – the graphics card had not yet settled at the start; the lower one is used.",
     "Jūsų nustatymai": "Your settings",
-    "Tik sniegas, 60 k/s": "Snow only, 60 fps",
-    "Tik sniegas, 30 k/s": "Snow only, 30 fps",
-    "Tik sniegas, 60 k/s, dalinis kopijavimas": "Snow only, 60 fps, partial copying",
+    "Tik sniegas, 60 kadr./s": "Snow only, 60 fps",
+    "Tik sniegas, 30 kadr./s": "Snow only, 30 fps",
+    "Tik sniegas, 60 kadr./s, dalinis kopijavimas": "Snow only, 60 fps, partial copying",
     "+ glotnios snaigės": "+ smooth flakes",
     "+ eglės": "+ trees",
     "+ girliandos": "+ light strings",
@@ -107,7 +107,7 @@ EN = frozendict({
     "nežinoma (galia matuojama tik NVIDIA su nvidia-smi)": "unknown (power is measured only on NVIDIA with nvidia-smi)",
     "Kiekvienas etapas: {a} s įsibėgėjimas, {b} s matavimas. Kadro darbas – ms per kadrą (vidurkis ir 95 % kadrų ne ilgiau), CPU – viso proceso, % vieno branduolio.":
         "Each stage: {a} s warm-up, {b} s measurement. Frame work – ms per frame (average and the 95th percentile), CPU – whole process, % of one core.",
-    "Piešimas = statinis (pusnų, kelio, eglių perpiešimas) + atstat. (fono atstatymas) + judantys objektai.":
+    "Piešimas = statinis (pusnių, kelio, eglių perpiešimas) + atk. (fono atkūrimas) + judantys objektai.":
         "Drawing = static (redrawing drifts, road, trees) + restore (background restore) + moving objects.",
     "Etapas": "Stage",
     "darbas": "work",
@@ -117,20 +117,20 @@ EN = frozendict({
     "statinis": "static",
     "Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji.":
         "In the stages (except “Your settings”), amounts, sizes, speeds and heights are the defaults.",
-    "atstat.": "restore",
+    "atk.": "restore",
     "pilni %": "full %",
     "stač.": "rects",
-    "Atstat.: pilni % – kiek kadrų fonas atstatytas visas (viso buferio kopija), o ne tik pakitusiose vietose; stač. – "
-    "kiek stačiakampių atstatyta vidutiniškai (kai ne visas).":
+    "Atk.: pilni % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
+    "vietose; stač. – kiek stačiakampių atkurta vidutiniškai (kai ne visas).":
         "Restore: full % – share of frames where the whole background buffer was copied instead of only the changed "
         "spots; rects – average number of rectangles restored (when not full).",
-    "Atstatymo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > viso kaina × 1,15 → visas):":
+    "Atkūrimo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > viso kaina × 1,15 → visas):":
         "Restore decision estimates at the end of each stage (rule: rects × one rect cost > full cost × 1.15 → full):",
     "vieno stačiakampio {a} µs, viso buferio {b} ms, dalinis būtų ≈ {c} ms":
         "one rectangle {a} µs, whole buffer {b} ms, partial would be ≈ {c} ms",
     "Kaina, palyginti su „{p}“:": "Cost compared with “{p}”:",
     "kadrą": "frame",
-    "Sniegas vaizdo plokštei ({p}, prieš paslėptą programą): {w} W": "Snow for the graphics card ({p}, vs. program hidden): {w} W",
+    "Sniegas vaizdo plokštei ({p}, palyginti su paslėpta programa): {w} W": "Graphics card power for snow ({p}, vs. program hidden): {w} W",
     "Programa bus paleista iš naujo su našumo profiliuotuvu. Naudokite ją kaip įprastai 1–3 minutes, tada išjunkite (piktograma prie laikrodžio → „Išjungti“). Profilis bus įrašytas čia:":
         "The program will restart with the performance profiler. Use it as usual for 1–3 minutes, then quit it (icon next to the clock → “Exit”). The profile will be saved here:",
     "Tęsti?": "Continue?",
@@ -140,8 +140,8 @@ EN = frozendict({
     "Šventė": "Celebration",
     "Darbui": "For work",
     "Pritaikyti paruoštuką „{p}“?": "Apply the “{p}” preset?",
-    "Keičiami tik šio paruoštuko nustatymai, kiti lieka tokie, kokie yra.": "Only this preset's settings change; the rest stay as they are.",
-    "Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka tavo.": "Ready-made setting sets. Each changes only its own settings – the rest stay yours.",
+    "Keičiami tik šio paruoštuko nustatymai, kiti lieka tokie, kokie yra.": "Only this preset’s settings change; the rest stay as they are.",
+    "Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka nepakeisti.": "Ready-made presets. Each changes only its own settings – the rest stay unchanged.",
     "Paruoštukai": "Presets",
     "Bumbuliukai pasirodys po fejerverkų": "Baubles return after the fireworks",
     "Numatytieji nustatymai": "Default settings",
@@ -161,9 +161,9 @@ EN = frozendict({
     "Spustelėkite – licencijos tekstas.":
         "You may use, change and share it freely; changed versions must also be open source under the same license. "
         "Click to open the license text.",
-    "Sukurta su Claude (Anthropic) ir Google Gemini pagalba": "Made with the help of Claude (Anthropic) and Google Gemini",
+    "Sukurta padedant „Claude“ („Anthropic“) ir „Google Gemini“": "Made with the help of Claude (Anthropic) and Google Gemini",
     "Numatytasis": "Default",
-    "Grąžina visus nustatymus į numatytuosius (kalba lieka).": "Resets all settings to defaults (language stays).",
+    "Atkuria visus numatytuosius nustatymus (kalba lieka).": "Resets all settings to defaults (language stays).",
     "Nėra nė vieno rašto ar spalvos – bumbuliukų nebus": "No pattern or color selected – no baubles",
     "Vidurinis pelės mygtukas – paslėpti / rodyti": "Middle mouse button – hide / show",
     # antraštė, mygtukai
@@ -197,14 +197,14 @@ EN = frozendict({
         "Double-click the label for the defaults ({v}, the usual mix of kinds)",
     "Lemputės ant šluotos": "Lights on the broom",
     "Mirksi": "Blinking",
-    "Lėtai įsižiebia ir užgęsta": "Slowly fade in and out",
-    "Bėga iš apačios į viršų": "Running upwards",
-    "Šviečia nemirksėdamos": "Steady",
+    "Lėtai įsižiebia": "Slow fade",
+    "Bėga aukštyn": "Chase upward",
+    "Nemirksi": "Steady",
     "iš {m}": "of {m}",
-    "Bendras snaigių kiekis. Pakeitus jį čia, kiekis atsitiktinai paskirstomas po rūšis (kiek kurios – matosi "
-    "rūšių eilutėse aukščiau). Vėl pakeitus po pertraukos – parenkamas naujas atsitiktinis rūšių mišinys.":
-        "Total number of flakes. When changed here, it is split randomly among the kinds (each kind's count is "
-        "shown in its row above). Changing it again after a pause picks a new random mix.",
+    "Bendras snaigių kiekis. Pakeitus jį čia, kiekis atsitiktinai paskirstomas rūšims (kiek kurios – "
+    "matyti rūšių eilutėse aukščiau). Vėl pakeitus po pertraukos – parenkamas naujas atsitiktinis rūšių "
+    "mišinys.":
+        "Total number of flakes. When changed here, it is split randomly among the kinds (each kind’s count is shown in its row above). Changing it again after a pause picks a new random mix.",
     "Dydis, %": "Size, %",
     "Kritimo greitis, %": "Fall speed, %",
     "Stilius": "Style",
@@ -217,13 +217,13 @@ EN = frozendict({
         "windows would be invisible.",
     "Sniegas kartais sužiba": "Snow sparkles now and then",
     "Glotnus judėjimas": "Smooth motion",
-    "Krentančios snaigės glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. Išjungus – kaip anksčiau. "
-    "Pixel art stiliui netaikoma.":
+    "Krentančios snaigės būna glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. Išjungus – "
+    "kaip anksčiau. „Pixel art“ stiliui netaikoma.":
         "Falling flakes have smooth edges and move evenly instead of in one-pixel steps. When off – as before. "
         "Does not apply to the Pixel art style.",
-    "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – kelias sekundes, "
-    "lėtesniame kompiuteryje iki ~20 s). Senesniuose kompiuteriuose, ypač su didelės raiškos ekranu (2560×1440 ir "
-    "daugiau), jis gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite.":
+    "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
+    "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesnis kompiuteris, ypač su didelės raiškos "
+    "ekranu (2560×1440 ir daugiau), gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite.":
         "Puts more load on the computer: when turned on, flakes appear gradually while their images are created (a few "
         "seconds, up to ~20 s on a slower computer). Older computers, especially with a high-resolution screen "
         "(2560×1440 and above), may not keep up – the snow starts to stutter. In that case, better turn it off.",
@@ -251,8 +251,7 @@ EN = frozendict({
         "(on a 1920×1080 screen; proportionally more on larger ones), 3 – about 36 and so on; distant ones – slower.",
     "Ramiu metu vėjas kas 5–12 s pasirenkamas iš naujo: nuo 0 iki 0,7 šios reikšmės (kintančios krypties – kartais "
     "trumpam ir atgal). Gūsio metu – tiek, kiek „Gūsio stiprumas“.":
-        "In calm periods the wind is re-chosen every 5–12 s: from 0 to 0.7 of this value (with changing direction – "
-        "sometimes briefly backwards). During a gust – as much as “Gust strength”.",
+        "In calm periods the wind changes every 5–12 s: from 0 to 0.7 of this value (with changing direction – sometimes briefly backward). During a gust – as much as “Gust strength”.",
     "Peržiūroje – dabartinis vėjas: kryptis, stiprumas ir ar dabar ramu, gūsis, ar jis rimsta.":
         "The preview shows the current wind: direction, strength and whether it is calm, gusting or easing.",
     "Sniego kaupimasis": "Snow accumulation",
@@ -262,35 +261,34 @@ EN = frozendict({
     "Nuvalyti sniegą": "Clear snow",
     "Didžiausias aukštis, px": "Max height, px",
     "Visi šios skilties nustatymai – numatytieji.": "All settings in this section are at their defaults.",
-    "Spustelėkite (arba Tarpas), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.":
+    "Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.":
         "Click (or Space) to toggle. Right-click – only this one / all again.",
     "Sustabdyti": "Stop",
     "Dukart spustelėkite – išvalyti klaidą ir skaitiklius.": "Double-click to clear the error and counters.",
-    "Grąžinti šios skilties nustatymus į numatytuosius (įjungimo varnelė nekeičiama).":
-        "Reset this section's settings to defaults (the on/off checkbox is not changed).",
-    "Grąžinti skilties „{s}“ nustatymus į numatytuosius?": "Reset the “{s}” section's settings to defaults?",
+    "Atkurti šios skilties numatytuosius nustatymus (įjungimo varnelė nekeičiama).":
+        "Reset this section’s settings to defaults (the on/off checkbox is not changed).",
+    "Atkurti skilties „{s}“ numatytuosius nustatymus?": "Reset the “{s}” section’s settings to defaults?",
     "Nustatymai": "Settings",
     "Eksportuoti…": "Export…",
     "Importuoti…": "Import…",
-    "Išsaugoti visus nustatymus į bylą (pvz., perkelti į kitą kompiuterį).":
-        "Save all settings to a file (e.g. to move them to another computer).",
-    "Įkelti nustatymus iš bylos. Kalba lieka dabartinė; byloje nesantys nustatymai – numatytieji.":
+    "Išsaugoti visus nustatymus į rinkmeną (pvz., norint perkelti į kitą kompiuterį).":
+        "Save all settings to a file (e.g., to move them to another computer).",
+    "Įkelti nustatymus iš rinkmenos. Kalba lieka dabartinė; rinkmenoje nesantys nustatymai – numatytieji.":
         "Load settings from a file. The language stays as it is; settings missing from the file get defaults.",
-    "Nustatymų byla": "Settings file",
+    "Nustatymų rinkmena": "Settings file",
     "Nustatymai išsaugoti:": "Settings saved:",
     "Nepavyko išsaugoti:": "Could not save:",
-    "Nepavyko perskaityti nustatymų bylos:": "Could not read the settings file:",
-    "Įkelti nustatymus iš šios bylos? Dabartiniai nustatymai bus pakeisti.":
+    "Nepavyko perskaityti nustatymų rinkmenos:": "Could not read the settings file:",
+    "Įkelti nustatymus iš šios rinkmenos? Dabartiniai nustatymai bus pakeisti.":
         "Load settings from this file? The current settings will be replaced.",
-    "Byloje įjungtos išplėstos ribos – jos leidžia daug didesnius kiekius ir dydžius, kompiuteris gali strigti."
-    "\n\nĮjungti? (Ne – reikšmės bus apribotos įprastomis ribomis.)":
-        "The file has extended limits turned on – they allow much larger amounts and sizes, the computer may lag."
-        "\n\nTurn them on? (No – values will be clamped to the normal limits.)",
+    "Rinkmenoje įjungtos išplėstos ribos – jos leidžia daug didesnius kiekius ir dydžius, kompiuteris "
+    "gali strigti.\n\nĮjungti? (Ne – reikšmės bus apribotos įprastomis ribomis.)":
+        "The file has extended limits turned on – they allow much larger amounts and sizes, so the computer may lag.\n\nTurn them on? (No – values will be clamped to the normal limits.)",
     "Kita": "Other",
     "Diagnostika": "Diagnostics",
     "Kadrų per sekundę": "Frames per second",
     "Slėpti, kai programa per visą ekraną": "Hide when an app is full screen",
-    "Paleisti kartu su Windows": "Start with Windows",
+    "Paleisti kartu su „Windows“": "Start with Windows",
     "Išjungimo mygtukas": "Close button",
     "Klausti": "Ask",
     "Išjungti programą": "Exit program",
@@ -325,18 +323,18 @@ EN = frozendict({
     "0 – visai nepastumiami (rieda tik nuokalnėmis ir pučiant vėjui).": "0 – never nudged (they roll only on slopes and in wind).",
     "Įprastas vėjas pučia iki maždaug 0,7 savo reikšmės (dabar – iki {v}); gūsis – maždaug tiek, kiek nustatyta čia.":
         "Normal wind blows up to about 0.7 of its value (now up to {v}); a gust is about as strong as set here.",
-    "Šiame ekrane su dabartiniu dydžiu telpa iki {n} lempučių – daugiau nebus.":
+    "Esant dabartiniam dydžiui, šiame ekrane telpa iki {n} lempučių – daugiau nebus.":
         "On this screen, at the current size, up to {n} bulbs fit – no more will be shown.",
-    "⚠ Gūsis ({g}) silpnesnis už įprastą vėją, kuris pučia iki {v}: gūsiai beveik nesijaus, o stipriai pučiant "
-    "gūsis vėją net susilpnina. Padidinkite „Gūsio stiprumą“ bent iki {n} arba sumažinkite „Įprastą vėją“.":
+    "⚠ Gūsis ({g}) silpnesnis už įprastą vėją, kuris pučia iki {v}: gūsiai bus beveik nejuntami, o "
+    "stipriai pučiant gūsis vėją net susilpnina. Padidinkite „Gūsio stiprumą“ bent iki {n} arba "
+    "sumažinkite „Įprastą vėją“.":
         "⚠ The gust ({g}) is weaker than the normal wind, which blows up to {v}: gusts will hardly be felt, and in "
         "strong wind a gust even weakens it. Raise “Gust strength” to at least {n} or lower “Normal wind”.",
-    "⚠ Nustatyta {k} lempučių, bet šiame ekrane su dydžiu {d} % telpa tik {n} – daugiau nerodoma. "
+    "⚠ Nustatyta {k} lempučių, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
     "Sumažinkite dydį arba lempučių kiekį.":
-        "⚠ {k} bulbs are set, but at size {d} % only {n} fit on this screen – the rest are not shown. "
-        "Reduce the size or the number of bulbs.",
-    "⚠ Šou ({t} s) ne trumpesnis už tarpą tarp jų ({m} min): kol vyksta šou, kitas praleidžiamas – "
-    "šou bus rečiau, nei nustatyta.":
+        "⚠ {k} bulbs are set, but at size {d}% only {n} fit on this screen – the rest are not shown. Reduce the size or the number of bulbs.",
+    "⚠ Šou ({t} s) ne trumpesnis už tarpą tarp šou ({m} min): kol vyksta vienas, kitas praleidžiamas – "
+    "šou vyks rečiau, nei nustatyta.":
         "⚠ The show ({t} s) is not shorter than the gap between shows ({m} min): while a show runs the next one is "
         "skipped – shows will be less frequent than set.",
     "Tai vienintelis pasirinktas – bent vienas turi likti.": "This is the only one selected – at least one must stay.",
@@ -364,23 +362,23 @@ EN = frozendict({
     "Sniegas ant šakų": "Snow on branches",
     "Eglių plotis": "Tree width",
     "Taškais 1920×1080 ekrane; didesniame – proporcingai daugiau (šiame ekrane ×{k}, t. y. iki {px} px).":
-        "In pixels on a 1920×1080 screen; proportionally more on larger ones (×{k} on this screen, i.e. up to {px} px).",
+        "In pixels on a 1920×1080 screen; proportionally more on larger ones (×{k} on this screen, i.e., up to {px} px).",
     "Įvairus": "Mixed",
     "Be siaurų": "No narrow",
     "Vienodas": "Uniform",
     "Siauros, vidutinės ir plačios eglės (siauriausios – {p} % įprasto pločio).":
-        "Narrow, medium and wide trees (the narrowest are {p} % of the normal width).",
+        "Narrow, medium and wide trees (the narrowest are {p}% of the normal width).",
     "Vidutinės ir plačios eglės (siauriausios – {p} % įprasto pločio).":
-        "Medium and wide trees (the narrowest are {p} % of the normal width).",
+        "Medium and wide trees (the narrowest are {p}% of the normal width).",
     "Visos eglės – įprasto pločio.": "All trees have the normal width.",
     "Išdėlioti iš naujo": "Rearrange",
-    "mastelis {p}": "scale {p}",
+    "mastelis {p} %": "scale {p}%",
     # išjungimo klausimas, dėklas
     "Ką daryti paspaudus išjungimo mygtuką?": "What should the close button do?",
     "Sistemos dėkle sniegas veikia toliau – nustatymus atversite\nspustelėję piktogramą prie laikrodžio.":
         "In the system tray the snow keeps falling – open the settings\nby clicking the icon next to the clock.",
     "Atšaukti": "Cancel",
-    "Daugiau neklausti (pakeisti galima skiltyje „Kita“)": "Don't ask again (can be changed under “Other”)",
+    "Daugiau neklausti (pakeisti galima skiltyje „Kita“)": "Don’t ask again (can be changed under “Other”)",
     "Sniegas veikia toliau. Nustatymai ir išjungimas – per piktogramą prie laikrodžio.":
         "Sniegas keeps running. Settings and exit – via the icon next to the clock.",
     # būsena
@@ -388,20 +386,20 @@ EN = frozendict({
     "Pristabdyta – programa per visą ekraną.": "Paused – an app is full screen.",
     "Snaigių: {a}   Kadrų per sek.: {b}   Kadrui: {c} ms   Langų su sniegu: {d}":
         "Flakes: {a}   FPS: {b}   Per frame: {c} ms   Windows with snow: {d}",
-    "   Fizika / atstatymas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)":
+    "   Fizika / atkūrimas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)":
         "   Physics / restore / draw / screen: {a} / {r} / {b} / {c} ms ({n} blits)",
-    "   Windows trynė vaizdą: {n} k.": "   Windows erased the image: {n}×",
+    "   „Windows“ trynė vaizdą: {n} k.": "   Windows erased the image: {n}×",
     "   Ekranai keitėsi: {n} k.": "   Display changes: {n}×",
     "   Klaida: {e}": "   Error: {e}",
     # pranešimai
-    "Nepavyko perskaityti nustatymų bylos – naudojami numatytieji.": "Could not read the settings file – using defaults.",
-    "Kai kurie nustatymai byloje netinkami – jiems naudojamos numatytosios reikšmės:":
+    "Nepavyko perskaityti nustatymų rinkmenos – naudojami numatytieji.": "Could not read the settings file – using defaults.",
+    "Kai kurie nustatymai rinkmenoje netinkami – jiems naudojamos numatytosios reikšmės:":
         "Some settings in the file are invalid – defaults are used for them:",
     "Nepavyko išsaugoti nustatymų. Gal programos aplankas tik skaitymui?":
         "Could not save the settings. Is the program folder read-only?",
     "Įvyko klaida, bet programa bando dirbti toliau. Jei sniegas elgiasi keistai – paleiskite programą iš naujo.":
         "An error occurred, but the program keeps running. If the snow behaves strangely, restart the program.",
-    "Grąžinti visus nustatymus į numatytuosius?": "Restore all settings to defaults?",
+    "Atkurti visus numatytuosius nustatymus?": "Restore all settings to defaults?",
     "Nepavyko pakeisti automatinio paleidimo nustatymo.": "Could not change the startup setting.",
     "„Sniegas“ jau veikia – jo piktogramą rasite prie laikrodžio.":
         "“Sniegas” is already running – its icon is next to the clock.",
@@ -417,7 +415,7 @@ EN = frozendict({
         "Wind, gusts and swirls. When off – calm air: flakes fall and only sway.",
     "Sniegas kaupiasi ekrano apačioje ir (ar) ant langų. Išjungus – sukauptas sniegas dingsta ir nebesikaupia.":
         "Snow piles up at the bottom of the screen and/or on windows. When off – the piled snow disappears and no more piles up.",
-    "Pixel art eglutės ekranų apačioje – su lemputėmis ir papuošimais.":
+    "„Pixel art“ eglutės ekranų apačioje – su lemputėmis ir papuošimais.":
         "Pixel art trees along the bottom of the screens – with lights and ornaments.",
     "Retro lempučių girliandos ekrano kairėje ir dešinėje – nuo viršaus iki užduočių juostos.":
         "Retro bulb strings on the left and right of the screen – from the top down to the taskbar.",
@@ -434,21 +432,21 @@ EN = frozendict({
     "Sniegas kaupiasi ant atidarytų langų viršutinio krašto.":
         "Snow piles up on the top edge of open windows.",
     "Kai aktyvi programa užima visą ekraną (žaidimas, filmas, pristatymas), sniegas paslepiamas. Išdidinti įprasti langai – ne.":
-        "When the active program fills the whole screen (a game, a film, a presentation), the snow is hidden. Ordinary maximized windows – not.",
+        "When the active program fills the whole screen (a game, a film, a presentation), the snow is hidden. Ordinary maximized windows are not affected.",
     "Rašo techninį žurnalą sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos. „Atverti“ – parodo žurnalą.":
-        "Writes a technical log sniegas_diagnostika.log (frame times, errors) – for tracking down problems. “Open” – shows the log.",
+        "Writes a technical log sniegas_diagnostika.log (frame times, errors) – for tracking down problems. “Open” shows the log.",
     "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.":
         "Flakes spin as they fall. When off – they do not spin, only tilt slightly as they sway.",
     "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.":
         "Now and then a sparkle glints on the piled snow and on falling flakes.",
-    "Įprastos – glotnios snaigės; Pixel art – stambiais taškais, kaip senuose žaidimuose.":
+    "Įprastos – glotnios snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.":
         "Classic – smooth flakes; Pixel art – chunky pixels, like in old games.",
     "Kintanti – vėjas kartais pasikeičia ir trumpam papučia atgal; „Į dešinę“ ir „Į kairę“ – visada ta kryptimi.":
         "Changing – the wind sometimes turns and briefly blows back; “To the right” and “To the left” – always that way.",
     "Šviečiančių lempučių stikle kartais blyksteli atspindys.":
         "A reflection now and then flashes in the glass of lit bulbs.",
     "Bumbuliukai rieda nuokalnėmis, juos stumia vėjas, kartais pašoka. Išjungus – stovi vietoje.":
-        "Baubles roll down slopes, the wind pushes them, sometimes they hop. When off – they stand still.",
+        "Baubles roll down slopes, the wind pushes them, and sometimes they hop. When off, they stand still.",
     "Kur būna bumbuliukai: tik ekrano apačioje arba ir ant langų viršaus (nuo krašto nurieda ir nukrenta).":
         "Where baubles are: only at the bottom of the screen, or also on top of windows (they roll off the edge and fall).",
     "Bumbuliukai kartais pradingsta ir atsiranda kitur. Kaip pradingsta – pažymėkite žemiau (kiekvieną kartą parenkamas vienas iš pažymėtų).":
@@ -476,15 +474,15 @@ EN = frozendict({
     "Numatytoji reikšmė – įjungta.": "Default value – on.",
     "Numatytoji reikšmė – išjungta.": "Default value – off.",
     "Numatytoji reikšmė – „{t}“.": "Default value – “{t}”.",
-    "Programa pasileidžia automatiškai prisijungus prie Windows.": "The program starts automatically when you sign in to Windows.",
+    "Programa paleidžiama automatiškai prisijungus prie „Windows“.": "The program starts automatically when you sign in to Windows.",
     "Vienas iš būdų, kaip bumbuliukas pradingsta (ir atitinkamai atsiranda). Parenkamas atsitiktinai iš pažymėtų.":
         "One of the ways a bauble vanishes (and reappears accordingly). Picked at random from the ticked ones.",
-    "⚠ Bent vienas pradingimo būdas turi likti (norint, kad nepradingtų – nuimkite varnelę viršuje).":
+    "⚠ Bent vienas pradingimo būdas turi likti (jei norite, kad nepradingtų, nuimkite varnelę viršuje).":
         "⚠ At least one way must stay ticked (to stop them vanishing – untick the box above).",
     "⚠ Reikia įjungti „Kaupti ant langų viršaus“ (skiltyje „Sniego kaupimasis“).":
         "⚠ Turn on “Pile up on top of windows” (in “Snow accumulation”) first.",
-    "⚠ Veikia tik kai įjungta „Tik stovi vietoje“.": "⚠ Only works when “Just stands still” is on.",
-    "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai Failų "
+    "⚠ Veikia, tik kai įjungta „Tik stovi vietoje“.": "⚠ Only works when “Just stands still” is on.",
+    "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai failų "
     "naršyklės langas su šiuo aplanku rodo jos paveikslėlį). Uždarykite to aplanko langą arba ištrinkite "
     "sniegas.ico ir paleiskite dar kartą.":
         "Could not overwrite the icon – most likely another program has it open (usually a File Explorer window "
@@ -502,7 +500,7 @@ EN = frozendict({
     "Kaip greitai sniegas kaupiasi: 100 – įprastai, 200 – dvigubai greičiau, 50 – perpus lėčiau.":
         "How fast snow piles up: 100 – normal, 200 – twice as fast, 50 – half as fast.",
     "Kaip stipriai oro sūkuriai suka snaiges – kaimyninės juda kartu, pučiant stipriau – ir sūkuriai stipresni. 0 – sūkurių nėra.":
-        "How strongly air swirls turn the flakes – neighbours move together; stronger wind – stronger swirls. 0 – no swirls.",
+        "How strongly air swirls turn the flakes – neighbors move together; stronger wind – stronger swirls. 0 – no swirls.",
     "Šou paleidžiamas kas tiek minučių, skaičiuojant nuo vidurnakčio (60 – kiekvienos valandos pradžioje, 30 – kas pusvalandį).":
         "A show starts every N minutes, counted from midnight (60 – at the start of every hour, 30 – every half hour).",
     "Šou trukmė sekundėmis.":
@@ -542,7 +540,7 @@ EN = frozendict({
                            "dots less. 0 – they fall straight down.",
     "Kaip stipriai kristalai krisdami tai sulėtėja, tai pagreitėja. 0 – krenta tolygiai.":
         "How much crystals alternately slow down and speed up as they fall. 0 – they fall steadily.",
-    "120 – tik 120 Hz ar greitesniam ekranui (60 Hz ekrane veiks kaip 60). Procesorius dirba maždaug 4 kartus daugiau nei su 30.":
+    "120 – tik 120 Hz ar greitesniam ekranui (60 Hz ekrane veiks kaip 60). Procesorius dirba maždaug 4 kartus daugiau nei pasirinkus 30.":
         "120 is only for 120 Hz or faster displays (on a 60 Hz display it works like 60). Uses about 4 times the CPU of 30.",
     "Išplėstos ribos leidžia nustatyti daug didesnius kiekius ir dydžius (ribos vis tiek lieka – kad programa "
     "neužstrigtų visai). Kompiuteris gali pradėti stipriai strigti, o nustatymų langas – lėtai reaguoti."
@@ -566,12 +564,12 @@ EN = frozendict({
     "Profilis": "Profile",
     "Paleisti…": "Run…",
     "Dar nėra.": "Not created yet.",
-    "Šios bylos dar nėra.": "This file does not exist yet.",
-    "Nepavyko atverti bylos.": "Could not open the file.",
+    "Šios rinkmenos dar nėra.": "This file does not exist yet.",
+    "Nepavyko atverti rinkmenos.": "Could not open the file.",
     "Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos.":
         "Technical log sniegas_diagnostika.log (frame times, errors) – for troubleshooting.",
-    "~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo grąžinami. Rezultatai – sniegas_nasumas.txt („Atverti“).":
-        "~6 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterwards. Results – sniegas_nasumas.txt (“Open”).",
+    "~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – sniegas_nasumas.txt („Atverti“).":
+        "~6 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterward. Results – sniegas_nasumas.txt (“Open”).",
     "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Rezultatai – sniegas_profilis.txt.":
         "Performance profile (Python 3.15+): the program restarts and records which of its parts take the most CPU time. Results – sniegas_profilis.txt.",
     "Našumo testas baigtas. Rezultatai – skiltyje „Diagnostika“ → „Atverti“.":
@@ -1050,7 +1048,7 @@ APRASAI = frozendict({
     "snaiges": "Krentančios snaigės. Žemiau – kiek ir kokių rūšių, kaip krenta ir atrodo.",
     "vejas_ijungtas": "Vėjas, gūsiai ir sūkuriai. Išjungus – oras ramus: snaigės krenta, tik svyruoja.",
     "kaupimasis": "Sniegas kaupiasi ekrano apačioje ir (ar) ant langų. Išjungus – sukauptas sniegas dingsta ir nebesikaupia.",
-    "egles": "Pixel art eglutės ekranų apačioje – su lemputėmis ir papuošimais.",
+    "egles": "„Pixel art“ eglutės ekranų apačioje – su lemputėmis ir papuošimais.",
     "girliandos": "Retro lempučių girliandos ekrano kairėje ir dešinėje – nuo viršaus iki užduočių juostos.",
     "fejerverkai": "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. ▶ antraštėje paleidžia ir išjungus.",
     "bumbulai": "Kalėdiniai bumbuliukai, riedantys sniegu ekrano apačioje (ir ant langų).",
@@ -1063,15 +1061,14 @@ APRASAI = frozendict({
     "snaiges_sukasi": "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.",
     "sniego_konturas": "Plona melsva linija sukaupto sniego viršuje. Ant langų ji būna visada – be jos sniegas ant baltų langų nesimatytų.",
     "sniegas_blizga": "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.",
-    "snaiges_glotnios": ("Krentančios snaigės glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. "
-                         "Išjungus – kaip anksčiau. Pixel art stiliui netaikoma.",
+    "snaiges_glotnios": ("Krentančios snaigės būna glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. Išjungus – "
+                         "kaip anksčiau. „Pixel art“ stiliui netaikoma.",
                          "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
-                         "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesniuose kompiuteriuose, ypač su "
-                         "didelės raiškos ekranu (2560×1440 ir daugiau), jis gali nebespėti – sniegas ima trūkčioti. "
-                         "Tada geriau išjunkite."),
+                         "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesnis kompiuteris, ypač su didelės raiškos "
+                         "ekranu (2560×1440 ir daugiau), gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite."),
     "glotniu_astrumas": "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų "
                         "snaigių. Pakeitus snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.",
-    "snaigiu_stilius": "Įprastos – glotnios snaigės; Pixel art – stambiais taškais, kaip senuose žaidimuose.",
+    "snaigiu_stilius": "Įprastos – glotnios snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.",
     "vejo_kryptis": "Kintanti – vėjas kartais pasikeičia ir trumpam papučia atgal; „Į dešinę“ ir „Į kairę“ – visada ta kryptimi.",
     "girliandu_atspindziai": "Šviečiančių lempučių stikle kartais blyksteli atspindys.",
     "bumbulu_juda": "Bumbuliukai rieda nuokalnėmis, juos stumia vėjas, kartais pašoka. Išjungus – stovi vietoje.",
@@ -5986,7 +5983,7 @@ class Sniegas:
                     duom[naujas] = duom.pop(senas)
         except Exception as e:
             if importuojama is not None:
-                messagebox.showerror(PAVADINIMAS, T("Nepavyko perskaityti nustatymų bylos:") + f"\n\n{byla}\n\n{e!r}")
+                messagebox.showerror(PAVADINIMAS, T("Nepavyko perskaityti nustatymų rinkmenos:") + f"\n\n{byla}\n\n{e!r}")
                 return None
             atsargine = ""
             if byla == NUSTATYMU_BYLA:  # sugadinta byla neperrašoma be pėdsakų – pasiliekama „.bad“ kopija
@@ -5995,7 +5992,7 @@ class Sniegas:
                     atsargine = f"\n\n→ {byla.name}.bad"
                 except OSError:
                     pass
-            messagebox.showwarning(PAVADINIMAS, T("Nepavyko perskaityti nustatymų bylos – naudojami numatytieji.")
+            messagebox.showwarning(PAVADINIMAS, T("Nepavyko perskaityti nustatymų rinkmenos – naudojami numatytieji.")
                                    + f"\n\n{byla}\n\n{e!r}{atsargine}")
             return n
         blogi = []
@@ -6046,7 +6043,7 @@ class Sniegas:
         if blogi:
             if importuojama is None:  # paleidžiant – jau vartotojo kalba (importuojant – dabartine sąsajos kalba)
                 nustatyti_kalba(n["kalba"])
-            messagebox.showwarning(PAVADINIMAS, T("Kai kurie nustatymai byloje netinkami – jiems naudojamos numatytosios reikšmės:")
+            messagebox.showwarning(PAVADINIMAS, T("Kai kurie nustatymai rinkmenoje netinkami – jiems naudojamos numatytosios reikšmės:")
                                    + f"\n{', '.join(blogi)}\n\n{byla}")
         return n
 
@@ -6849,20 +6846,20 @@ class Sniegas:
         """Kodėl nustatymas (dalinai) neveikia – tekstas patarimui; None – viskas gerai."""
         n = self.n
         if raktas == "gusio_stiprumas" and gusis_silpnas(n):
-            return T("⚠ Gūsis ({g}) silpnesnis už įprastą vėją, kuris pučia iki {v}: gūsiai beveik nesijaus, o stipriai "
-                     "pučiant gūsis vėją net susilpnina. Padidinkite „Gūsio stiprumą“ bent iki {n} arba sumažinkite "
-                     "„Įprastą vėją“.").format(g=n["gusio_stiprumas"], v=skaicius_tekstu(0.7 * n["vejas"]),
+            return T("⚠ Gūsis ({g}) silpnesnis už įprastą vėją, kuris pučia iki {v}: gūsiai bus beveik nejuntami, o "
+                     "stipriai pučiant gūsis vėją net susilpnina. Padidinkite „Gūsio stiprumą“ bent iki {n} arba "
+                     "sumažinkite „Įprastą vėją“.").format(g=n["gusio_stiprumas"], v=skaicius_tekstu(0.7 * n["vejas"]),
                                                n=math.ceil(0.7 * n["vejas"] - 1e-9))
         if raktas == "girliandu_kiekis" and n["girliandos"]:
             telpa = self.girliandu_telpa()
             if telpa is not None and n["girliandu_kiekis"] > telpa:
-                return T("⚠ Nustatyta {k} lempučių, bet šiame ekrane su dydžiu {d} % telpa tik {n} – daugiau nerodoma. "
+                return T("⚠ Nustatyta {k} lempučių, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
                          "Sumažinkite dydį arba lempučių kiekį.").format(k=n["girliandu_kiekis"],
                                                                         d=n["girliandu_dydis"], n=telpa)
         if raktas in ("fejerverku_intervalas", "fejerverku_trukme") and n["fejerverkai"] \
                 and n["fejerverku_trukme"] >= n["fejerverku_intervalas"] * 60:
-            return T("⚠ Šou ({t} s) ne trumpesnis už tarpą tarp jų ({m} min): kol vyksta šou, kitas praleidžiamas – "
-                     "šou bus rečiau, nei nustatyta.").format(t=n["fejerverku_trukme"], m=n["fejerverku_intervalas"])
+            return T("⚠ Šou ({t} s) ne trumpesnis už tarpą tarp šou ({m} min): kol vyksta vienas, kitas praleidžiamas – "
+                     "šou vyks rečiau, nei nustatyta.").format(t=n["fejerverku_trukme"], m=n["fejerverku_intervalas"])
         return None
 
     def atnaujinti_ispejimus(self):
@@ -11913,9 +11910,9 @@ class Sniegas:
                     snaiges_glotnios=True)
         return [(T("Programa paslėpta (bazė)"), None, None),
                 (T("Jūsų nustatymai"), {}, None),
-                (T("Tik sniegas, 60 k/s"), baze, None),
-                (T("Tik sniegas, 30 k/s"), dict(baze, fps=30), None),
-                (T("Tik sniegas, 60 k/s, dalinis kopijavimas"), baze, "dalinis"),
+                (T("Tik sniegas, 60 kadr./s"), baze, None),
+                (T("Tik sniegas, 30 kadr./s"), dict(baze, fps=30), None),
+                (T("Tik sniegas, 60 kadr./s, dalinis kopijavimas"), baze, "dalinis"),
                 (T("+ glotnios snaigės"), dict(baze, snaiges_glotnios=True), None),
                 (T("+ eglės"), dict(baze, egles=True), None),
                 (T("+ girliandos"), dict(baze, girliandos=True), None),
@@ -11938,7 +11935,7 @@ class Sniegas:
         if not messagebox.askokcancel(PAVADINIMAS, T(
                 "Našumo testas truks ~{m} min: programa paeiliui įjungs įvairius nustatymus ir matuos, kiek jie "
                 "kainuoja. Tuo metu geriau nieko nedaryti kompiuteriu. Nustatymų langas bus paslėptas, o jūsų "
-                "nustatymai po testo grąžinami. Rezultatai bus įrašyti čia:").format(m=trukme)
+                "nustatymai po testo bus grąžinti. Rezultatai bus įrašyti čia:").format(m=trukme)
                 + f"\n\n{NASUMO_BYLA}\n\n" + T("Pradėti?")):
             return
         stabdyti = threading.Event()
@@ -12094,14 +12091,13 @@ class Sniegas:
                T("Kiekvienas etapas: {a} s įsibėgėjimas, {b} s matavimas. Kadro darbas – ms per kadrą (vidurkis ir "
                  "95 % kadrų ne ilgiau), CPU – viso proceso, % vieno branduolio.").format(
                    a=int(NASUMO_ISIBEGEJIMAS), b=int(NASUMO_MATAVIMAS)),
-               T("Piešimas = statinis (pusnų, kelio, eglių perpiešimas) + atstat. (fono atstatymas) + judantys "
-                 "objektai."),
-               T("Atstat.: pilni % – kiek kadrų fonas atstatytas visas (viso buferio kopija), o ne tik pakitusiose "
-                 "vietose; stač. – kiek stačiakampių atstatyta vidutiniškai (kai ne visas)."),
+               T("Piešimas = statinis (pusnių, kelio, eglių perpiešimas) + atk. (fono atkūrimas) + judantys objektai."),
+               T("Atk.: pilni % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
+                 "vietose; stač. – kiek stačiakampių atkurta vidutiniškai (kai ne visas)."),
                T("Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji."), ""]
         plotis = max(len(r["pav"]) for r in rez) + 2 if rez else 20
         plociai = (6, 7, 6, 7, 8, 8, 8, 7, 6, 8, 6, 6, 5)
-        antr = ("k/s", T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atstat."), T("pilni %"),
+        antr = ("kadr./s", T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atk."), T("pilni %"),
                 T("stač."), T("ekranas"), "CPU %", "GPU W", "MHz")
         eil.append(f"{T('Etapas'):<{plotis}}" + " ".join(f"{a:>{w}}" for a, w in zip(antr, plociai)))
         for r in rez:
@@ -12126,12 +12122,12 @@ class Sniegas:
                                         "dar nebuvo nusiraminusi; imama mažesnioji.").format(d=f(max(bazes) - min(bazes), ".1f")))
                 for r in (rez[1], rez[2]):  # jūsų nustatymai ir „tik sniegas, 60 k/s“
                     if r["w"] is not None:
-                        eil.append("  " + T("Sniegas vaizdo plokštei ({p}, prieš paslėptą programą): {w} W").format(
+                        eil.append("  " + T("Sniegas vaizdo plokštei ({p}, palyginti su paslėpta programa): {w} W").format(
                             p=r["pav"], w=f(r["w"] - min(bazes), "+.1f")))
         # kodėl pasirinktas viso buferio / dalinis atstatymas – įverčiai, kuriais remiasi sprendimas
         if any(r.get("kaina_pil") is not None for r in rez[1:]):
-            eil += ["", T("Atstatymo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > "
-                          "viso kaina × 1,15 → visas):")]
+            eil += ["", T("Atkūrimo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > viso kaina × "
+                          "1,15 → visas):")]
             for r in rez[1:]:
                 if r.get("paslepta") or r.get("kaina_pil") is None or r.get("stac_visi") is None:
                     continue
@@ -12161,12 +12157,12 @@ class Sniegas:
     def atverti_byla(self, byla):
         """Diagnostikos byla (žurnalas, našumo testo rezultatai, profilis) – numatytąja programa."""
         if not byla.exists():
-            messagebox.showinfo(PAVADINIMAS, T("Šios bylos dar nėra.") + f"\n\n{byla}")
+            messagebox.showinfo(PAVADINIMAS, T("Šios rinkmenos dar nėra.") + f"\n\n{byla}")
             return
         try:
             os.startfile(byla)
         except Exception as e:
-            messagebox.showerror(PAVADINIMAS, T("Nepavyko atverti bylos.") + f"\n\n{byla}\n\n{e!r}")
+            messagebox.showerror(PAVADINIMAS, T("Nepavyko atverti rinkmenos.") + f"\n\n{byla}\n\n{e!r}")
 
     def klaida(self, e):
         self.paskutine_klaida = repr(e)
@@ -12186,7 +12182,7 @@ class Sniegas:
         self.busenos_trynimai0 = self.windows_trynimai
         self.busenos_perkurimai0 = getattr(self, "ekranu_perkurimai", 0)
         try:  # tekstas atsinaujina per ≤ 1 s (atnaujinti_busena neiškviečiama – ji nunulintų kadrų skaitiklius)
-            self.busena.configure(text=self.busena.cget("text").split(T("   Windows trynė vaizdą: {n} k.").split("{")[0])[0]
+            self.busena.configure(text=self.busena.cget("text").split(T("   „Windows“ trynė vaizdą: {n} k.").split("{")[0])[0]
                                   .split(T("   Ekranai keitėsi: {n} k.").split("{")[0])[0]
                                   .split(T("   Klaida: {e}").split("{")[0])[0])
         except tk.TclError:
@@ -12205,13 +12201,13 @@ class Sniegas:
                     a=len(self.snaiges), b=self.kadru_skaitliklis, c=f"{vid:.1f}", d=su_sniegu)
                 if self.kadru_skaitliklis:
                     k_ = self.kadru_skaitliklis
-                    tekstas += T("   Fizika / atstatymas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)").format(
+                    tekstas += T("   Fizika / atkūrimas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)").format(
                         a=f"{self.b_fizika / k_:.1f}", r=f"{self.b_atstatymas / k_:.1f}",
                         b=f"{self.b_buferis / k_:.1f}", c=f"{self.b_ekranas / k_:.1f}", n=round(self.b_kopijos / k_))
             trynimai = self.windows_trynimai - self.__dict__.get("busenos_trynimai0", 0)
             perkurimai = getattr(self, "ekranu_perkurimai", 0) - self.__dict__.get("busenos_perkurimai0", 0)
             if trynimai:
-                tekstas += T("   Windows trynė vaizdą: {n} k.").format(n=trynimai)
+                tekstas += T("   „Windows“ trynė vaizdą: {n} k.").format(n=trynimai)
             if perkurimai:  # padeda suprasti, jei vaizdas „be priežasties“ perpiešiamas
                 tekstas += T("   Ekranai keitėsi: {n} k.").format(n=perkurimai)
             if self.paskutine_klaida:
@@ -12368,8 +12364,8 @@ class Sniegas:
             pl = ParuostukoPlyta(pr, T(pav), "", fonas, tekstas, lambda f=veiksmas: self.root.after_idle(f))
             pl.remas.pack(side="left", padx=1)
             Patarimas(pl.remas, lambda apr=apr, i=i: T(apr) + "\n\n" + (
-                T("Grąžina visus nustatymus į numatytuosius (kalba lieka).") if i == NUMATYTIEJI else
-                T("Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka tavo."))
+                T("Atkuria visus numatytuosius nustatymus (kalba lieka).") if i == NUMATYTIEJI else
+                T("Paruošti nustatymų rinkiniai. Keičia tik savo nustatymus – kiti lieka nepakeisti."))
                 + "\n" + T("Pažymėtas ✓ – šiuo metu galiojantis; pakeitus jo nustatymą, žymė dingsta."))
             pl.paruostukas = i
             self.paruostuku_mygtukai.append(pl)
@@ -12425,8 +12421,8 @@ class Sniegas:
         kadrai.grid(row=0, column=1, sticky="w", padx=4, pady=1)
         patarimai = {30: "30 – mažiausia apkrova: vaizdo plokštė lieka ramybės būsenoje.",
                      60: "60 – sklandžiau, bet procesorius dirba maždaug dvigubai daugiau.",
-                     120: "120 – tik 120 Hz ar greitesniam ekranui (60 Hz ekrane veiks kaip 60). "
-                          "Procesorius dirba maždaug 4 kartus daugiau nei su 30."}
+                     120: "120 – tik 120 Hz ar greitesniam ekranui (60 Hz ekrane veiks kaip 60). Procesorius dirba maždaug 4 "
+                          "kartus daugiau nei pasirinkus 30."}
         for reiksme in (30, 60, 120):
             rb = ttk.Radiobutton(kadrai, text=str(reiksme), value=reiksme, variable=v,
                                  command=lambda: self.pakeista("fps"))
@@ -12434,10 +12430,10 @@ class Sniegas:
             Patarimas(rb, T(patarimai[reiksme]))
         self.zymimasis(g, "slepti_pilname_ekrane", "Slėpti, kai programa per visą ekraną", 1)
         self.autostartas = tk.BooleanVar(value=autostartas_ijungtas() is not None)
-        cb = ttk.Checkbutton(g, text=T("Paleisti kartu su Windows"), variable=self.autostartas,
+        cb = ttk.Checkbutton(g, text=T("Paleisti kartu su „Windows“"), variable=self.autostartas,
                              command=self.perjungti_autostarta)
         cb.grid(row=2, column=0, columnspan=2, sticky="w", padx=4, pady=2)
-        Patarimas(cb, T("Programa pasileidžia automatiškai prisijungus prie Windows."))
+        Patarimas(cb, T("Programa paleidžiama automatiškai prisijungus prie „Windows“."))
         et = ttk.Label(g, text=T("Išjungimo mygtukas"))
         et.grid(row=3, column=0, sticky="w", padx=4, pady=(2, 0))
         self.patarimas_nustatymui(et, "kryzelis")
@@ -12458,10 +12454,10 @@ class Sniegas:
         bylos.grid(row=5, column=1, sticky="e", padx=4, pady=(2, 0))
         b = ttk.Button(bylos, text=T("Eksportuoti…"), command=self.eksportuoti_nustatymus)
         b.pack(side="left", padx=(0, 4))
-        Patarimas(b, T("Išsaugoti visus nustatymus į bylą (pvz., perkelti į kitą kompiuterį)."))
+        Patarimas(b, T("Išsaugoti visus nustatymus į rinkmeną (pvz., norint perkelti į kitą kompiuterį)."))
         b = ttk.Button(bylos, text=T("Importuoti…"), command=self.importuoti_nustatymus)
         b.pack(side="left")
-        Patarimas(b, T("Įkelti nustatymus iš bylos. Kalba lieka dabartinė; byloje nesantys nustatymai – numatytieji."))
+        Patarimas(b, T("Įkelti nustatymus iš rinkmenos. Kalba lieka dabartinė; rinkmenoje nesantys nustatymai – numatytieji."))
         # Diagnostika ir našumas – atskirai nuo kasdienių nustatymų (jų reikia tik ieškant problemų)
         # Diagnostika – trys vienodos eilutės: pavadinimas | ką daryti (įjungti / paleisti) | „Atverti“ rezultatą.
         # (Anksčiau žurnalas – varnelė su mygtuku, o testai – du mygtukai be būdo atverti jų rezultatus.)
@@ -12472,8 +12468,8 @@ class Sniegas:
                     T("Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti "
                       "problemos."))]
         eilutes.append(("Našumo testas", self.nasumo_testas, NASUMO_BYLA,
-                        T("~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui "
-                          "ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo grąžinami. Rezultatai – "
+                        T("~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei "
+                          "yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – "
                           "sniegas_nasumas.txt („Atverti“).")))
         if PROFILIUOTI_GALIMA:
             eilutes.append(("Profilis", self.profiliuoti, PROFILIO_BYLA,
@@ -12585,7 +12581,7 @@ class Sniegas:
             if not self.skiltis_pakeista(raktas):
                 at.configure(cursor="")
             at.bind("<Button-1>", lambda e: self.root.after_idle(lambda: self.atkurti_skilti(raktas, vardas)))
-            Patarimas(at, lambda: T("Grąžinti šios skilties nustatymus į numatytuosius (įjungimo varnelė nekeičiama).")
+            Patarimas(at, lambda: T("Atkurti šios skilties numatytuosius nustatymus (įjungimo varnelė nekeičiama).")
                       if self.skiltis_pakeista(raktas) else T("Visi šios skilties nustatymai – numatytieji."))
         g.configure(labelwidget=antr)
         cb.antraste = True
@@ -12744,7 +12740,7 @@ class Sniegas:
             e.pack(anchor="w", pady=1)
             ttk.Label(e, text=antr + ":", foreground="#555555").pack(side="left")
             ttk.Label(e, text=" " + reiksme, font=("Segoe UI", 9, "bold")).pack(side="left")
-        ttk.Label(kaire, text=T("Sukurta su Claude (Anthropic) ir Google Gemini pagalba"), foreground="#555555").pack(anchor="w", pady=(10, 0))
+        ttk.Label(kaire, text=T("Sukurta padedant „Claude“ („Anthropic“) ir „Google Gemini“"), foreground="#555555").pack(anchor="w", pady=(10, 0))
         licencija = ttk.Label(kaire, text=T("Laisva programa – GNU GPL 3.0 licencija"), foreground="#1a5fb4", cursor="hand2")
         licencija.pack(anchor="w", pady=(2, 0))
         licencija.bind("<Button-1>", lambda e: webbrowser.open(LICENCIJOS_NUORODA))
@@ -12843,9 +12839,9 @@ class Sniegas:
         self.is_viso.grid(row=e + 1, column=3, sticky="w", padx=(0, 4))
         self.is_viso_kint.trace_add("write", lambda *_: self.pakeistas_is_viso())
         sb.bind("<FocusOut>", lambda e_: self.is_viso_kint.set(str(sum(self.n["tipai"]))))
-        aprasas = T("Bendras snaigių kiekis. Pakeitus jį čia, kiekis atsitiktinai paskirstomas po rūšis (kiek "
-                    "kurios – matosi rūšių eilutėse aukščiau). Vėl pakeitus po pertraukos – parenkamas naujas "
-                    "atsitiktinis rūšių mišinys.")
+        aprasas = T("Bendras snaigių kiekis. Pakeitus jį čia, kiekis atsitiktinai paskirstomas rūšims (kiek kurios – "
+                    "matyti rūšių eilutėse aukščiau). Vėl pakeitus po pertraukos – parenkamas naujas atsitiktinis rūšių "
+                    "mišinys.")
         aprasas += "\n" + T("Dukart spustelėkite pavadinimą – numatytieji ({v}, įprastas rūšių mišinys)").format(
             v=sum(NUMATYTI["tipai"]))
         for w in (etikete, remas):
@@ -12870,7 +12866,7 @@ class Sniegas:
         self.girl_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.slankiklis(g, "girliandu_kiekis", "Lempučių vienoje pusėje", 2)
         self.papildomi_aprasai["girliandu_kiekis"] = lambda: None if self.girliandu_telpa() is None else T(
-            "Šiame ekrane su dabartiniu dydžiu telpa iki {n} lempučių – daugiau nebus.").format(n=self.girliandu_telpa())
+            "Esant dabartiniam dydžiui, šiame ekrane telpa iki {n} lempučių – daugiau nebus.").format(n=self.girliandu_telpa())
         self.slankiklis(g, "girliandu_dydis", "Dydis, %", 3)
         self.slankiklis(g, "girliandu_mirksejimas", "Mirksėjimas, %", 4)
         self.zymimasis(g, "girliandu_atspindziai", "Atspindžiai stikle (kartais blyksteli)", 5)
@@ -13304,8 +13300,7 @@ class Sniegas:
             self.tipu_varneles["bumbulu_dingimai"].append(v)
             cb = ttk.Checkbutton(dg, text=T(pavadinimas), variable=v, command=lambda: self.pakeisti_dingimus())
             cb.grid(row=0, column=i, sticky="w", padx=(0, 6 if i < 3 else 0))
-            Patarimas(cb, lambda v=v: (T("⚠ Bent vienas pradingimo būdas turi likti (norint, kad nepradingtų – nuimkite "
-                                         "varnelę viršuje).") + "\n\n" if v.get() and sum(
+            Patarimas(cb, lambda v=v: (T("⚠ Bent vienas pradingimo būdas turi likti (jei norite, kad nepradingtų, nuimkite varnelę viršuje).") + "\n\n" if v.get() and sum(
                 x.get() for x in self.tipu_varneles["bumbulu_dingimai"]) == 1 else "") + T(
                 "Vienas iš būdų, kaip bumbuliukas pradingsta (ir atitinkamai atsiranda). Parenkamas atsitiktinai iš "
                 "pažymėtų."))
@@ -13413,7 +13408,7 @@ class Sniegas:
             busena = T(("naudojamas" if v.get() else "nenaudojamas") if rastas else
                        ("naudojama" if v.get() else "nenaudojama"))
             uzuomina = T("Tai vienintelis pasirinktas – bent vienas turi likti.") if jungiklis.aktyvus and vienintelis() \
-                else T("Spustelėkite (arba Tarpas), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.") \
+                else T("Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.") \
                 if jungiklis.aktyvus else \
                 T("Bumbuliukai išjungti – įjunkite skilties antraštėje.")
             return f"{rusis}: {T(pavadinimas)} – {busena}\n{uzuomina}"
@@ -13729,7 +13724,7 @@ class Sniegas:
         self.zymimasis(g, "senio_stovi", "Tik stovi vietoje", 4)
         self.zymimasis(g, "sniegas_ant_senio", "Stovinčiam prisninga ant galvos ir šluotos", 5)
         self.papildomi_aprasai["sniegas_ant_senio"] = lambda: None if self.n["senio_stovi"] else T(
-            "⚠ Veikia tik kai įjungta „Tik stovi vietoje“.")
+            "⚠ Veikia, tik kai įjungta „Tik stovi vietoje“.")
         # varnelė ir animacija – vienoje eilutėje: „☑ Lemputės ant šluotos [Mirksi ▾]“
         self.zymimasis(g, "senio_lemputes", "Lemputės ant šluotos", 6, ilgis=1)
         v = tk.StringVar(value=self.n["senio_lempuciu_animacija"])
@@ -14095,7 +14090,7 @@ class Sniegas:
         for e in self.perziuros_egles:
             piesti_egle(p, e, n if "egles" in self.uzvesta else dict(n, egliu_mirksi=False))
         if mastelis < 1:
-            c.create_text(pp("egles") - 4, 4, text=T("mastelis {p}").format(p=f"{mastelis:.0%}"), fill="#9fb3c8", anchor="ne", font=("Segoe UI", 8))
+            c.create_text(pp("egles") - 4, 4, text=T("mastelis {p} %").format(p=f"{mastelis * 100:.0f}"), fill="#9fb3c8", anchor="ne", font=("Segoe UI", 8))
 
     def paspausta_egle(self, e):
         """Slaptas didysis šou: 5 kartus greitai spustelėti didžiausią (trečią) eglutę."""
@@ -14581,7 +14576,7 @@ class Sniegas:
         self.pilnas_perpiesimas = True
 
     def atkurti_numatytuosius(self):
-        if not messagebox.askyesno(PAVADINIMAS, T("Grąžinti visus nustatymus į numatytuosius?")):
+        if not messagebox.askyesno(PAVADINIMAS, T("Atkurti visus numatytuosius nustatymus?")):
             self.atnaujinti_paruostukus()  # mygtukas jau nuspaustas – grąžinama tikroji žymė
             return
         nauji = numatytieji()
@@ -14646,7 +14641,7 @@ class Sniegas:
         """↺ skilties pavadinime: tik tos skilties nustatymai (SKILCIU_NUSTATYMAI) – į numatytuosius."""
         if not self.skiltis_pakeista(raktas):  # nėra ką atkurti – ir neklausiama
             return
-        if not messagebox.askyesno(PAVADINIMAS, T("Grąžinti skilties „{s}“ nustatymus į numatytuosius?").format(
+        if not messagebox.askyesno(PAVADINIMAS, T("Atkurti skilties „{s}“ numatytuosius nustatymus?").format(
                 s=T(vardas))):
             return
         nauji = dict(self.n)
@@ -14659,7 +14654,7 @@ class Sniegas:
         from tkinter import filedialog
         kelias = filedialog.asksaveasfilename(parent=self.root, title=T("Eksportuoti…"), defaultextension=".json",
                                               initialfile=f"Sniegas_nustatymai_{time.strftime('%Y%m%d')}.json",
-                                              filetypes=[(T("Nustatymų byla"), "*.json")])
+                                              filetypes=[(T("Nustatymų rinkmena"), "*.json")])
         if not kelias:
             return
         try:
@@ -14673,9 +14668,9 @@ class Sniegas:
     def importuoti_nustatymus(self):
         from tkinter import filedialog
         kelias = filedialog.askopenfilename(parent=self.root, title=T("Importuoti…"),
-                                            filetypes=[(T("Nustatymų byla"), "*.json"), ("*.*", "*.*")])
+                                            filetypes=[(T("Nustatymų rinkmena"), "*.json"), ("*.*", "*.*")])
         if not kelias or not messagebox.askyesno(
-                PAVADINIMAS, T("Įkelti nustatymus iš šios bylos? Dabartiniai nustatymai bus pakeisti.") + f"\n\n{kelias}"):
+                PAVADINIMAS, T("Įkelti nustatymus iš šios rinkmenos? Dabartiniai nustatymai bus pakeisti.") + f"\n\n{kelias}"):
             return
         nauji = self.ikelti_nustatymus(importuojama=kelias)
         nustatyti_kalba(self.n["kalba"])  # ikelti_nustatymus perspėjimui galėjo perjungti kalbą
@@ -14683,8 +14678,8 @@ class Sniegas:
             return
         nauji["kalba"] = self.n["kalba"]
         if nauji["be_apribojimu"] and not self.n["be_apribojimu"] and not messagebox.askyesno(PAVADINIMAS, T(
-                "Byloje įjungtos išplėstos ribos – jos leidžia daug didesnius kiekius ir dydžius, kompiuteris gali strigti."
-                "\n\nĮjungti? (Ne – reikšmės bus apribotos įprastomis ribomis.)"), icon="warning"):
+                "Rinkmenoje įjungtos išplėstos ribos – jos leidžia daug didesnius kiekius ir dydžius, kompiuteris "
+                "gali strigti.\n\nĮjungti? (Ne – reikšmės bus apribotos įprastomis ribomis.)"), icon="warning"):
             nauji["be_apribojimu"] = False
             apriboti_iprastai(nauji)
         ZURNALAS.rasyti(f"ĮVYKIS: nustatymai importuoti iš {kelias}")
@@ -14965,7 +14960,7 @@ def sukurti_ikonos_byla(kelias):
         r = tk.Tk()
         r.withdraw()
         messagebox.showerror(PAVADINIMAS, f"{kelias}\n\n{e!r}\n\n" + T(
-            "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai Failų "
+            "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai failų "
             "naršyklės langas su šiuo aplanku rodo jos paveikslėlį). Uždarykite to aplanko langą arba ištrinkite "
             "sniegas.ico ir paleiskite dar kartą."), parent=r)
         r.destroy()
