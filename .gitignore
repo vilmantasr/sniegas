@@ -11,3 +11,5 @@ __pycache__/
 # Programos nustatymai ir žurnalai (kuriami šalia programos)
 sniegas_nustatymai.json*
 sniegas_diagnostika*.log
+sniegas_nasumas.txt
+sniegas_profilis.txt

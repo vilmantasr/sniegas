@@ -18,7 +18,7 @@ Kompiliavimas į .exe (Windows, kad veiktų be įdiegto Python):
 Paruoštas Sniegas.exe – aplanke dist. Nustatymai saugomi šalia programos (jei ten rašyti negalima –
 %APPDATA%\\Sniegas).
 
-Diagnostika (įjungiama skiltyje „Kita“, numatytai išjungta): šalia nustatymų rašomas sniegas_diagnostika.log –
+Diagnostika (įjungiama skiltyje „Diagnostika“, numatytai išjungta): šalia nustatymų rašomas sniegas_diagnostika.log –
 kas minutę viena suvestinės eilutė (kadrai, darbo laikas, procesorius, atmintis, GDI objektai, ką teko
 perpiešti) ir visi įvykiai bei klaidos. Programos lūžiai užrašomi visada.
 """
@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.39"
+VERSIJA = "12.40"
 DATA = "2026-11-12"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -569,8 +569,8 @@ EN = frozendict({
     "Nepavyko atverti rinkmenos.": "Could not open the file.",
     "Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos.":
         "Technical log sniegas_diagnostika.log (frame times, errors) – for troubleshooting.",
-    "~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – sniegas_nasumas.txt („Atverti“).":
-        "~6 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterward. Results – sniegas_nasumas.txt (“Open”).",
+    "~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – sniegas_nasumas.txt („Atverti“).":
+        "~5 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterward. Results – sniegas_nasumas.txt (“Open”).",
     "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Rezultatai – sniegas_profilis.txt.":
         "Performance profile (Python 3.15+): the program restarts and records which of its parts take the most CPU time. Results – sniegas_profilis.txt.",
     "Našumo testas baigtas. Rezultatai – skiltyje „Diagnostika“ → „Atverti“.":
@@ -2967,8 +2967,7 @@ def bumbulo_matmenys(R0, P, dydis):
 
 
 def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
-    """Pixel art žaisliukas-burbulas: raštas sukasi kartu su juo, kepurėlė ir blizgesys lieka vietoje (pasukta
-    2 langelių kepurėlė atrodė kaip šone prilipęs kvadratėlis).
+    """Pixel art žaisliukas-burbulas: raštas ir kepurėlė sukasi kartu su juo, blizgesys lieka vietoje.
     langelis – tinklelio kraštinė (kad mažesni pradingimo kadrai būtų tame pačiame dydyje)."""
     pagr, tamsi, sviesi = BUMBULU_SPALVOS[spalva]
     puosimas = "#d62828" if spalva in BUMBULU_RAUDONA_JUOSTA else "#fff4d6"
@@ -2997,9 +2996,6 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
             dx, dy = x + 1 - c, y + 1 - c  # centras – langelių sandūroje (lyginis skersmuo – be „spyglių“ ant ašių)
             xr, yr = dx * cs + dy * sn, -dx * sn + dy * cs  # taškas burbulo koordinatėse
             atstumas = math.hypot(dx, dy)
-            if R >= 3 and abs(dx) <= 1.0 and -R - 1.8 <= dy <= -R:  # auksinė kepurėlė – visada viršuje
-                t[y][x] = kepure[abs(dx) > 0.9]
-                continue
             if atstumas > riba:
                 continue
             kontur = uz(dx + 1, dy) or uz(dx - 1, dy) or uz(dx, dy + 1) or uz(dx, dy - 1)
@@ -3019,6 +3015,29 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
             if kontur:  # kontūras (kaimynas už rutulio) – kad matytųsi ir ant balto sniego
                 spalva_px = tamsi
             t[y][x] = spalva_px
+    # Auksinė kepurėlė – stiklinio kaklelio dalis: sukasi kartu su rutuliu, bet formos nekeičia (visada tas pats
+    # 2 × 2 kvadratėlis, kairė pusė šviesesnė). Jos vieta – rutulio „viršaus“ kryptimi, pristumta prie rutulio, kol
+    # paliečia jį kraštine (įstrižai anksčiau atitrūkdavo per vieną tuščią langelį)
+    if R >= 3:
+        # iš visų 2 × 2 vietų prie rutulio krypties ašies – ta, kuri įsistato į kontūro laiptelį (daugiausia bendrų
+        # kraštinių su rutuliu), o ne remiasi vien kampu; po to – arčiausia ašies. Rutulio (ir jo kontūro) neuždengia
+        ux, uy, vieta, geriausia = sn, -cs, (), None
+        for by in range(n - 1):
+            for bx in range(n - 1):
+                mx, my = bx + 1.5 - c, by + 1.5 - c  # kvadratėlio vidurys (dx, dy sistemoje)
+                isilg, skers = mx * ux + my * uy, abs(mx * uy - my * ux)
+                if isilg <= 0 or skers > 1.0:
+                    continue
+                langeliai = [(bx + i, by + j) for j in (0, 1) for i in (0, 1)]
+                if any(t[y][x] is not None for x, y in langeliai):
+                    continue
+                kont = sum(0 <= x + ax < n and 0 <= y + ay < n and t[y + ay][x + ax] is not None
+                           and (x + ax, y + ay) not in langeliai
+                           for x, y in langeliai for ax, ay in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+                if kont and (geriausia is None or (-kont, skers, isilg) < geriausia):
+                    geriausia, vieta = (-kont, skers, isilg), langeliai
+        for i, (x, y) in enumerate(vieta):
+            t[y][x] = kepure[i % 2]
     return tuple(tuple(e) for e in t)
 
 
@@ -4416,11 +4435,14 @@ SENIO_PUOSMENOS = ("trys", "uogos", "viena", "sonu", "plika")
 SENIO_SAGOS = (("#1e1e22", "#1e1e22", "#1e1e22"), ("#fdb913", "#006a44", "#c1272d"),
                ("#c82832", "#c82832", "#c82832"), ("#18468c", "#18468c", "#18468c"),
                ("#ffd21a", "#ff2d92", "#1e90ff"))
-# Kiekvieno senio (tas pats numeris kaip SENIO_SAGOS) šalikas: (dryžis, kitas dryžis, galo ilgis langeliais)
-# ir šluotos raištis – kad keli seniai nebūtų vienodi. Galas visada ant kūno (ne permatomoje vietoje): kitų
+# Kiekvieno senio (tas pats numeris kaip SENIO_SAGOS) šalikas: (dryžis, kitas dryžis, galo ilgis langeliais,
+# plazdėjimo fazė, plazdėjimo stiprumas) ir šluotos raištis – kad keli seniai nebūtų vienodi. Galas visada ant kūno (ne permatomoje vietoje): kitų
 # senių spalvos užpiešiamos ant 1-o senio juostos (senio_bumbulo_langeliai), permatomo langelio ten neištrinsi.
-SENIO_SALIKAI = (("#3478d2", "#18468c", 4), ("#c82832", "#82141e", 5), ("#2f9a44", "#1d6a2c", 3),
-                 ("#f2b01e", "#b87510", 6), ("#8e52c8", "#5a2a8c", 4))
+# Paskutiniai du – plazdėjimo fazė ir stiprumas (kiekvieno šalikas plazda kitaip). Parinkta perrinkus: kiekvienas
+# galo langelis per žingsnį pajuda bent du kartus ir galas niekada nekabo stačiai per 3 langelius.
+SENIO_SALIKAI = (("#3478d2", "#18468c", 4, 0.0, 0.7), ("#c82832", "#82141e", 5, 2.1, 0.5),
+                 ("#2f9a44", "#1d6a2c", 3, 3.5, 0.7), ("#f2b01e", "#b87510", 6, 1.4, 0.5),
+                 ("#8e52c8", "#5a2a8c", 4, 4.2, 0.5))
 SENIO_RAISCIAI = ("#c82832", "#fdb913", "#3478d2", "#2f9a44", "#ff8a1a")
 # Konfeti pabūklo (tūtos) dryžiai: (1 dryžis, jo šešėlis, 2 dryžis, jo šešėlis) – kiekvieną kartą šaunant
 # atsitiktinai kitos spalvos (senio_tuta)
@@ -4621,11 +4643,25 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika")
     for i, k_ in enumerate((-0.5, -0.1, 0.3)):
         t[(gx, round(apat_cy + apat_ry * k_))] = "123"[i]  # spalvos – SENIO_SAGOS (kiekvieno senio savos)
     _sn_puosmena(t, gx, gy, puosmena)  # galvos šakelės
-    sy = gy + 5  # šalikas
+    sy = gy + 5  # šalikas – 11 langelių juosta per pečius (siauresnė palikdavo pilkus kontūro kyšulius)
     for x in range(gx - 5, gx + 6):
-        t[(x, sy)] = "C" if x % 2 else "c"
-    for i in range(SENIO_SALIKAI[bumbulas % len(SENIO_SALIKAI)][2]):  # einant galas plevėsuoja atgal (iki kūno krašto)
-        t[(gx - 4 - (min(i, 3) if poza == "eina" else 0), sy + 1 + i)] = "C" if i % 2 == 0 else "c"
+        t[(x, sy)] = "C" if x % 2 else "c"  # dryžiai; abu juostos galai – šviesūs (tamsūs atrodė kaip svetimkūniai)
+    _, _, ilgis, faze, plazda = SENIO_SALIKAI[bumbulas % len(SENIO_SALIKAI)]
+    atgal = x_ = 0
+    for i in range(ilgis):
+        # Einant šaliko galas – kaip vėliava ant judančio kūno: oro pasipriešinimas jį laiko pakrypusį atgal (~35°),
+        # o kiekvienas žingsnis (galvos linktelėjimas) paleidžia bangą, kuri bėga žemyn ir vėluoja (kuo žemiau, tuo
+        # vėliau) bei stiprėja link laisvojo galo. Langeliais: kiekvienas kitas – žemiau ir paprastai už ankstesnio;
+        # gretimi skiriasi ne daugiau kaip 1 stulpeliu (nenutrūksta), pats galiukas niekada nekabo tiesiai po
+        # ankstesniu. Ne toliau kaip 3 langeliai atgal (ant kūno: kitų senių spalvos užpiešiamos ant juostos,
+        # permatomo langelio ten nebūtų). Viršutinis – po juostos užpakaliniu galu (jis einant lieka ant pečių).
+        if poza == "eina" and i:
+            pask = atgal
+            x_ += 0.7 + plazda * i / (ilgis - 1) * math.sin(2 * math.pi * f - 0.9 * i + faze)
+            atgal = max(0, min(3, atgal + 1, max(atgal - 1, round(x_))))
+            if i == ilgis - 1 and atgal == pask:
+                atgal += 1 if atgal < 3 and math.sin(2 * math.pi * f + faze) > 0 or atgal == 0 else -1
+        t[(gx - 4 - atgal, sy + 1 + i)] = "C" if (ilgis - 1 - i) % 2 == 0 else "c"  # galiukas – šviesus
     # kabo: kadras = atsilenkimas * SENIO_KABO_RANKOS + rankų padėtis
     sw = kadras // SENIO_KABO_RANKOS - SENIO_KABO_KADRAI // 2 if poza == "kabo" else 0  # apatinės dalies atsilenkimas
     most = SENIO_RANKU_POSUKIS[kadras % SENIO_KABO_RANKOS] if poza == "kabo" else 0  # rankų mostas
@@ -4665,7 +4701,14 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika")
     if poza == "eina":  # galva pasilenkusi į priekį ir linksi, už nugaros – sniego dulkės. Kad keli seniai
         # neatrodytų kaip žąsys, kiekvienas eina savo greičiu ir tempu („greitis“)
         lenk = round(1.5 + 0.5 * math.sin(2 * math.pi * f))
-        t = {(x + (lenk if y <= sy else 0), y): v for (x, y), v in t.items()}
+        t = {(x + (lenk if y <= sy else 0), y): v for (x, y), v in t.items()}  # šalikas ant kaklo – kartu su galva
+        # juosta: priekyje pasislenka su galva, bet ne toliau kūno krašto; užpakalyje lieka ant pečių (kitaip
+        # atsidengdavo balta „kupra“) – tarpas užpildomas dryžiais
+        for x in range(gx - 5, gx - 5 + lenk):
+            t[(x, sy)] = "C" if x % 2 else "c"
+        for x in range(gx + 7, gx + 6 + lenk):
+            t.pop((x, sy), None)
+        t[(min(gx + 6, gx + 5 + lenk), sy)] = "C"  # priekinis galas – šviesus
         for i in range(4):
             t[(gx - 9 - i * 2 - round(f * 2), 34 - (i % 2) - round(f))] = "w" if i % 2 else "W"
     elif poza == "semia":  # galva (su šakelėmis) pasilenkia į priekį ir žemyn
@@ -8614,23 +8657,40 @@ class Sniegas:
         self.senio_daleliu_zingsnis(dt)
 
     def senis_mina(self, s_, dx, Ps):
-        """Einantis ekrano apačia senis suslegia pusnį: kas nueitą stulpelį – stulpelį priešais apatinį gumulą
-        SENIO_MINA px (×k), todėl kiekvienas stulpelis per vieną praėjimą suslegiamas kartą ir lieka seklus takas
-        (kaip bumbuliuko vėžė, tik seklesnė). Kelio sniego (jį tvarko sniego valytuvai) neliečia."""
-        if not (s_["pav"] and s_["pav"][0] == "zeme") or not kaupia(self.n, "kaupti_apacioje"):
+        """Einantis senis suslegia sniegą po savimi (ekrano apačioje ir ant langų): kas nueitą stulpelį – stulpelį
+        priešais apatinį gumulą SENIO_MINA px (×k), todėl kiekvienas stulpelis per vieną praėjimą suslegiamas kartą
+        ir lieka seklus takas (kaip bumbuliuko vėžė, tik seklesnė). Kelio sniego (jį tvarko sniego valytuvai) neliečia."""
+        pav = s_["pav"]
+        if not pav:
             return
-        S, h = STULPELIS, self.aukstis
+        if pav[0] == "zeme":
+            if not kaupia(self.n, "kaupti_apacioje"):
+                return
+            h, x0, st = self.aukstis, 0, None
+        else:
+            st = self.langai.get(pav[1])
+            if st is None:
+                return
+            h, x0 = st["h"], st["l"]
+        S = STULPELIS
         s_["mina"] = s_.get("mina", 0.0) + abs(dx)
         if s_["mina"] < S:
             return
         s_["mina"] -= S
         lx = SENIO_GNIUZTE if s_.get("kryptis", 1) > 0 else SENIO_W - 1 - SENIO_GNIUZTE  # kaip senio_atramos_y
-        c = int((s_["x"] + (lx + 0.5 - SENIO_W / 2 + (1 if dx > 0 else -1) * SENIO_GNIUZTES_PUS * 0.6) * Ps) // S)
-        kel = self.__dict__.get("kelias") or ()
-        if 0 <= c < len(h) and self.pagrindas[c] is not None and h[c] > 0.5 and \
-                not (c < len(kel) and self.virsus_be_kruvu(c) > h[c]):
-            h[c] -= min(h[c], SENIO_MINA * self.k)
+        c = int((s_["x"] - x0 + (lx + 0.5 - SENIO_W / 2 + (1 if dx > 0 else -1) * SENIO_GNIUZTES_PUS * 0.6) * Ps) // S)
+        if not (0 <= c < len(h)) or h[c] <= 0.5:
+            return
+        if st is None:
+            kel = self.__dict__.get("kelias") or ()
+            if self.pagrindas[c] is None or (c < len(kel) and self.virsus_be_kruvu(c) > h[c]):
+                return
+        h[c] -= min(h[c], SENIO_MINA * self.k)
+        if st is None:
             self.pazymeti_zeme(c, c + 1)
+        elif not st["nesvarus"]:
+            st["nesvarus"] = True
+            self.nesvarus_langai.append(st)
 
     def senio_sniegas(self, s_, b, dt, snaigiu_yra, Ps):
         """Stovinčiam (ir kai sninga) – pamažu prisninga; pajudėjus (eina, pagautas, krenta, meta…) – nubyra.
@@ -12528,7 +12588,7 @@ class Sniegas:
                     T("Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti "
                       "problemos."))]
         eilutes.append(("Našumo testas", self.nasumo_testas, NASUMO_BYLA,
-                        T("~6 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei "
+                        T("~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei "
                           "yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – "
                           "sniegas_nasumas.txt („Atverti“).")))
         if PROFILIUOTI_GALIMA:
