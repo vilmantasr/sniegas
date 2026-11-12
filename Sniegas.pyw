@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.40"
+VERSIJA = "12.41"
 DATA = "2026-11-12"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -4440,8 +4440,9 @@ SENIO_SAGOS = (("#1e1e22", "#1e1e22", "#1e1e22"), ("#fdb913", "#006a44", "#c1272
 # senių spalvos užpiešiamos ant 1-o senio juostos (senio_bumbulo_langeliai), permatomo langelio ten neištrinsi.
 # Paskutiniai du – plazdėjimo fazė ir stiprumas (kiekvieno šalikas plazda kitaip). Parinkta perrinkus: kiekvienas
 # galo langelis per žingsnį pajuda bent du kartus ir galas niekada nekabo stačiai per 3 langelius.
+# Stiprumas 0 – galas neplazda (trumpas, 3 langelių, tik trūkčiojo kairėn dešinėn): einant nusviręs atgal ir nejuda.
 SENIO_SALIKAI = (("#3478d2", "#18468c", 4, 0.0, 0.7), ("#c82832", "#82141e", 5, 2.1, 0.5),
-                 ("#2f9a44", "#1d6a2c", 3, 3.5, 0.7), ("#f2b01e", "#b87510", 6, 1.4, 0.5),
+                 ("#2f9a44", "#1d6a2c", 3, 0.0, 0.0), ("#f2b01e", "#b87510", 6, 1.4, 0.5),
                  ("#8e52c8", "#5a2a8c", 4, 4.2, 0.5))
 SENIO_RAISCIAI = ("#c82832", "#fdb913", "#3478d2", "#2f9a44", "#ff8a1a")
 # Konfeti pabūklo (tūtos) dryžiai: (1 dryžis, jo šešėlis, 2 dryžis, jo šešėlis) – kiekvieną kartą šaunant
@@ -4655,7 +4656,9 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika")
         # gretimi skiriasi ne daugiau kaip 1 stulpeliu (nenutrūksta), pats galiukas niekada nekabo tiesiai po
         # ankstesniu. Ne toliau kaip 3 langeliai atgal (ant kūno: kitų senių spalvos užpiešiamos ant juostos,
         # permatomo langelio ten nebūtų). Viršutinis – po juostos užpakaliniu galu (jis einant lieka ant pečių).
-        if poza == "eina" and i:
+        if poza == "eina" and not plazda:
+            atgal = i
+        elif poza == "eina" and i:
             pask = atgal
             x_ += 0.7 + plazda * i / (ilgis - 1) * math.sin(2 * math.pi * f - 0.9 * i + faze)
             atgal = max(0, min(3, atgal + 1, max(atgal - 1, round(x_))))
@@ -4702,13 +4705,12 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika")
         # neatrodytų kaip žąsys, kiekvienas eina savo greičiu ir tempu („greitis“)
         lenk = round(1.5 + 0.5 * math.sin(2 * math.pi * f))
         t = {(x + (lenk if y <= sy else 0), y): v for (x, y), v in t.items()}  # šalikas ant kaklo – kartu su galva
-        # juosta: priekyje pasislenka su galva, bet ne toliau kūno krašto; užpakalyje lieka ant pečių (kitaip
-        # atsidengdavo balta „kupra“) – tarpas užpildomas dryžiais
-        for x in range(gx - 5, gx - 5 + lenk):
-            t[(x, sy)] = "C" if x % 2 else "c"
-        for x in range(gx + 7, gx + 6 + lenk):
+        # Juosta einant nejuda (per pečius, kaip stovint), dryžiai – pagal kūną.
+        # Kai ji slinkdavo su galva tarp nejudančių galų, dryžiai „šliaužiojo“ kairėn dešinėn.
+        for x in (gx + 6, gx + 7):
             t.pop((x, sy), None)
-        t[(min(gx + 6, gx + 5 + lenk), sy)] = "C"  # priekinis galas – šviesus
+        for x in range(gx - 5, gx + 6):
+            t[(x, sy)] = "C" if x % 2 else "c"
         for i in range(4):
             t[(gx - 9 - i * 2 - round(f * 2), 34 - (i % 2) - round(f))] = "w" if i % 2 else "W"
     elif poza == "semia":  # galva (su šakelėmis) pasilenkia į priekį ir žemyn
