@@ -13,5 +13,5 @@ Reikia Python 3.12 ar naujesnio su tkinter. `ivedimo_testas.py` ir dūmų bandym
 ## Aplankai
 
 - `*_testas.py` – testai. Kiekvienas gauna programos bylą kaip pirmą argumentą ir pabaigoje parašo `praėjo/iš viso`.
-- `dumu/` – dūmų bandymas: `paleisti.py Sniegas.pyw` paleidžia visą programą su netikru Windows API (`dumas.py` dar tikrina GDI objektų nutekėjimą ir kopijavimą už paveikslėlio ribų), `scenarijus.py` – atsitiktiniai veiksmai. Aplinkos kintamieji: `SEKLA`, `KADRU`, `DAZNIS`, `GYVAS=1` (daug senių, valytuvų, bumbuliukų, langų).
+- `dumu/` – dūmų bandymas: `paleisti.py Sniegas.pyw` paleidžia visą programą su netikru Windows API (`dumas.py` dar tikrina GDI objektų nutekėjimą ir kopijavimą už paveikslėlio ribų), `scenarijus.py` – atsitiktiniai veiksmai. Aplinkos kintamieji: `SEKLA`, `KADRU`, `DAZNIS`, `GYVAS=1` (daug senių, valytuvų, bumbuliukų, langų; įjungtas ledas, jis susidaro po `LEDO_LAIKAS` s – numatyta 2), `KAUP` (sniego kaupimosi greitis).
 - `irankiai/` – vertimų .po bylos (`po_eksportas.py`, `po_en.py`, `po_pritaikymas.py`) ir nustatymų lango nuotrauka (`visas_langas.py`).

@@ -116,10 +116,12 @@ root.after = _after
 if os.environ.get('GYVAS'):
     nn = dict(a.n); nn.update(be_apribojimu=True, sniego_senis=True, senio_kiekis=12, senio_stovi=False, valytuvai=True, valytuvu_kiekis=8,
               bumbulai=True, bumbulu_kiekis=12, egles=True, girliandos=True, vejas=8, gusio_stiprumas=9, gusiai=6, kaupimo_greitis=500,
-              fejerverkai=False, sniegas_ant_senio=True, senio_lemputes=True)
+              fejerverkai=False, sniegas_ant_senio=True, senio_lemputes=True, ledas_languose=True)
+    sn.LEDO_LAIKAS = float(os.environ.get("LEDO_LAIKAS", "2"))  # kad ledas susidarytų per trumpą bandymą
+    if os.environ.get("KAUP"): nn["kaupimo_greitis"] = int(os.environ["KAUP"])
     nn["tipai"] = [60] * len(nn["tipai"])
     a.taikyti_nustatymus(nn); nauji_langai(); nauji_langai(); a.langai_judejo = True
-    RAKTAI[:] = ["senio_stovi", "vejas", "gusio_stiprumas", "senio_dydis", "valytuvu_dydis", "bumbulu_juda", "bumbulai_languose", "kaupimo_greitis", "max_aukstis", "max_aukstis_languose", "senio_lempuciu_animacija"]
+    RAKTAI[:] = ["senio_stovi", "vejas", "gusio_stiprumas", "senio_dydis", "valytuvu_dydis", "bumbulu_juda", "bumbulai_languose", "kaupimo_greitis", "max_aukstis", "max_aukstis_languose", "senio_lempuciu_animacija", "ledas_languose"]
 if os.environ.get('DIAG'):
     sn.ZURNALAS.ijungtas = True; a.n['diagnostika'] = True
     try: a.ijungta_diagnostika()
@@ -140,6 +142,9 @@ def dydziai():
     d["tk_valdikliu"] = sum(1 for _ in root.tk.call("winfo", "children", ".")) 
     return d
 ISTORIJA = []
+LEDAI = [0]  # kiek kartų tikrinant rastas langas su ledu
+SLYDO = [0]  # kiek senio kadrų slysta ledu
+GRIUVO = [0]  # kiek senio kadrų griūva ant ledo
 def tikrinti_busena(kadras):
     for vardas in ("aukstis", "kelias"):
         v = getattr(a, vardas, None)
@@ -148,10 +153,15 @@ def tikrinti_busena(kadras):
     for st in a.langai.values():
         if any((x != x) or x < -0.01 or x > 5000 for x in st["h"]):
             print(f"--- BLOGA lango h kadre {kadras}: {ZURN[-6:]}"); return
+        if any(len(st.get(r, st["h"])) != len(st["h"]) for r in ("ledas", "valyta", "pliko_laikas", "apsnigta")):
+            print(f"--- BLOGAS lango ledo masyvas kadre {kadras}: {ZURN[-6:]}"); return
+        if st.get("ledas"): LEDAI[0] += 1
     for f in a.snaiges:
         if f[sn.SX] != f[sn.SX] or f[sn.SY] != f[sn.SY]:
             print(f"--- NaN snaigė kadre {kadras}: {ZURN[-6:]}"); return
 for kadras in range(KADRU):
+    SLYDO[0] += sum(1 for s_ in getattr(a, "seniai", ()) if s_.get("slysta") is not None and s_["busena"] == "eina")
+    GRIUVO[0] += sum(1 for s_ in getattr(a, "seniai", ()) if s_.get("griuva") is not None)
     laikas[0] += 1 / 30 + rnd.random() * 0.002
     if rnd.random() < 0.02: laikas[0] += rnd.uniform(0.1, 3.0)  # stabtelėjimas
     try:
@@ -168,7 +178,7 @@ for kadras in range(KADRU):
         if klaidu > 8: break
     if KLAIDOS:
         print(f"--- TK KLAIDA kadre {kadras}: {ZURN[-6:]}"); print("\n".join(KLAIDOS)); KLAIDOS.clear(); klaidu += 1
-print(f"BAIGTA sėkla={SEKLA} kadrų={kadras + 1} klaidų={klaidu} veiksmų={len(ZURN)} trukmė={_pc() - t0:.0f}s GDI kvietimų={sum(KV.values())}")
+print(f"BAIGTA sėkla={SEKLA} kadrų={kadras + 1} klaidų={klaidu} veiksmų={len(ZURN)} trukmė={_pc() - t0:.0f}s GDI kvietimų={sum(KV.values())} ledas={LEDAI[0]} slydo={SLYDO[0]} griuvo={GRIUVO[0]}")
 
 if len(ISTORIJA) >= 6:
     pr, pb = ISTORIJA[len(ISTORIJA) // 3], ISTORIJA[-1]
