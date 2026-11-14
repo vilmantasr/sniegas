@@ -25,8 +25,10 @@ rez = [r("Programa paslėpta (bazė)", 10.5, paslepta=True), r("Jūsų nustatyma
        r("Tik sniegas, 30 kadr./s", 8.4), r("Programa paslėpta (bazė, pabaigoje)", 7.6, paslepta=True)]
 t = a.nasumo_ataskaita({"rez": rez, "pradzia": "x", "gpu": "RTX"})
 print(t)
-tikrinti("palyginime paslėptas etapas neminimas", "pabaigoje)" not in t.split("Kaina, palyginti")[1].split("Bazės")[0])
-tikrinti("bazių skirtumas parodytas", "skiriasi 2.9 W" in t)
-tikrinti("jūsų nustatymai – nuo mažesnės bazės (+0,6 W)", "Jūsų nustatymai, palyginti su paslėpta programa): +0.6 W" in t)
+tikrinti("palyginime paslėptas etapas neminimas", "pabaigoje)" not in t.split("Kaina, palyginti")[1].split("Atkūrimo sprendimo")[0])
+# 12.42: W palyginimų nebėra (vaizdo plokštės dažnis šokinėja – skirtumai klaidino), lieka tik pastaba
+kaina = t.split("Kaina, palyginti")[1].split("Atkūrimo sprendimo")[0]
+tikrinti("kainos palyginime W nėra", " W" not in kaina.replace("GPU W", ""))
+tikrinti("pastaba apie GPU W parodyta", "tik informacijai" in kaina)
 tikrinti("įverčiuose paslėptų etapų nėra", "pabaigoje)" not in t.split("Atkūrimo sprendimo")[1])
 print(f"{sum(REZ)}/{len(REZ)}")

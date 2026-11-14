@@ -38,11 +38,19 @@ tikrinti("galas suapvalintas (krašte žemiau nei viduryje)",
 a4 = B(); a4.piesti_sluoksni(h, 5, 15, L, t, 1.0, None, apacia=2, kampai=(8, Rr))
 tikrinti("ne krašte (dalinis perpiešimas viduryje) – apačia tiesi", max(a4.statinis.pol[0][1::2]) == t + 2)
 print(f"{sum(REZ)}/{len(REZ)}")
-print("3. Prie lango krašto – 12.34 nuolydis (4 stulpeliai po 1,5 px)")
+print("3. Prie lango krašto – suapvalintas galas (12.42: ketvirtis apskritimo, spindulys – sniego aukštis)")
 hh = [20.0] * 50
 sn.nusodinti(hh, 25, 0.1, 20, krastai=True, profilis=[1.0] * 50)
-tikrinti("kraštai – 1,5 / 3 / 4,5 / 6 px", hh[:4] == [1.5, 3.0, 4.5, 6.0] and hh[-4:] == [6.0, 4.5, 3.0, 1.5], hh[:5])
-tikrinti("toliau – nekeičiama", hh[4] == 20.0 and hh[-5] == 20.0)
+kr, des = hh[:8], hh[::-1][:8]
+tikrinti("galas simetriškas", all(abs(a - b) < 1e-9 for a, b in zip(kr, des)), [round(x, 1) for x in kr])
+tikrinti("ne smailus ir ne stati siena: krašte 30–50 % aukščio", 0.3 * 20 <= kr[0] <= 0.5 * 20, round(kr[0], 1))
+tikrinti("kyla, kol pasiekia sniego aukštį (per ~aukštį px)", all(a < b for a, b in zip(kr, kr[1:6])) and hh[7] == 20.0)
+tikrinti("išgaubtas (prieaugis mažėja – apvalus, ne pleištas)",
+         all(b - a > c - b for a, b, c in zip(kr, kr[1:], kr[2:6])))
+h1 = [5.0] * 30
+sn.nusodinti(h1, 15, 0.01, 5, krastai=True, profilis=[1.0] * 30)
+tikrinti("plonas sniegas (5 px) – galas trumpas (≤ 2 stulpeliai), ne ilga adata", h1[2] == 5.0 and h1[0] >= 2.5,
+         [round(x, 1) for x in h1[:4]])
 print(f"{sum(REZ)}/{len(REZ)}")
 print("4. Klodai ir šešėlis neišeina už sniego galo prie kampo")
 class P2(P):

@@ -59,8 +59,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.41"
-DATA = "2026-11-12"
+VERSIJA = "12.42"
+DATA = "2026-11-14"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -88,8 +88,6 @@ EN = frozendict({
     "Pradėti?": "Start?",
     "Programa paslėpta (bazė)": "Program hidden (baseline)",
     "Programa paslėpta (bazė, pabaigoje)": "Program hidden (baseline, at the end)",
-    "Bazės (pradžioje ir pabaigoje) skiriasi {d} W – vaizdo plokštė testo pradžioje dar nebuvo nusiraminusi; imama mažesnioji.":
-        "The baselines (start and end) differ by {d} W – the graphics card had not yet settled at the start; the lower one is used.",
     "Jūsų nustatymai": "Your settings",
     "Tik sniegas, 60 kadr./s": "Snow only, 60 fps",
     "Tik sniegas, 30 kadr./s": "Snow only, 30 fps",
@@ -131,7 +129,8 @@ EN = frozendict({
         "one rectangle {a} µs, whole buffer {b} ms, partial would be ≈ {c} ms",
     "Kaina, palyginti su „{p}“:": "Cost compared with “{p}”:",
     "kadrą": "frame",
-    "Sniegas vaizdo plokštei ({p}, palyginti su paslėpta programa): {w} W": "Graphics card power for snow ({p}, vs. program hidden): {w} W",
+    "GPU W ir MHz stulpeliai – tik informacijai: vaizdo plokštės dažnis kinta savaime, todėl jų skirtumai tarp etapų nepatikimi.":
+        "The GPU W and MHz columns are for reference only: the graphics card clock changes on its own, so their differences between stages are unreliable.",
     "Programa bus paleista iš naujo su našumo profiliuotuvu. Naudokite ją kaip įprastai 1–3 minutes, tada išjunkite (piktograma prie laikrodžio → „Išjungti“). Profilis bus įrašytas čia:":
         "The program will restart with the performance profiler. Use it as usual for 1–3 minutes, then quit it (icon next to the clock → “Exit”). The profile will be saved here:",
     "Tęsti?": "Continue?",
@@ -3250,12 +3249,28 @@ def nusodinti(h, c, kiekis, maks, krastai=False, profilis=None, sust=None):
                 sust[j] = 0  # kauburio nebeliko – vėl paprasta riba
     if krastai:  # nuo lango kraštų sniegas nubyra – kraštai suapvalėja
         # (sniego valytuvo stumiamo kauburio – sust – neliečiame: kitaip jis dingdavo dar valytuvui nepasiekus krašto)
-        for j in range(min(4, n)):
-            riba = (j + 1) * 1.5
-            if h[j] > riba and not (sust and sust[j]):
+        apvalinti_krastus(h, sust)
+
+
+def apvalinti_krastus(h, sust=None):
+    """Lango krašte sniegas nesilaiko stačia siena, bet ir ne plonu pleišteliu: galas suapvalėja kaip tikras
+    sniego karnizas – ketvirtis apskritimo, kurio spindulys lygus sniego aukščiui prie krašto (H). Anksčiau galas
+    buvo tiesus 1,5 px stulpeliui nuolydis per 4 stulpelius (12 px): ploname sniege – ilgas smailas „adatos“ galas,
+    storame – už jo stati siena. sust – stumiamų kauburių stulpeliai (jų neliečiama)."""
+    n = len(h)
+    for seka in (range(n), range(n - 1, -1, -1)):
+        seka = list(seka)[:12]
+        H = max((h[j] for j in seka), default=0.0)
+        w = max(STULPELIS, H)  # apvalinimo plotis, px
+        for i, j in enumerate(seka):
+            if sust and sust[j]:
+                break
+            d = (i + 0.5) * STULPELIS  # stulpelio vidurio atstumas nuo krašto, px
+            if d >= w:
+                break
+            riba = H * math.sqrt(1 - (1 - d / w) ** 2)
+            if h[j] > riba:
                 h[j] = riba
-            if h[n - 1 - j] > riba and not (sust and sust[n - 1 - j]):
-                h[n - 1 - j] = riba
 
 
 def kopu_bangos(rnd, ilgiai):
@@ -7083,15 +7098,20 @@ class Sniegas:
             apac = pagrindas + apacia
             kairys, desinys = [x0 + c1 * S, apac], [x0 + c2 * S, apac]
             R = kampai[0] if kampai else 0
-            if R > 0 and (c1 == 0 or c2 == nh):
-                kairys, desinys = self.sniegas_ant_kampu(virsus, c1 == 0, c2 == nh, x0, kampai[1], pagrindas, R, apac)
+            # Atkarpa baigiasi ant kampo lanko: ne tik kai sniegas iki pat lango krašto, bet ir kai kraštiniai stulpeliai
+            # per ploni piešti (< slenkstis) – tada atkarpa baigiasi 1–2 stulpeliais anksčiau, dar ant lanko, ir jos
+            # status galas kyšojo virš kampo kaip „snapelis“ (kol kita snaigė nepakeisdavo kraštinių stulpelių)
+            kraste_k = R > 0 and c1 * S < R
+            kraste_d = R > 0 and (nh - c2) * S < R
+            if kraste_k or kraste_d:
+                kairys, desinys = self.sniegas_ant_kampu(virsus, kraste_k, kraste_d, x0, kampai[1], pagrindas, R, apac)
                 if not virsus:  # sniegas tik ant paties kampo lanko – ten jis nesilaiko
                     continue
             p.poligonas(kairys + virsus + desinys, baltas)
             # ties apvaliais kampais sniego galas suapvalintas (nuleistas) – ten klodai ir šešėlis apkerpami pagal
             # tikrąjį viršų (be to jie išlįsdavo „spygliu“, o visai be jų galas buvo balta „nosis“)
-            kamp_k = int(2 * R // S) + 2 if R > 0 and c1 == 0 else 0
-            kamp_d = nh - int(2 * R // S) - 3 if R > 0 and c2 == nh else nh
+            kamp_k = int(2 * R // S) + 2 if kraste_k else 0
+            kamp_d = nh - int(2 * R // S) - 3 if kraste_d else nh
 
             def kampe(q):
                 return q < kamp_k or q > kamp_d
@@ -9661,6 +9681,16 @@ class Sniegas:
         S, k, d = STULPELIS, self.k, e["kryptis"]
         if e.get("kruvos_kryptis") != d:  # apsisuko – senas kauburys lieka, kur buvo
             e["kruvos_kryptis"], e["kruvos_ilgis"] = d, 0
+            st = self.langai.get(e["pav"][1]) if e["pav"][0] == "langas" else None
+            if st is not None:  # ant lango – prie krašto paliktas kauburys nubyra (kitaip – stati siena)
+                sust = st.get("sust")
+                if sust:
+                    for j in (*range(min(8, len(sust))), *range(max(0, len(sust) - 8), len(sust))):
+                        sust[j] = 0
+                apvalinti_krastus(h, sust)
+                if not st["nesvarus"]:
+                    st["nesvarus"] = True
+                    self.nesvarus_langai.append(st)
         c_lo, c_hi = max(0, int((lo - x0) // S)), min(len(h), int((hi - x0) // S))
         c_priekis = int((priekis - x0) // S)
         c_galas = int((e["x"] - d * self.valyt_pus() - x0) // S)
@@ -9672,6 +9702,18 @@ class Sniegas:
             e["kruvos_ilgis"] = 0
             return
         n_telpa, pilti, perteklius, nuo, iki = rez
+        st = self.langai.get(e["pav"][1]) if krastas and e["pav"][0] == "langas" else None
+        if st is not None and (hi >= st["r"] - 2 * S if d > 0 else lo <= st["l"] + 2 * S):  # tikras lango kraštas
+            # prie lango krašto stumiamas kauburys nebestovi aukšta siena, užlinkusia per kampą: jo priekis nubyra per
+            # kraštą (apvalinti_krastus; stumiamumo žymė – tik kraštiniams stulpeliams), nubyrėjęs – į byrantį sniegą
+            sust, n_ = st.get("sust"), len(h)
+            sritis = range(max(0, n_ - 12), n_) if d > 0 else range(min(12, n_))
+            pries = sum(h[j] for j in sritis)
+            if sust:
+                for j in sritis:
+                    sust[j] = 0
+            apvalinti_krastus(h, sust)
+            pilti += max(0.0, pries - sum(h[j] for j in sritis))
         if perteklius > 0:  # tik purslai – sniegas dingsta
             # pagal kiekį, ne kas kadrą: giliame sniege perteklius būna kiekviename kadre, ir prie verstuvo
             # nuolat virpėdavo iki 3 gumulų per kadrą (~90 per sekundę)
@@ -9701,15 +9743,18 @@ class Sniegas:
             n = 1
         if n:
             for _ in range(n):
+                # išstumtas per kraštą gumulas išlekia lanku (stumtas valytuvo), ne krenta stulpu, o ore subyra
+                # (valyt_daleliu_zingsnis, „byra“) – iki 12.42 tiesiu stulpu krentantys kvadratėliai atrodė kaip ledukai
                 self.valyt_daleles.append({
                     "x": x + d * random.uniform(0, 5) * k, "y": y - random.uniform(0, maks + 2),
-                    "vx": d * random.uniform(12, 65) * k, "vy": -random.uniform(0, 45) * k,
-                    "gyv": 5.0, "kiekis": kaupas / n, "sena": None, "dyd": random.choice((Pe, Pe, max(2, Pe - 1)))})
+                    "vx": d * random.uniform(18, 55) * k, "vy": -random.uniform(0, 30) * k,
+                    "gyv": 5.0, "kiekis": kaupas / n, "sena": None, "dyd": random.choice((Pe + 1, Pe, Pe)),
+                    "byra": random.uniform(0.2, 0.45)})
             kaupas = 0.0
         if e is not None:
             e["pilti_kaupas"] = kaupas
         smulkus = max(1, Pe // 2)
-        for _ in range(min(random.choice((0, 1, 1, 2)), max(0, vietos - n))):  # trupiniai – tik vaizdas
+        for _ in range(min(random.choice((0, 0, 1)), max(0, vietos - n))):  # trupiniai – tik vaizdas (12.42: retesni)
             self.valyt_daleles.append({
                 "x": x + d * random.uniform(0, 7) * k, "y": y - random.uniform(0, maks + 2),
                 "vx": d * random.uniform(8, 90) * k, "vy": -random.uniform(0, 70) * k,
@@ -10112,7 +10157,7 @@ class Sniegas:
         maks_l = self.n["max_aukstis_languose"] * self.k
         langams = kaupia(self.n, "kaupti_languose")
         oro_riba = 260 * self.k  # smulkūs trupiniai krenta lėčiau (oro pasipriešinimas)
-        likusios = []
+        likusios, nauji = [], []
         for d in self.valyt_daleles:
             y0 = d["y"]
             d["vy"] += trauka * dt
@@ -10123,6 +10168,18 @@ class Sniegas:
             d["x"] += d["vx"] * dt
             d["y"] += d["vy"] * dt
             d["gyv"] -= dt
+            if "byra" in d:  # krentantis gumulas ore byra: atskyla trupinių, pats mažėja
+                d["byra"] -= dt
+                if d["byra"] <= 0 and len(self.valyt_daleles) + len(nauji) < MAKS_VALYT_DALELIU:
+                    for _ in range(random.choice((0, 1))):  # 12.42: mažiau trupinių
+                        nauji.append({"x": d["x"] + random.uniform(-2, 2) * self.k, "y": d["y"] - random.uniform(0, d["dyd"]),
+                                      "vx": d["vx"] * random.uniform(0.6, 1.0) + random.uniform(-10, 10) * self.k,
+                                      "vy": d["vy"] * random.uniform(0.6, 1.0), "gyv": 8.0, "oras": True,
+                                      "kiekis": 0.0, "sena": None, "dyd": max(1, d["dyd"] // 2)})
+                    d["dyd"] -= 1
+                    d["byra"] = random.uniform(0.3, 0.5) if d["dyd"] > 2 else None
+                    if d["byra"] is None:
+                        del d["byra"]
             if d["vy"] > 0 and nd:
                 di = int(d["x"]) >> 6
                 ant_lango = False
@@ -10156,7 +10213,7 @@ class Sniegas:
                     self.papildomos.append(d["sena"])
             else:
                 likusios.append(d)
-        self.valyt_daleles = likusios
+        self.valyt_daleles = likusios + nauji
 
     def piesti_gumulus(self, i_langa, visas, senio):
         """Sniego gumulai – su kontūru, kad matytųsi ir ant balto lango. senio=True – senių purslai („d“): senio
@@ -10173,10 +10230,20 @@ class Sniegas:
             x, y, dd = int(d["x"]), int(d["y"]), d.get("d") or d.get("dyd", d_)
             nauja = self.ribos(x - 1, y - dd - 1, x + dd + 1, y + 1)
             if nauja:
-                user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*nauja)), kontur)
-                vidus = self.ribos(x, y - dd, x + dd, y)
-                if vidus:
-                    user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*vidus)), baltas)
+                if dd >= 3:  # apvalesnis gumulas: kontūras ir vidus be kampų (kvadratėliai atrodė kaip ledukai)
+                    for a, b, c_, e_ in ((x, y - dd - 1, x + dd, y + 1), (x - 1, y - dd, x + dd + 1, y)):
+                        rr = self.ribos(a, b, c_, e_)
+                        if rr:
+                            user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*rr)), kontur)
+                    for a, b, c_, e_ in ((x + 1, y - dd, x + dd - 1, y), (x, y - dd + 1, x + dd, y - 1)):
+                        rr = self.ribos(a, b, c_, e_)
+                        if rr:
+                            user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*rr)), baltas)
+                else:
+                    user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*nauja)), kontur)
+                    vidus = self.ribos(x, y - dd, x + dd, y)
+                    if vidus:
+                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*vidus)), baltas)
                 if senio:
                     dengti.append(nauja)
             if not visas:
@@ -12234,17 +12301,11 @@ class Sniegas:
                 if r.get("paslepta"):
                     continue
                 dd = r["darbas"] - baze["darbas"] if r["darbas"] is not None and baze["darbas"] is not None else None
-                dw = r["w"] - baze["w"] if r["w"] is not None and baze["w"] is not None else None
-                eil.append(f"  {r['pav']:<{plotis}}{f(dd, '+.2f'):>7} ms/{T('kadrą')}   {f(dw, '+.1f'):>6} W")
-            bazes = [r["w"] for r in rez if r.get("paslepta", r is rez[0]) and r["w"] is not None]
-            if bazes:
-                if len(bazes) > 1 and max(bazes) - min(bazes) >= 1.0:
-                    eil.append("  " + T("Bazės (pradžioje ir pabaigoje) skiriasi {d} W – vaizdo plokštė testo pradžioje "
-                                        "dar nebuvo nusiraminusi; imama mažesnioji.").format(d=f(max(bazes) - min(bazes), ".1f")))
-                for r in (rez[1], rez[2]):  # jūsų nustatymai ir „tik sniegas, 60 k/s“
-                    if r["w"] is not None:
-                        eil.append("  " + T("Sniegas vaizdo plokštei ({p}, palyginti su paslėpta programa): {w} W").format(
-                            p=r["pav"], w=f(r["w"] - min(bazes), "+.1f")))
+                eil.append(f"  {r['pav']:<{plotis}}{f(dd, '+.2f'):>7} ms/{T('kadrą')}")
+            # W palyginimų nerodome: vaizdo plokštės dažnis šokinėja nepriklausomai nuo programos (tas pats etapas
+            # vienąkart 380 MHz, kitąkart 1119 MHz), todėl W skirtumai tarp etapų klaidino (dažnai net neigiami)
+            eil.append("  " + T("GPU W ir MHz stulpeliai – tik informacijai: vaizdo plokštės dažnis kinta savaime, todėl "
+                                "jų skirtumai tarp etapų nepatikimi."))
         # kodėl pasirinktas viso buferio / dalinis atstatymas – įverčiai, kuriais remiasi sprendimas
         if any(r.get("kaina_pil") is not None for r in rez[1:]):
             eil += ["", T("Atkūrimo sprendimo įverčiai etapo pabaigoje (renkamasi: stačiakampių × vieno kaina > viso kaina × "
@@ -12318,13 +12379,17 @@ class Sniegas:
             else:
                 su_sniegu = sum(1 for st in self.langai.values() if max(st["h"]) > 0.5)
                 vid = self.darbo_ms / self.kadru_skaitliklis if self.kadru_skaitliklis else 0
+
+                def ms(x):  # lietuviškai – dešimtainis kablelis
+                    t = f"{x:.1f}"
+                    return t.replace(".", ",") if KALBA == "lt" else t
                 tekstas = T("Snaigių: {a}   Kadrų per sek.: {b}   Kadrui: {c} ms   Langų su sniegu: {d}").format(
-                    a=len(self.snaiges), b=self.kadru_skaitliklis, c=f"{vid:.1f}", d=su_sniegu)
+                    a=len(self.snaiges), b=self.kadru_skaitliklis, c=ms(vid), d=su_sniegu)
                 if self.kadru_skaitliklis:
                     k_ = self.kadru_skaitliklis
                     tekstas += T("   Fizika / atkūrimas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)").format(
-                        a=f"{self.b_fizika / k_:.1f}", r=f"{self.b_atstatymas / k_:.1f}",
-                        b=f"{self.b_buferis / k_:.1f}", c=f"{self.b_ekranas / k_:.1f}", n=round(self.b_kopijos / k_))
+                        a=ms(self.b_fizika / k_), r=ms(self.b_atstatymas / k_),
+                        b=ms(self.b_buferis / k_), c=ms(self.b_ekranas / k_), n=round(self.b_kopijos / k_))
             trynimai = self.windows_trynimai - self.__dict__.get("busenos_trynimai0", 0)
             perkurimai = getattr(self, "ekranu_perkurimai", 0) - self.__dict__.get("busenos_perkurimai0", 0)
             if trynimai:
@@ -12526,7 +12591,8 @@ class Sniegas:
         for raktas in ("max_aukstis", "max_aukstis_languose"):
             self.papildomi_aprasai[raktas] = (lambda raktas=raktas: T(
                 "Taškais 1920×1080 ekrane; didesniame – proporcingai daugiau (šiame ekrane ×{k}, t. y. iki {px} px).")
-                .format(k=f"{self.k:.2f}".rstrip("0").rstrip("."), px=round(self.n[raktas] * self.k)))
+                .format(k=f"{self.k:.2f}".rstrip("0").rstrip(".").replace(".", "," if KALBA == "lt" else "."),
+                        px=round(self.n[raktas] * self.k)))
         self.skilties_ikona(g, "nuvalyti", T("Nuvalyti sniegą"), self.nuvalyti)
 
         g = self.skilties_remas(stulpeliai[1], "Vėjas", "vejas_ijungtas")
