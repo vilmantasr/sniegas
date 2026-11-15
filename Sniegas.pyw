@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.44"
+VERSIJA = "12.45"
 DATA = "2026-11-15"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -531,7 +531,7 @@ EN = frozendict({
         "How many snowplows clear the snow.",
     "Sniego valytuvų dydis, % įprasto.":
         "Snowplow size, % of normal.",
-    "Nuvalytos vietos apledėja": "Cleared spots ice over",
+    "Nuvalytos langų vietos apledėja": "Cleared spots on windows ice over",
     "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvai buksuoja. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.":
         "Where a snowplow has cleared the top of a window and no snow has settled for about 30 s, a 50–100 px patch of ice forms. Baubles barely slow down on it and snowplows spin their wheels. Ice covered with snow is not slippery; it melts after a few minutes.",
     "60 – sklandžiau, bet procesorius dirba maždaug dvigubai daugiau.": "60 is smoother, but uses about twice the CPU.",
@@ -575,6 +575,13 @@ EN = frozendict({
         "~5 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterward. Results – sniegas_nasumas.txt (“Open”).",
     "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Rezultatai – sniegas_profilis.txt.":
         "Performance profile (Python 3.15+): the program restarts and records which of its parts take the most CPU time. Results – sniegas_profilis.txt.",
+    "Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant Sniego piktogramos prie laikrodžio.":
+        "Performance test started (~{m} min). Hover over the Snow icon next to the clock to see progress.",
+    "Sniegas – našumo testas: {i} iš {n} etapų, liko ~{m} min": "Snow – performance test: stage {i} of {n}, ~{m} min left",
+    "(sniegas paslėptas – matuojama be jo)": "(snow hidden – measuring without it)",
+    "Vyksta našumo testas…": "Performance test running…",
+    "Našumo testas baigtas {laikas} – rezultatai: „Diagnostika“ → „Atverti“.":
+        "Performance test finished at {laikas} – results: “Diagnostics” → “Open”.",
     "Našumo testas baigtas. Rezultatai – skiltyje „Diagnostika“ → „Atverti“.":
         "Performance test finished. Results – in “Diagnostics” → “Open”.",
 })
@@ -990,7 +997,7 @@ NUMATYTI = frozendict({
     "senio_lempuciu_animacija": "sviecia",  # SENIO_LEMPUCIU_ANIMACIJOS
     "valytuvu_kiekis": 2,
     "valytuvu_dydis": 100,
-    "ledas_languose": False,  # sniego valytuvų nuvalytose lango vietose susidaro ledas (LEDO_*)
+    "ledas_languose": True,  # sniego valytuvų nuvalytose lango vietose susidaro ledas (LEDO_*); nuo 12.45 – įjungta
     "be_apribojimu": False,  # išplėstos ribos (RIBOS_LAISVOS) – savo rizika
 })
 
@@ -1110,6 +1117,8 @@ VEJO_KRYPCIU_TEKSTAI = ("Kintanti", "Į dešinę", "Į kairę")
 # Gūsių laikai – pastovūs (senose nustatymų bylose esantys gusiu_pauze, gusio_trukme, gusio_kilimas, gusio_rimimas
 # tiesiog praleidžiami)
 GUSIU_PAUZE = 30  # s, vidutiniškai (±50 %)
+VEJO_SKLIDIMAS = 2.5  # s – per tiek vėjo pasikeitimas (gūsis) nukeliauja per visą ekraną nuo vėjo pusės
+VEJO_JUOSTOS = 48  # tiek ekrano juostų skaičiuojamas atskiras vėjas (vejo_juostos)
 GUSIO_TRUKME = 4  # s, kartu su įsibėgėjimu (±30 %)
 GUSIO_KILIMAS = 100  # %, kaip greitai vėjas stiprėja
 GUSIO_RIMIMAS = 100  # %, kaip greitai silpsta
@@ -6522,6 +6531,15 @@ class Sniegas:
             user32.DestroyIcon(self._deklo_ikona)
             self._deklo_ikona = None
 
+    def deklo_patarimas(self, tekstas=None):
+        """Patarimas užvedus pelę ant dėklo piktogramos (None – įprastas). Našumo testo metu – jo eiga."""
+        if not self.deklas:
+            return
+        d = self.deklas
+        d.uFlags = NIF_TIP
+        d.szTip = (tekstas or PAVADINIMAS + "\n" + T("Vidurinis pelės mygtukas – paslėpti / rodyti"))[:127]
+        shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(d))
+
     def deklo_pranesimas(self, tekstas):
         if not self.deklas:
             return
@@ -7608,6 +7626,33 @@ class Sniegas:
         stipreja = abs(self.vejo_tikslas) > abs(self.vejas)
         greitis = 0.8 * (GUSIO_KILIMAS if stipreja else GUSIO_RIMIMAS) / 100
         self.vejas += (self.vejo_tikslas - self.vejas) * min(1.0, dt * greitis)
+
+    def vejo_juostos(self, t):
+        """Vėjo greitis (px/s) VEJO_JUOSTOS ekrano juostose: kiekvienoje – toks, koks buvo prieš tiek laiko, kiek
+        pasikeitimui reikia nukeliauti nuo vėjo pusės krašto iki jos (vėjo istorija – paskutinės ~VEJO_SKLIDIMAS s)."""
+        ist = self.__dict__.get("vejo_ist")
+        if ist is None or (ist and t < ist[-1][0]):  # pirmas kadras arba laikas pradėtas iš naujo
+            ist = self.vejo_ist = []
+        ist.append((t, self.vejas))
+        while len(ist) > 2 and ist[1][0] < t - VEJO_SKLIDIMAS - 0.1:
+            del ist[0]
+        laikai = [a for a, _ in ist]
+        d = 1 if self.vejas >= 0 else -1
+        px = 12 * self.k
+        rez = []
+        for i in range(VEJO_JUOSTOS):
+            dalis = (i + 0.5) / VEJO_JUOSTOS
+            tt = t - VEJO_SKLIDIMAS * (dalis if d > 0 else 1 - dalis)
+            j = bisect.bisect_left(laikai, tt)
+            if j <= 0:
+                v = ist[0][1]
+            elif j >= len(ist):
+                v = ist[-1][1]
+            else:
+                (t0, v0), (t1, v1) = ist[j - 1], ist[j]
+                v = v0 + (v1 - v0) * ((tt - t0) / (t1 - t0) if t1 > t0 else 1.0)
+            rez.append(v * px)
+        return rez
 
     def pradeti_gusi(self):
         n = self.n
@@ -11443,6 +11488,11 @@ class Sniegas:
         t_ = pc()
         self.vejo_zingsnis(dt)
         vejas_px = self.vejas * 12 * self.k
+        # vėjas pagal vietą ekrane: pasikeitimas (gūsis, nurimimas) ateina iš vėjo pusės ir per VEJO_SKLIDIMAS s
+        # nukeliauja per visą ekraną – kitaip gūsis visur prasidėdavo tą pačią akimirką
+        vejo_juostos = self.vejo_juostos(t)
+        juostu_k = len(vejo_juostos) / max(1, self.vw)
+        juostu_max = len(vejo_juostos) - 1
         gk = n["greitis"] / 100
         maks_z = n["max_aukstis"] * self.k
         maks_l = n["max_aukstis_languose"] * self.k
@@ -11462,7 +11512,7 @@ class Sniegas:
         # Oro sūkuriai: stiprumas – pagal „Sūkurius“ (0 – sūkurių visai nėra)
         sukurys = n["gusiai"] * 6 * self.k * n["vejas_ijungtas"]
         # gūsio banga keliauja per ekraną: vėjas vietomis stipresnis, vietomis silpnesnis
-        banga_k, banga_t = 1 / (260 * self.k), t * 0.6
+        banga_k, banga_t = 1 / (260 * self.k), t * 0.6 * (1 if self.vejas >= 0 else -1)  # banga – pavėjui
         svyr, plasn = n["svyravimas"] / 100, n["plasnojimas"] / 100
         # netolygaus svyravimo mostai (dvi bangos, kintantis mostas, sfz ≤ ~1) siauresni nei vienos sinusoidės –
         # SVYRAVIMO_PLOTIS juos praplatina, kad tas pats procentas reikštų tokį pat mostų plotį kaip senojoje fizikoje
@@ -11524,7 +11574,8 @@ class Sniegas:
                 f[SLETOS] = (u, v, banga, mostas)
             fz = t * f[SDAZN] + f[SFAZE]
             # snaigė prie vėjo prisitaiko greitai, bet ne akimirksniu
-            tikslas = vejas_px * z * banga + u
+            bi = int(x * juostu_k)
+            tikslas = vejo_juostos[0 if bi < 0 else juostu_max if bi > juostu_max else bi] * z * banga + u
             vx = f[SVX]
             k_ = dt * f[SREAKCIJA]
             vx += (tikslas - vx) * (k_ if k_ < 1 else 1)
@@ -12579,6 +12630,10 @@ class Sniegas:
                        "paslepe": self.vartotojas_paslepe}
         ZURNALAS.rasyti(f"NAŠUMO TESTAS pradėtas ({len(etapai)} etapų; vaizdo plokštė: {gpu_pav or '–'})")
         self.root.withdraw()  # peržiūrų animacijos netrukdo matuoti
+        # kol nustatymų langas paslėptas, o pradžioje ir pabaigoje nesimato ir sniego, – eiga prie laikrodžio
+        # (kitaip neaišku, ar testas dar vyksta, ar jau baigėsi)
+        self.deklo_pranesimas(T("Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant Sniego piktogramos prie "
+                                "laikrodžio.").format(m=trukme))
         self.testo_etapas(0)
 
     def testo_etapas(self, i):
@@ -12589,6 +12644,10 @@ class Sniegas:
             self.testo_pabaiga()
             return
         _, pakeitimai, rezimas = testas["etapai"][i]
+        liko = max(1, round((len(testas["etapai"]) - i) * (NASUMO_ISIBEGEJIMAS + NASUMO_MATAVIMAS) / 60))
+        self.deklo_patarimas(T("Sniegas – našumo testas: {i} iš {n} etapų, liko ~{m} min").format(
+            i=i + 1, n=len(testas["etapai"]), m=liko)
+            + ("\n" + T("(sniegas paslėptas – matuojama be jo)") if pakeitimai is None else ""))
         self.kopijavimo_rezimas = rezimas
         self.vartotojas_paslepe = pakeitimai is None
         nauji = {k: (list(v) if isinstance(v, list) else v) for k, v in testas["pradiniai"].items()}
@@ -12680,6 +12739,8 @@ class Sniegas:
             ZURNALAS.rasyti(f"KLAIDA: našumo testo rezultatai neįrašyti: {e!r}")
             irasyta = False
         ZURNALAS.rasyti("NAŠUMO TESTAS baigtas:\n" + tekstas)
+        self.deklo_patarimas()
+        self.testo_baigtas = time.time() if irasyta else None  # būsenos juostoje kelias minutes – kad baigėsi
         # Be modalinio klausimo: jis stabdė visą programą (ir sniegą), o kai tuo metu dirbama kita programa,
         # Windows jį (ir nustatymų langą) palikdavo už jos – nesimatė nieko. Dabar – pranešimas prie laikrodžio,
         # rezultatai – „Diagnostika“ → „Atverti“.
@@ -12793,7 +12854,9 @@ class Sniegas:
 
     def atnaujinti_busena(self):
         try:
-            if self.vartotojas_paslepe:
+            if self.__dict__.get("testas"):
+                tekstas = T("Vyksta našumo testas…")
+            elif self.vartotojas_paslepe:
                 tekstas = T("Viskas paslėpta.")
             elif self.pilnas_ekranas:
                 tekstas = T("Pristabdyta – programa per visą ekraną.")
@@ -12819,6 +12882,10 @@ class Sniegas:
                 tekstas += T("   Ekranai keitėsi: {n} k.").format(n=perkurimai)
             if self.paskutine_klaida:
                 tekstas += T("   Klaida: {e}").format(e=self.paskutine_klaida[:60])
+            baigtas = self.__dict__.get("testo_baigtas")
+            if baigtas and time.time() - baigtas < 300:
+                tekstas = T("Našumo testas baigtas {laikas} – rezultatai: „Diagnostika“ → „Atverti“.").format(
+                    laikas=time.strftime("%H:%M", time.localtime(baigtas))) + "   " + tekstas
             self.busena.configure(text=tekstas)
         except Exception:
             pass
@@ -14514,7 +14581,7 @@ class Sniegas:
         self.valyt_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.slankiklis(g, "valytuvu_kiekis", "Kiekis", 2)
         self.slankiklis(g, "valytuvu_dydis", "Dydis, %", 3)
-        self.zymimasis(g, "ledas_languose", "Nuvalytos vietos apledėja", 4)
+        self.zymimasis(g, "ledas_languose", "Nuvalytos langų vietos apledėja", 4)
         self.valyt_perziura = {"x": 80.0, "kryptis": 1, "ratai": 0.0,
                                 "h": [3.0 + (i % 7) * 0.5 for i in range(pp("valytuvai") // 3)], "daleles": []}
         self.piesti_valyt_perziura()
