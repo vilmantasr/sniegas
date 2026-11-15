@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.46"
+VERSIJA = "12.47"
 DATA = "2026-11-15"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -7628,6 +7628,7 @@ class Sniegas:
             for f, (x, y) in zip(random.sample(self.snaiges, kiek), random.sample(taskai, kiek)):
                 f[SX], f[SY] = x, y
         self.nesvarios_sritys.append(st["sritis"])
+        st.pop("ledas", None)  # senasis lango sniegas nebegalioja – jo ledo kibirkštėlės užgęsta (blizgesiu_zingsnis)
 
     # ------------------------------------------------------------ vėjas
 
@@ -11008,7 +11009,8 @@ class Sniegas:
                 nauja = self.ribos(x, y - sk["h"], x + sk["w"], y)
                 if nauja:
                     user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*nauja)), self.g.teptukas(sk["spalva"]))
-                    if kerta_egles(nauja, egles, egliu_virsus):
+                    # ant lango – visada (kaip bumbuliukas): žemai nuleistame lange šukė tarp eglių būtų priešais kelią
+                    if ant_lango(sk) or kerta_egles(nauja, egles, egliu_virsus):
                         dengti.append(nauja)
             if not visas:
                 if sk["sena"]:
@@ -11090,7 +11092,7 @@ class Sniegas:
         dalys = sorted(self._fizikos_dalys.items(), key=lambda kv: -kv[1])[:4]
         ZURNALAS.rasyti(f"LĖTAS KADRAS: {darbas:.0f} ms | langų skaitymas {langai:.1f} | fizika {fizika:.1f} ("
                         + ", ".join(f"{k} {v:.1f}" for k, v in dalys) + f") | atstatymas {atstatymas:.1f} | piešimas "
-                        f"{piesimas:.1f} | ekranas {ekranas:.1f} ms ({self._ekrano_kv} kop.) | pilnas perpiešimas: "
+                        f"{piesimas:.1f} | ekranas {ekranas:.1f} ms ({self._ekrano_kv} kop.) | viso kadro perpiešimas: "
                         f"{'taip' if pilnas else 'ne'} | šiukšlių surinkimas {self._gc_ms:.0f} ms | snaigės {len(self.snaiges)}"
                         f" | langai {len(self.langai)}" + self.alfa_leto_kadro_dalys())
 
@@ -11365,8 +11367,12 @@ class Sniegas:
                 persikele = f[SY] < b["y"] - 20 or abs(f[SX] - b["x"]) > 60
                 b["x"], b["y"] = f[SX], f[SY]
             led_st = b.get("ledas")
-            if led_st is not None and led_st is not True and not self.ant_ledo(led_st, b["x"]):
-                persikele = True  # ledą ką tik užstūmė sniego valytuvo krūva ar užsnigo – kibirkštėlė užgęsta
+            if led_st is not None:
+                # ledą ką tik užstūmė sniego valytuvo krūva ar užsnigo, langas pasislinko, užsidarė ar tą vietą
+                # uždengė kitas langas – užgęsta
+                c = int((b["x"] - led_st["l"]) // STULPELIS)
+                if not self.ant_ledo(led_st, b["x"]) or not any(c1 <= c < c2 for c1, c2 in led_st["matomi"]):
+                    persikele = True
             if b["t"] >= b["trukme"] or persikele:
                 if b["sena"]:
                     self.papildomos.append(b["sena"])
@@ -12579,7 +12585,7 @@ class Sniegas:
                     if getattr(self, "vsync_periodas", 0) else "sinchronizuota su ekranu: ne"),
                    f"snaigės {len(self.snaiges)}",
                    f"langai su sniegu {sum(1 for st in self.langai.values() if max(st['h']) > 0.5)}/{len(self.langai)}",
-                   f"pilni kopijavimai {self.d_pilni}",
+                   f"viso kadro kopijavimai {self.d_pilni}",
                    f"daliniai {self.d_plotas / trukme / 1e6:.2f} Mpx/s",
                    f"Windows trynė {self.windows_trynimai - self.d_trynimai0}",
                    f"iškelta į viršų {self.d_topmost}",
@@ -14457,7 +14463,7 @@ class Sniegas:
         self.skilties_ikona(g, "isbarstyti", T("Išdėlioti iš naujo"), self.perdelioti_senius)
         self.senio_drobe = tk.Canvas(g, width=pp("seniai"), height=PERZ_MAZA[1], bg=DANGUS, highlightthickness=0,
                                      cursor="hand2")
-        self.animuoti_uzvedus(self.senio_drobe, "senis")
+        self.animuoti_uzvedus(self.senio_drobe, "senis", self.piesti_senio_perziura)
         self.senio_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.slankiklis(g, "senio_kiekis", "Kiekis", 2)
         self.slankiklis(g, "senio_dydis", "Dydis, %", 3)
@@ -14579,7 +14585,8 @@ class Sniegas:
             if slenkstis >= lygis:
                 break
             c.create_rectangle(x0 + x * Pp, y0 + y * Pp, x0 + (x + 1) * Pp, y0 + (y + 1) * Pp, fill=SNIEGAS, outline="")
-        for x, y, sp in senio_mirksnio_langeliai(poza, kadras, nr >= n) if senio_mirksi(p) else ():
+        mirksi = "senis" in self.uzvesta and senio_mirksi(p)  # nuvedus pelę peržiūra sustoja – atmerktomis akimis
+        for x, y, sp in senio_mirksnio_langeliai(poza, kadras, nr >= n) if mirksi else ():
             c.create_rectangle(x0 + x * Pp, y0 + y * Pp, x0 + (x + 1) * Pp, y0 + (y + 1) * Pp, fill=sp, outline="")
         if self.n["senio_lemputes"]:
             lemp = senio_sluotos_lemputes(poza, kadras, nr >= n)
