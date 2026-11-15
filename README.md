@@ -15,8 +15,8 @@ Sniegas paverčia Windows darbalaukį žiema: snaigės krenta virš langų, kaup
 - Pagal laikrodį danguje iššaunami fejerverkai.
 - Yra paruošti nustatymų rinkiniai: nuo ramaus snygio iki pūgos.
 - Sąsaja lietuvių arba anglų kalba.
-- 
-<img width="1594" height="983" alt="pythonw_JJw7x6OcwM" src="https://github.com/user-attachments/assets/3b430cbb-86f4-41a8-8e5f-d4f9243613dc" />
+
+<img width="1594" height="1008" alt="pythonw_BsnODUmEmL" src="https://github.com/user-attachments/assets/d4670b2f-5128-4a89-bb3f-cf056cb49476" />
 
 ## Reikalavimai
 
