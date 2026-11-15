@@ -59,7 +59,7 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.45"
+VERSIJA = "12.46"
 DATA = "2026-11-15"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
@@ -117,9 +117,9 @@ EN = frozendict({
         "In the stages (except “Your settings”), amounts, sizes, speeds and heights are the defaults.",
     "atk.": "restore",
     "kadr./s": "fps",
-    "pilni %": "full %",
+    "visas %": "full %",
     "stač.": "rects",
-    "Atk.: pilni % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
+    "Atk.: visas % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
     "vietose; stač. – kiek stačiakampių atkurta vidutiniškai (kai ne visas).":
         "Restore: full % – share of frames where the whole background buffer was copied instead of only the changed "
         "spots; rects – average number of rectangles restored (when not full).",
@@ -3018,14 +3018,15 @@ def bumbulo_matmenys(R0, P, dydis):
     return Pb, R, max(1.0, D / (2 * R + 5))
 
 
-def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
+def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None, kilpute=False):
     """Pixel art žaisliukas-burbulas: raštas ir kepurėlė sukasi kartu su juo, blizgesys lieka vietoje.
-    langelis – tinklelio kraštinė (kad mažesni pradingimo kadrai būtų tame pačiame dydyje)."""
+    langelis – tinklelio kraštinė (kad mažesni pradingimo kadrai būtų tame pačiame dydyje); kilpute – su vieline
+    kilpute už kepurėlės (tinklelis 1 langeliu platesnis iš visų pusių – bumbulo_krastine; nustatymų paveikslėliai be jos)."""
     pagr, tamsi, sviesi = BUMBULU_SPALVOS[spalva]
     puosimas = "#d62828" if spalva in BUMBULU_RAUDONA_JUOSTA else "#fff4d6"
     k = kadras * 2 * math.pi / BUMBULU_KADRAI
     cs, sn = math.cos(k), math.sin(k)
-    n = langelis or 2 * R + 5
+    n = langelis or (bumbulo_krastine(R) if kilpute else 2 * R + 5)
     c = n / 2
     t = [[None] * n for _ in range(n)]
     # Stiklas: keturi tonai pagal rutulio normalę (šviesa iš viršaus kairės), lango atspindžio lankas ir
@@ -3090,7 +3091,27 @@ def bumbulo_tinklelis(R, spalva, rastas, kadras, langelis=None):
                     geriausia, vieta = (-kont, skers, isilg), langeliai
         for i, (x, y) in enumerate(vieta):
             t[y][x] = kepure[i % 2]
+        if kilpute and vieta:
+            # vielinė kilputė – 1 tamsesnis langelis už kepurėlės rutulio ašies kryptimi (arčiausiai ašies);
+            # taip bumbuliukas iš karto atpažįstamas kaip eglutės žaisliukas
+            mx = sum(x for x, _ in vieta) / 4 + 0.5
+            my = sum(y for _, y in vieta) / 4 + 0.5
+            geriausia = None
+            for y in range(n):
+                for x in range(n):
+                    if t[y][x] is None:
+                        dx, dy = x + 0.5 - mx, y + 0.5 - my
+                        isilg, skers = dx * ux + dy * uy, abs(dx * uy - dy * ux)
+                        if 0.9 < isilg < 2.2 and skers < 0.8 and (geriausia is None or (skers, isilg) < geriausia[0]):
+                            geriausia = ((skers, isilg), x, y)
+            if geriausia:
+                t[geriausia[2]][geriausia[1]] = kepure[1]
     return tuple(tuple(e) for e in t)
+
+
+def bumbulo_krastine(R):
+    """Ekrano bumbuliuko tinklelio kraštinė: rutulys, 2 × 2 kepurėlė ir kilputė (12.46: +2 langeliai kilputei)."""
+    return 2 * R + 7
 
 
 @functools.lru_cache(maxsize=None)
@@ -3138,7 +3159,7 @@ def bumbulo_animacijos_trukme(anim, R):
 @functools.lru_cache(maxsize=512)
 def tirpimo_tinklelis(R, spalva, rastas, lygis):
     """Burbulas, iš kurio atsitiktine (bet pastovia) tvarka dingsta pikseliai – „ištirpimas“."""
-    t = [list(e) for e in bumbulo_tinklelis(R, spalva, rastas, 0)]
+    t = [list(e) for e in bumbulo_tinklelis(R, spalva, rastas, 0, kilpute=True)]
     riba = (lygis + 1) / (TIRPIMO_KADRAI + 1)
     for y, eil in enumerate(t):
         for x in range(len(eil)):
@@ -4492,6 +4513,8 @@ SENIO_RANKA_METANT = (23, 24)   # langelis, iš kurio išskrenda gniūžtė (ži
 # eilutėje, o šluotos kotas – paskutinėje, todėl senis visada kabojo 1 langeliu virš sniego, „pasirėmęs ant šluotos“.
 # Žemiau esančios piešinio koordinatės – iki poslinkio (tinklelio viduje pridedamas pabaigoje).
 SENIO_POSLINKIS = 1
+SENIO_MIRKSEJIMAS = (4.0, 9.0)  # senis sumirksi kas tiek sekundžių (kiekvienas savo ritmu)
+SENIO_MIRKSNIS = 0.12           # kiek laiko akys užmerktos, s
 SENIO_PRITUPIMAS = (0.45, 0.9)  # pritūpusio („pritupia“ kadrai) suplotumas: galva žemiau po langelį; nukritęs – 1,3
 SENIO_TUTA = (25, 19)           # konfeti „pabūklo“ anga
 SENIO_RANKA_SEMIANT = (22, 32)  # sauja prie žemės, kai grebia sniegą
@@ -4678,7 +4701,7 @@ def _sn_puosmena(t, gx, gy, puosmena):
 
 
 @functools.lru_cache(maxsize=256)  # be ribos per ilgą darbą (visos pozos × puošmenos × tūtos) – iki ~16 MB
-def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika"):
+def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika", mirksi=False):
     """poza: „eina“ (kadras 0…5), „stovi“, „kabo“ (atsilenkimas × rankų padėtis, žr. senio_kabo_kadras), „nukrenta“, „meta“, „sauna“, „semia“, „mojuoja“,
     „rankos“, „dairosi“ (galva atsukta į kitą pusę). Žiūri į dešinę (i_kaire – veidrodiškai).
     Grąžina eilutes su spalvomis (None – permatoma). Priesaga „_be“ – ta pati poza be šluotos."""
@@ -4698,13 +4721,14 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika")
     gy = round(gy)
     # „dairosi“ – galva atsukta į kitą pusę (veidas veidrodiškai galvos centro, langelio gx, atžvilgiu)
     v = (lambda x: 2 * gx - x) if poza == "dairosi" else (lambda x: x)
-    for ax in (gx - 3, gx + 1):  # akys
-        t[(v(ax), gy - 1)] = t[(v(ax), gy)] = "K"
+    for ax in (gx - 3, gx + 1):  # akys; mirksi – užmerktos (viršutinis akies langelis – galvos spalva)
+        t[(v(ax), gy - 1)] = t.get((v(ax), gy - 1), "W") if mirksi else "K"
+        t[(v(ax), gy)] = "K"
     t[(v(gx - 4), gy + 2)] = t[(v(gx + 3), gy + 2)] = "k"  # skruostai
     for i, ch in enumerate("OOo"):
         t[(v(gx + i), gy + 2)] = ch
-    if poza == "kabo":  # nustebęs
-        t[(gx - 1, gy + 4)] = "K"
+    if poza == "kabo":  # nustebęs – „o“ (1 × 2; vienas langelis apačioje susiliedavo su kontūru ir nesimatė)
+        t[(gx - 1, gy + 3)] = t[(gx - 1, gy + 4)] = "K"
     else:
         t[(v(gx - 2), gy + 3)] = t[(v(gx + 1), gy + 3)] = "K"
         t[(v(gx - 1), gy + 4)] = t[(v(gx), gy + 4)] = "K"
@@ -4813,6 +4837,21 @@ SENIO_KADRAI = ([("eina", i) for i in range(SENIO_EINA_KADRAI)] + [("stovi", 0)]
                 [(p_ + SENIO_BE_SLUOTOS, k_) for p_, k_ in (("stovi", 0), ("mojuoja", 0), ("mojuoja", 1),
                                                             ("rankos", 0), ("rankos", 1), ("dairosi", 0))] +
                 [("pritupia", k_) for k_ in range(len(SENIO_PRITUPIMAS))])
+
+
+@functools.lru_cache(maxsize=None)
+def senio_mirksnio_langeliai(poza, kadras, i_kaire):
+    """Užmerktų akių langeliai [(x, y, spalva)] – piešiami ant juostos kadro, kai senis sumirksi (bet kurioje pozoje)."""
+    a, b = senio_tinklelis(poza, kadras, i_kaire), senio_tinklelis(poza, kadras, i_kaire, mirksi=True)
+    return tuple((x, y, b[y][x]) for y in range(SENIO_H) for x in range(SENIO_W) if b[y][x] != a[y][x] and b[y][x])
+
+
+def senio_mirksi(s_):
+    """Ar senis dabar sumirksėjęs: kas 4–9 s (kiekvienas savo ritmu) ~0,12 s užmerktos akys."""
+    m = s_.get("mirksi")
+    if m is None:
+        m = s_["mirksi"] = (random.uniform(*SENIO_MIRKSEJIMAS), random.uniform(0.0, 9.0))
+    return (time.monotonic() + m[1]) % m[0] < SENIO_MIRKSNIS
 
 
 @functools.lru_cache(maxsize=None)
@@ -7737,11 +7776,11 @@ class Sniegas:
         for i in range(self.n["bumbulu_kiekis"]):
             Pb, R, Pf = bumbulo_matmenys(random.choice((6, 6, 7)), self.P, self.n["bumbulu_dydis"])
             spalva, rastas = spalvos[i % len(spalvos)], BUMBULU_RASTAI[random.choice(rastai)]
-            n = 2 * R + 5
+            n = bumbulo_krastine(R)
             W = round(n * Pf)
             # kadrai: 8 sukimosi, mažėjantys, žiežirbos, tirpstantys
-            kadrai = ([bumbulo_tinklelis(R, spalva, rastas, k) for k in range(BUMBULU_KADRAI)]
-                      + [bumbulo_tinklelis(r, spalva, rastas, 0, n) for r in range(R - 1, 0, -1)]
+            kadrai = ([bumbulo_tinklelis(R, spalva, rastas, k, kilpute=True) for k in range(BUMBULU_KADRAI)]
+                      + [bumbulo_tinklelis(r, spalva, rastas, 0, n, True) for r in range(R - 1, 0, -1)]
                       + [blyksnio_tinklelis(n, k) for k in range(BUMBULU_BLYKSNIAI)]
                       + [tirpimo_tinklelis(R, spalva, rastas, k) for k in range(TIRPIMO_KADRAI)])
             sp = self.naujas_dc(W * len(kadrai), W)
@@ -8719,7 +8758,12 @@ class Sniegas:
                     s_["y"] += st["t"] - s_["st"]["t"]
                     s_["st"] = st
             iseina = s_.get("iseina") and pav and pav[0] == "zeme"
-            a = self.senio_atrama(s_, min(max(s_["x"], 1.0), self.vw - 1.0) if iseina else s_["x"])
+            if iseina and 0 <= pav[1] < len(self.zemes_ruozai):  # už ekrano – atrama tikrinama ruožo krašte (jis
+                r1, r2, _ = self.zemes_ruozai[pav[1]]  # gali prasidėti ne nuo 0 stulpelio – kitaip senis nukrisdavo)
+                x_atr = min(max(s_["x"], r1 * STULPELIS + 1.0), r2 * STULPELIS - 1.0)
+            else:
+                x_atr = s_["x"]
+            a = self.senio_atrama(s_, x_atr)
             if a is None:  # langas užsidarė / buvo uždengtas – krenta
                 s_.update(busena="krenta", vy=0.0, vx=0.0, pav=None, st=None, y_fiks=None, sv_x=None)
                 continue
@@ -8898,12 +8942,13 @@ class Sniegas:
         bumbuliukas nurieda ta pačia kryptimi (toliau – įprasta riedėjimo fizika, ant ledo – toli). Tas pats senis
         vėl spirti gali tik po SENIO_SPYRIO_PERTRAUKA s."""
         k = self.k
+        juda = self.n["bumbulu_juda"]  # išjungus „Rieda ir šokinėja“ – nespiria (bumbuliukas vis tiek nepajudėtų)
         for s_ in self.seniai:
             if s_.get("spiria", 0.0) > 0:
                 s_["spiria"] -= dt
             s_["spyris_po"] = s_.get("spyris_po", 0.0) - dt
-            if s_["busena"] != "eina" or s_["spyris_po"] > 0 or s_.get("griuva") is not None or not s_.get("pav") \
-                    or s_.get("y") is None:
+            if not juda or s_["busena"] != "eina" or s_["spyris_po"] > 0 or s_.get("griuva") is not None \
+                    or s_.get("slysta") is not None or not s_.get("pav") or s_.get("y") is None:
                 continue
             kr = s_["kryptis"]
             for b in self.bumbulai:
@@ -9215,7 +9260,8 @@ class Sniegas:
         blizg = self.__dict__.get("blizgesiai")
         for d in likusios if blizg is not None else ():  # gulintis metalinis konfeti kartais sužiba (kaip sniegas)
             if d.get("metalas") and d["guli"] and d["gyv"] > KONFETI_MIRKSI and random.random() < 0.7 * dt \
-                    and len(blizg) < BLIZG_MAKS and not self.blizgesys_uzdengtas(d["x"] + Ps, d["y"] - Ps * 0.5, False):
+                    and len(blizg) < BLIZG_MAKS and not self.blizgesys_uzdengtas(d["x"] + Ps, d["y"] - Ps * 0.5, ant_lango(d)):
+                # ant lango gulintį (jis už pusnių) dengia ir pusnis; ant pusnies gulinčio – ne ta pati pusnis
                 blizg.append({"x": d["x"] + Ps, "y": d["y"] - Ps * 0.5, "t": 0.0,
                                         "trukme": random.uniform(0.45, 0.9), "snaige": None, "sena": None})
         gyvos = {id(d) for d in likusios}  # ne „d in likusios“ – tai lygintų žodynus (O(n²))
@@ -9740,6 +9786,10 @@ class Sniegas:
                             sp = senio_lemputes_spalva(j, i, senio_lemputes_sviesumas(anim, laikas, j, len(lemp), i))
                             user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(
                                 x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y), y0 + L(y + 1))), self.g.teptukas(sp))
+                if nauja and senio_mirksi(s_):  # sumirksi – užmerktos akys ant kadro
+                    for x, y, sp in senio_mirksnio_langeliai(*SENIO_KADRAI[nr % n], nr >= n):
+                        user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(
+                            x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y), y0 + L(y + 1))), self.g.teptukas(sp))
                 if nauja and s_["busena"] != "kabo":
                     self.uzdengti_eglemis(nauja)
             if not visas:
@@ -10700,8 +10750,8 @@ class Sniegas:
                     self.piesti_svyturely(e, x0, int(e["y"]) - H + 1, Pe)
                     self.piesti_stikla(e, x0, int(e["y"]) - H + 1, Pe)
                     # ant lango – už eglių, kaip ir lango sniegas (ekrano apačioje – kelyje, priešais egles)
-                    if e["pav"] is not None and e["pav"][0] == "langas" and \
-                            kerta_egles(nauja, [g["ribos"] for g in self.egles], 0 if self.egles else None):
+                    # ant lango – už eglių ir kelio (žemai nutemptas langas): uzdengti_eglemis pati tikrina, ar kerta
+                    if e["pav"] is not None and e["pav"][0] == "langas":
                         self.uzdengti_eglemis(nauja)
             if not visas:
                 if e["sena"]:
@@ -11314,6 +11364,9 @@ class Sniegas:
             if f is not None:  # nusileidusi snaigė perkeliama į viršų – tada ir blizgesys baigiasi
                 persikele = f[SY] < b["y"] - 20 or abs(f[SX] - b["x"]) > 60
                 b["x"], b["y"] = f[SX], f[SY]
+            led_st = b.get("ledas")
+            if led_st is not None and led_st is not True and not self.ant_ledo(led_st, b["x"]):
+                persikele = True  # ledą ką tik užstūmė sniego valytuvo krūva ar užsnigo – kibirkštėlė užgęsta
             if b["t"] >= b["trukme"] or persikele:
                 if b["sena"]:
                     self.papildomos.append(b["sena"])
@@ -11326,7 +11379,7 @@ class Sniegas:
         def kiek(norma):  # Puasono skirstinys mažai normai: dažniausiai 0, kartais 1
             return int(norma) + (random.random() < norma % 1)
 
-        def naujas(x, y, snaige=None, ledas=False):
+        def naujas(x, y, snaige=None, ledas=None):  # ledas – lango st (ledo kibirkštėlė)
             self.blizgesiai.append({"x": x, "y": y, "t": 0.0, "trukme": random.uniform(0.45, 0.9),
                                     "snaige": snaige, "sena": None, "ledas": ledas})
 
@@ -11369,7 +11422,7 @@ class Sniegas:
                 if self.ant_ledo(st, x) and any(c1 <= c < c2 for c1, c2 in st["matomi"]):
                     y = st["t"] - max(3, int(round(3 * self.k))) + random.uniform(0, 2)
                     if not self.blizgesys_uzdengtas(x, y):
-                        naujas(x, y, ledas=True)
+                        naujas(x, y, ledas=st)
         for _ in range(kiek(BLIZG_DAZNIS_SNAIGES * len(self.snaiges) * dt)):
             f = random.choice(self.snaiges)
             if f[SGYLIS] >= GILUMO_RIBA:  # tik artimos (8 planas) – tolimos yra už eglių, jų blyksnis lįstų į priekį
@@ -12762,12 +12815,12 @@ class Sniegas:
                  "95 % kadrų ne ilgiau), CPU – viso proceso, % vieno branduolio.").format(
                    a=int(NASUMO_ISIBEGEJIMAS), b=int(NASUMO_MATAVIMAS)),
                T("Piešimas = statinis (pusnių, kelio, eglių perpiešimas) + atk. (fono atkūrimas) + judantys objektai."),
-               T("Atk.: pilni % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
+               T("Atk.: visas % – kiek kadrų fonas atkurtas visas (viso buferio kopija), o ne tik pakitusiose "
                  "vietose; stač. – kiek stačiakampių atkurta vidutiniškai (kai ne visas)."),
                T("Etapuose (išskyrus „Jūsų nustatymai“) kiekiai, dydžiai, greičiai ir aukščiai – numatytieji."), ""]
         plotis = max(len(r["pav"]) for r in rez) + 2 if rez else 20
         plociai = (7, 7, 6, 7, 8, 8, 8, 7, 6, 8, 6, 6, 5)
-        antr = (T("kadr./s"), T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atk."), T("pilni %"),
+        antr = (T("kadr./s"), T("darbas"), "p95", T("fizika"), T("piešimas"), T("statinis"), T("atk."), T("visas %"),
                 T("stač."), T("ekranas"), "CPU %", "GPU W", "MHz")
         eil.append(f"{T('Etapas'):<{plotis}}" + " ".join(f"{a:>{w}}" for a, w in zip(antr, plociai)))
         for r in rez:
@@ -14150,9 +14203,9 @@ class Sniegas:
         for i in range(3 if rastai and spalvos else 0):
             R = bumbulo_matmenys((6, 6, 7)[i], P_, self.n["bumbulu_dydis"])[1]  # kaip ekrane
             spalva, rastas = spalvos[i % len(spalvos)], BUMBULU_RASTAI[rastai[i % len(rastai)]]
-            n = 2 * R + 5
-            kadrai = ([bumbulo_tinklelis(R, spalva, rastas, kk) for kk in range(BUMBULU_KADRAI)]
-                      + [bumbulo_tinklelis(r, spalva, rastas, 0, n) for r in range(R - 1, 0, -1)]
+            n = bumbulo_krastine(R)
+            kadrai = ([bumbulo_tinklelis(R, spalva, rastas, kk, kilpute=True) for kk in range(BUMBULU_KADRAI)]
+                      + [bumbulo_tinklelis(r, spalva, rastas, 0, n, True) for r in range(R - 1, 0, -1)]
                       + [blyksnio_tinklelis(n, kk) for kk in range(BUMBULU_BLYKSNIAI)]
                       + [tirpimo_tinklelis(R, spalva, rastas, kk) for kk in range(TIRPIMO_KADRAI)])
             self.bumbulu_perziura.append({
@@ -14526,6 +14579,8 @@ class Sniegas:
             if slenkstis >= lygis:
                 break
             c.create_rectangle(x0 + x * Pp, y0 + y * Pp, x0 + (x + 1) * Pp, y0 + (y + 1) * Pp, fill=SNIEGAS, outline="")
+        for x, y, sp in senio_mirksnio_langeliai(poza, kadras, nr >= n) if senio_mirksi(p) else ():
+            c.create_rectangle(x0 + x * Pp, y0 + y * Pp, x0 + (x + 1) * Pp, y0 + (y + 1) * Pp, fill=sp, outline="")
         if self.n["senio_lemputes"]:
             lemp = senio_sluotos_lemputes(poza, kadras, nr >= n)
             laikas, anim = time.perf_counter(), self.n["senio_lempuciu_animacija"]
