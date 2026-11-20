@@ -20,4 +20,4 @@ try:
     print("SUKURTA")
 except Exception:
     traceback.print_exc(); sys.exit(1)
-exec(open(os.path.join(_cia, "scenarijus.py"), encoding="utf-8").read())
+exec(open(os.environ.get("SCENARIJUS") or os.path.join(_cia, "scenarijus.py"), encoding="utf-8").read())

@@ -126,6 +126,7 @@ if os.environ.get('DIAG'):
     sn.ZURNALAS.ijungtas = True; a.n['diagnostika'] = True
     try: a.ijungta_diagnostika()
     except Exception: traceback.print_exc()
+if hasattr(sn.Sniegas, "sargai_visada"): a.sargai_visada = True  # elgsenos sargai – tik informacijai (veiksmai atsitiktiniai)
 t0 = _pc(); klaidu = 0
 import collections, math
 def dydziai():
@@ -178,7 +179,8 @@ for kadras in range(KADRU):
         if klaidu > 8: break
     if KLAIDOS:
         print(f"--- TK KLAIDA kadre {kadras}: {ZURN[-6:]}"); print("\n".join(KLAIDOS)); KLAIDOS.clear(); klaidu += 1
-print(f"BAIGTA sėkla={SEKLA} kadrų={kadras + 1} klaidų={klaidu} veiksmų={len(ZURN)} trukmė={_pc() - t0:.0f}s GDI kvietimų={sum(KV.values())} ledas={LEDAI[0]} slydo={SLYDO[0]} griuvo={GRIUVO[0]}")
+print(f"BAIGTA sėkla={SEKLA} kadrų={kadras + 1} klaidų={klaidu} veiksmų={len(ZURN)} trukmė={_pc() - t0:.0f}s GDI kvietimų={sum(KV.values())} ledas={LEDAI[0]} slydo={SLYDO[0]} griuvo={GRIUVO[0]} sargų={len(a.__dict__.get('sargu_pranesimai', ()))}")
+for _r, _k, _e in a.__dict__.get("sargu_pranesimai", ())[:8]: print("  ", _e)
 
 if len(ISTORIJA) >= 6:
     pr, pb = ISTORIJA[len(ISTORIJA) // 3], ISTORIJA[-1]
