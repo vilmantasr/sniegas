@@ -5,7 +5,7 @@ Sniegas – sninga ant Windows darbalaukio. Sąsaja lietuvių arba anglų kalba.
 Autorius: Vilmantas Ramonas. Licencija: GNU General Public License v3.0 (GPL-3.0, žr. LICENSE).
 
 Permatomas, pro jį spaudžiamas sluoksnis virš visų langų. Sniegas krenta, jį neša vėjas ir sūkuriai, jis kaupiasi
-ekrano apačioje (virš užduočių juostos) ir ant atidarytų langų viršaus. Apačioje stovi pixel art eglutės su
+ekrano apačioje (virš užduočių juostos) ir ant atvertų langų viršaus. Apačioje stovi pixel art eglutės su
 mirksinčiomis lemputėmis; gali riedėti bumbuliukai, vaikščioti sniego seniai (pele pačiumpami už šaliko), važinėti
 sniegą stumiantys sniego valytuvai, ekrano šonuose kabėti girliandos, o pagal laikrodį danguje iššaunami fejerverkai.
 Reikia tik Python 3 su tkinter (Windows 10/11), be papildomų bibliotekų. Piešiama tiesiogiai per Windows GDI su
@@ -58,8 +58,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "12.50"
-DATA = "2026-11-19"
+VERSIJA = "13.00"
+DATA = "2026-11-20"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -194,8 +194,8 @@ EN = frozendict({
     "Dvylikašakė": "Twelve-branched",
     "Stulpelis su kepurėlėmis": "Capped column",
     "Iš viso snaigių": "Total flakes",
-    "Dukart spustelėkite pavadinimą – numatytieji ({v}, įprastas rūšių mišinys)":
-        "Double-click the label for the defaults ({v}, the usual mix of kinds)",
+    "Dukart spustelėkite pavadinimą – numatytieji ({v}, įprastas rūšių mišinys).":
+        "Double-click the label for the defaults ({v}, the usual mix of kinds).",
     "Lemputės ant šluotos": "Lights on the broom",
     "Mirksi": "Blinking",
     "Lėtai įsižiebia": "Slow fade",
@@ -222,15 +222,15 @@ EN = frozendict({
     "kaip anksčiau. „Pixel art“ stiliui netaikoma.":
         "Falling flakes have smooth edges and move evenly instead of in one-pixel steps. When off – as before. "
         "Does not apply to the Pixel art style.",
-    "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
+    "Labiau apkrauna kompiuterį: įjungus šią parinktį, snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
     "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesnis kompiuteris, ypač su didelės raiškos "
     "ekranu (2560×1440 ir daugiau), gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite.":
         "Puts more load on the computer: when turned on, flakes appear gradually while their images are created (a few "
         "seconds, up to ~20 s on a slower computer). Older computers, especially with a high-resolution screen "
         "(2560×1440 and above), may not keep up – the snow starts to stutter. In that case, better turn it off.",
     "Kraštų aštrumas, %": "Edge sharpness, %",
-    "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų snaigių. Pakeitus "
-    "snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.":
+    "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų snaigių. Pakeitus šį "
+    "nustatymą, snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.":
         "Edge sharpness of smooth flakes: 0 – very soft, as if through fog; 100 – almost like regular flakes. After a "
         "change the flake images are created anew – for a few seconds the flakes appear gradually.",
     # vėjas, kaupimasis, kita
@@ -267,7 +267,7 @@ EN = frozendict({
     "Sustabdyti": "Stop",
     "Fejerverkai dabar": "Fireworks now",
     "Sustabdyti fejerverkus": "Stop fireworks",
-    "Dukart spustelėkite – išvalyti klaidą ir skaitiklius.": "Double-click to clear the error and counters.",
+    "Dukart spustelėkite, kad išvalytumėte klaidą ir skaitiklius.": "Double-click to clear the error and counters.",
     "Atkurti šios skilties numatytuosius nustatymus (įjungimo varnelė nekeičiama).":
         "Reset this section’s settings to defaults (the on/off checkbox is not changed).",
     "Atkurti skilties „{s}“ numatytuosius nustatymus?": "Reset the “{s}” section’s settings to defaults?",
@@ -294,7 +294,7 @@ EN = frozendict({
     "Kadrų per sekundę": "Frames per second",
     "Slėpti, kai programa per visą ekraną": "Hide when an app is full screen",
     "Paleisti kartu su „Windows“": "Start with Windows",
-    "Išjungimo mygtukas": "Close button",
+    "Uždarymo mygtukas": "Close button",
     "Klausti": "Ask",
     "Išjungti programą": "Exit program",
     # fejerverkai
@@ -315,7 +315,6 @@ EN = frozendict({
     # bumbuliukai
     "Bumbuliukai": "Baubles",
     "Rieda ir šokinėja": "Roll and bounce",
-    "Tik ekrano apačioje": "Screen bottom only",
     "Tik apačioje": "Bottom only",
     "Kartais pradingsta ir atsiranda kitur": "Sometimes vanish and reappear elsewhere",
     "Ir ant langų": "Also on windows",
@@ -329,14 +328,14 @@ EN = frozendict({
     "0 – visai nepastumiami (rieda tik nuokalnėmis ir pučiant vėjui).": "0 – never nudged (they roll only on slopes and in wind).",
     "Įprastas vėjas pučia iki maždaug 0,7 savo reikšmės (dabar – iki {v}); gūsis – maždaug tiek, kiek nustatyta čia.":
         "Normal wind blows up to about 0.7 of its value (now up to {v}); a gust is about as strong as set here.",
-    "Esant dabartiniam dydžiui, šiame ekrane telpa iki {n} lempučių – daugiau nebus.":
+    "Kai dydis dabartinis, šiame ekrane telpa iki {n} {lemp} – daugiau nebus.":
         "On this screen, at the current size, up to {n} bulbs fit – no more will be shown.",
     "⚠ Gūsis ({g}) silpnesnis už įprastą vėją, kuris pučia iki {v}: gūsiai bus beveik nejuntami, o "
     "stipriai pučiant gūsis vėją net susilpnina. Padidinkite „Gūsio stiprumą“ bent iki {n} arba "
     "sumažinkite „Įprastą vėją“.":
         "⚠ The gust ({g}) is weaker than the normal wind, which blows up to {v}: gusts will hardly be felt, and in "
         "strong wind a gust even weakens it. Raise “Gust strength” to at least {n} or lower “Normal wind”.",
-    "⚠ Nustatyta {k} lempučių, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
+    "⚠ Nustatyta {k} {lemp}, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
     "Sumažinkite dydį arba lempučių kiekį.":
         "⚠ {k} bulbs are set, but at size {d}% only {n} fit on this screen – the rest are not shown. Reduce the size or the number of bulbs.",
     "⚠ Šou ({t} s) ne trumpesnis už tarpą tarp šou ({m} min): kol vyksta vienas, kitas praleidžiamas – "
@@ -356,11 +355,9 @@ EN = frozendict({
     "Išbarstyti iš naujo": "Scatter again",
     # eglutės
     "Eglutės": "Trees",
-    "Vienodo aukščio": "Same height",
     "   px": "   px",
     "Aukštis": "Height",
     "Atsitiktinis": "Random",
-    "Atsitiktinio aukščio": "Random height",
     "Papuošimai": "Decorations",
     "Lemputės": "Lights",
     "Lemputės mirksi": "Lights blink",
@@ -380,7 +377,7 @@ EN = frozendict({
     "Išdėlioti iš naujo": "Rearrange",
     "mastelis {p} %": "scale {p}%",
     # išjungimo klausimas, dėklas
-    "Ką daryti paspaudus išjungimo mygtuką?": "What should the close button do?",
+    "Ką daryti paspaudus uždarymo mygtuką?": "What should the close button do?",
     "Sistemos dėkle sniegas veikia toliau – nustatymus atversite\nspustelėję piktogramą prie laikrodžio.":
         "In the system tray the snow keeps falling – open the settings\nby clicking the icon next to the clock.",
     "Atšaukti": "Cancel",
@@ -390,7 +387,7 @@ EN = frozendict({
     # būsena
     "Viskas paslėpta.": "Everything hidden.",
     "Pristabdyta – programa per visą ekraną.": "Paused – an app is full screen.",
-    "Snaigių: {a}   Kadrų per sek.: {b}   Kadrui: {c} ms   Langų su sniegu: {d}":
+    "Snaigių: {a}   Kadr./s: {b}   Kadrui: {c} ms   Langų su sniegu: {d}":
         "Flakes: {a}   FPS: {b}   Per frame: {c} ms   Windows with snow: {d}",
     "   Fizika / atkūrimas / piešimas / ekranas: {a} / {r} / {b} / {c} ms ({n} kop.)":
         "   Physics / restore / draw / screen: {a} / {r} / {b} / {c} ms ({n} blits)",
@@ -401,10 +398,10 @@ EN = frozendict({
     "Nepavyko perskaityti nustatymų rinkmenos – naudojami numatytieji.": "Could not read the settings file – using defaults.",
     "Kai kurie nustatymai rinkmenoje netinkami – jiems naudojamos numatytosios reikšmės:":
         "Some settings in the file are invalid – defaults are used for them:",
-    "Nepavyko išsaugoti nustatymų. Gal programos aplankas tik skaitymui?":
+    "Nepavyko išsaugoti nustatymų. Gal į programos aplanką negalima įrašyti?":
         "Could not save the settings. Is the program folder read-only?",
-    "Įvyko klaida, bet programa bando dirbti toliau. Jei sniegas elgiasi keistai – paleiskite programą iš naujo.":
-        "An error occurred, but the program keeps running. If the snow behaves strangely, restart the program.",
+    "Įvyko klaida, bet programa bando veikti toliau. Jei vaizdas stringa, mirga ar kas nors dingo, paleiskite programą iš naujo.":
+        "An error occurred, but the program keeps running. If the picture freezes, flickers or something has disappeared, restart the program.",
     "Atkurti visus numatytuosius nustatymus?": "Restore all settings to defaults?",
     "Nepavyko pakeisti automatinio paleidimo nustatymo.": "Could not change the startup setting.",
     "„Sniegas“ jau veikia – jo piktogramą rasite prie laikrodžio.":
@@ -429,13 +426,13 @@ EN = frozendict({
         "Firework shows by the clock: how often and how long – below. ▶ in the header launches one even when off.",
     "Kalėdiniai bumbuliukai, riedantys sniegu ekrano apačioje (ir ant langų).":
         "Christmas baubles rolling over the snow at the bottom of the screen (and on windows).",
-    "Sniego senis ekrano apačioje. Pele jį galima pačiupti už šaliko ir nunešti.":
-        "A snowman at the bottom of the screen. You can grab him by the scarf with the mouse and carry him.",
-    "Sniego valytuvai, kurie važinėja ir stumia sniegą – ekrano apačioje ir ant langų.":
+    "Sniego seniai ekrano apačioje ir ant langų. Pele juos galima pačiupti už šaliko ir nunešti.":
+        "Snowmen at the bottom of the screen and on windows. You can grab them by the scarf with the mouse and carry them.",
+    "Sniego valytuvai važinėja ir stumia sniegą ekrano apačioje ir ant langų.":
         "Small snowplows that drive around and push snow – at the bottom of the screen and on windows.",
     "Sniegas kaupiasi ekrano apačioje pusnimis. Išjungus – apačioje sukauptas sniegas dingsta.":
         "Snow piles up in drifts at the bottom of the screen. When off – the snow piled there disappears.",
-    "Sniegas kaupiasi ant atidarytų langų viršutinio krašto.":
+    "Sniegas kaupiasi ant atvertų langų viršutinio krašto.":
         "Snow piles up on the top edge of open windows.",
     "Kai aktyvi programa užima visą ekraną (žaidimas, filmas, pristatymas), sniegas paslepiamas. Išdidinti įprasti langai – ne.":
         "When the active program fills the whole screen (a game, a film, a presentation), the snow is hidden. Ordinary maximized windows are not affected.",
@@ -445,8 +442,8 @@ EN = frozendict({
         "Flakes spin as they fall. When off – they do not spin, only tilt slightly as they sway.",
     "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.":
         "Now and then a sparkle glints on the piled snow and on falling flakes.",
-    "Įprastos – glotnios snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.":
-        "Classic – smooth flakes; Pixel art – chunky pixels, like in old games.",
+    "Įprastos – smulkiai išpieštos snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.":
+        "Classic – finely drawn flakes; Pixel art – chunky pixels, like in old games.",
     "Kintanti – vėjas kartais pasikeičia ir trumpam papučia atgal; „Į dešinę“ ir „Į kairę“ – visada ta kryptimi.":
         "Changing – the wind sometimes turns and briefly blows back; “To the right” and “To the left” – always that way.",
     "Šviečiančių lempučių stikle kartais blyksteli atspindys.":
@@ -455,7 +452,7 @@ EN = frozendict({
         "Baubles roll down slopes, the wind pushes them, and sometimes they hop. When off, they stand still.",
     "Kur būna bumbuliukai: tik ekrano apačioje arba ir ant langų viršaus (nuo krašto nurieda ir nukrenta).":
         "Where baubles are: only at the bottom of the screen, or also on top of windows (they roll off the edge and fall).",
-    "Bumbuliukai kartais pradingsta ir atsiranda kitur. Kaip pradingsta – pažymėkite žemiau (kiekvieną kartą parenkamas vienas iš pažymėtų).":
+    "Bumbuliukai kartais pradingsta ir atsiranda kitur. Kaip pradingsta – pažymėkite žemiau (kiekvieną kartą parenkamas vienas iš pažymėtų būdų).":
         "Baubles now and then vanish and reappear elsewhere. How they vanish – tick below (one of the ticked ways is picked each time).",
     "Vienodo aukščio – visos eglutės vienodos; atsitiktinio – aukščiai tarp mažiausio ir didžiausio.":
         "Same height – all trees alike; random – heights between the minimum and the maximum.",
@@ -469,13 +466,13 @@ EN = frozendict({
         "Strips of snow on top of some branches.",
     "Senis stovi vietoje (kartais pajudina rankas, pasuka galvą). Išjungus – vaikšto. Pačiupti pele galima visada.":
         "The snowman stands in place (now and then moves his arms, turns his head). When off – he walks. You can always grab him.",
-    "Stovinčiam seniui pamažu prisninga ant galvos, šakelių galvoje, rankų ir šluotos. Pajudėjus (pačiupus pele, numetus) sniegas nubyra.":
+    "Stovinčiam seniui pamažu prisninga ant galvos, šakelių joje, rankų ir šluotos. Seniui pajudėjus (pačiupus pele ar numetus), sniegas nubyra.":
         "Snow slowly settles on a standing snowman’s head, the twigs on it, arms and broom. When he moves (grabbed with the mouse, dropped) the snow falls off.",
     "Girliandos lemputės ant šluotos; kaip šviečia – pasirinkite šalia.":
         "String-light bulbs on the broom; how they shine – choose next to it.",
     "Kaip šviečia lemputės ant šluotos.":
         "How the bulbs on the broom shine.",
-    "Ką daro nustatymų lango X: kaskart paklausia, sumažina į sistemos dėklą (sniegas lieka) arba išjungia programą.":
+    "Ką daro nustatymų lango uždarymo mygtukas ×: kaskart paklausia, sumažina į sistemos dėklą (sniegas lieka) arba išjungia programą.":
         "What the settings window X does: asks each time, minimizes to the tray (snow stays) or exits the program.",
     "Numatytoji reikšmė – įjungta.": "Default value – on.",
     "Numatytoji reikšmė – išjungta.": "Default value – off.",
@@ -488,14 +485,14 @@ EN = frozendict({
     "Ištirpsta – pikseliai išnyksta po vieną; kitur taip pat po vieną susidaro.":
         "Melts away pixel by pixel; reappears elsewhere the same way.",
     "Įsminga į sniegą; kitur išnyra iš sniego.": "Sinks into the snow; pops up from the snow elsewhere.",
-    "Kai pažymėti keli būdai – kiekvieną kartą parenkamas atsitiktinai.":
+    "Kai pažymėti keli būdai, kiekvieną kartą atsitiktinai parenkamas vienas iš jų.":
         "If several are ticked, one is picked at random each time.",
     "⚠ Bent vienas pradingimo būdas turi likti (jei norite, kad nepradingtų, nuimkite varnelę viršuje).":
         "⚠ At least one way must stay ticked (to stop them vanishing – untick the box above).",
     "⚠ Reikia įjungti „Kaupti ant langų viršaus“ (skiltyje „Sniego kaupimasis“).":
         "⚠ Turn on “Pile up on top of windows” (in “Snow accumulation”) first.",
     "⚠ Veikia, tik kai įjungta „Tik stovi vietoje“.": "⚠ Only works when “Just stands still” is on.",
-    "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai failų "
+    "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atvėrusi kita programa (dažniausiai rinkmenų "
     "naršyklės langas su šiuo aplanku rodo jos paveikslėlį). Uždarykite to aplanko langą arba ištrinkite "
     "sniegas.ico ir paleiskite dar kartą.":
         "Could not overwrite the icon – most likely another program has it open (usually a File Explorer window "
@@ -532,15 +529,15 @@ EN = frozendict({
         "How many trees are placed along the bottom of the screens.",
     "Visų eglučių aukštis – tikrais ekrano taškais (didesniame ekrane eglutės santykinai mažesnės).":
         "Height of all trees – in real screen pixels (on a larger screen trees are relatively smaller).",
-    "Žemiausių eglučių aukštis. Keičiant keičiasi tik žemiausios – vidutinės ir aukščiausios lieka.":
+    "Žemiausių eglučių aukštis. Pakeitus šį dydį, kinta tik žemiausios – vidutinės ir aukščiausios lieka.":
         "Height of the lowest trees. Changing it changes only the lowest – medium and tallest stay.",
-    "Aukščiausių eglučių aukštis. Keičiant keičiasi tik aukščiausios – vidutinės ir žemiausios lieka.":
+    "Aukščiausių eglučių aukštis. Pakeitus šį dydį, kinta tik aukščiausios – vidutinės ir žemiausios lieka.":
         "Height of the tallest trees. Changing it changes only the tallest – medium and lowest stay.",
     "Kiek sniego senių.":
         "How many snowmen.",
     "Sniego senių dydis, % įprasto.":
         "Snowman size, % of normal.",
-    "Kiek sniego valytuvų valo sniegą.":
+    "Kiek sniego valytuvų važinėja ekrane.":
         "How many snowplows clear the snow.",
     "Sniego valytuvų dydis, % įprasto.":
         "Snowplow size, % of normal.",
@@ -565,8 +562,14 @@ EN = frozendict({
         "completely). The computer may start lagging heavily and the settings window may respond slowly."
         "\n\nTurn on?",
     "Sniego valytuvai": "Snowplows",
-    "Sniego senis": "Snowman",
+    "Sniego seniai": "Snowmen",
     "Tik stovi vietoje": "Just stands still",
+    "Skirtingo dydžio": "Different sizes",
+    "⚠ Veikia, kai sniego senių daugiau nei vienas.": "⚠ Only works with more than one snowman.",
+    "Kai sniego senių keli, jie skiriasi dydžiu: kas antras – didesnis (dideliame ekrane būna ir mažesnių). Dydžiai "
+    "parinkti taip, kad piešinys liktų ryškus.":
+        "When there are several snowmen, they differ in size: every second one is bigger (on a large screen there are "
+        "smaller ones too). The sizes are chosen so the picture stays sharp.",
     "Stovinčiam prisninga ant galvos ir šluotos": "Snow settles on the head and broom while standing",
     "Pačiupk už šaliko!": "Grab the scarf!",
     "Girliandos": "Light strings",
@@ -582,13 +585,11 @@ EN = frozendict({
     "Dar nėra.": "Not created yet.",
     "Šios rinkmenos dar nėra.": "This file does not exist yet.",
     "Nepavyko atverti rinkmenos.": "Could not open the file.",
-    "Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos.":
-        "Technical log sniegas_diagnostika.log (frame times, errors) – for troubleshooting.",
     "~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – sniegas_nasumas.txt („Atverti“).":
         "~5 min: tries various settings in turn and records what each costs the CPU and (with NVIDIA) the graphics card. Your settings are restored afterward. Results – sniegas_nasumas.txt (“Open”).",
     "Našumo profilis (Python 3.15+): programa paleidžiama iš naujo ir įrašo, kurios jos dalys užima daugiausia procesoriaus laiko. Rezultatai – sniegas_profilis.txt.":
         "Performance profile (Python 3.15+): the program restarts and records which of its parts take the most CPU time. Results – sniegas_profilis.txt.",
-    "Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant Sniego piktogramos prie laikrodžio.":
+    "Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant programos „Sniegas“ piktogramos prie laikrodžio.":
         "Performance test started (~{m} min). Hover over the Snow icon next to the clock to see progress.",
     "Sniegas – našumo testas: {i} iš {n} etapų, liko ~{m} min": "Snow – performance test: stage {i} of {n}, ~{m} min left",
     "(sniegas paslėptas – matuojama be jo)": "(snow hidden – measuring without it)",
@@ -742,11 +743,11 @@ SENI_RAKTAI = {"ekskavatoriai": "valytuvai", "ekskavatoriu_kiekis": "valytuvu_ki
 SKILCIU_RAKTAI = ("snaiges", "vejas_ijungtas", "kaupimasis", "fejerverkai", "egles", "girliandos", "valytuvai",
                   "bumbulai", "sniego_senis")
 
-# Skilčių spalvos: skiltis → (fonas, antraštės spalva). Dvi grupės: dangus (sniegas, vėjas,
-# fejerverkai) – žydra, puošmenos (eglutės, sniego senis ir kt.) – žalsva, „Kita“ – neutrali pilka.
+# Skilčių spalvos: skiltis → (fonas, antraštės spalva). Dvi grupės: dangus (snaigės, vėjas, sniego
+# kaupimasis) – žydra, puošmenos (eglutės, fejerverkai, sniego senis ir kt.) – žalsva, „Kita“ – neutrali pilka.
 # Raktas – lietuviškas skilties pavadinimas.
 _DANGUS_SK = ("Snaigės", "Vėjas", "Sniego kaupimasis")  # sniegas ir oras – kairėje, melsvai
-_PUOSMENOS_SK = ("Eglutės", "Girliandos", "Fejerverkai", "Sniego valytuvai", "Bumbuliukai", "Sniego senis")  # dešinėje
+_PUOSMENOS_SK = ("Eglutės", "Girliandos", "Fejerverkai", "Sniego valytuvai", "Bumbuliukai", "Sniego seniai")  # dešinėje
 SKILCIU_SPALVOS = dict({k: ("#eaf2fb", "#1d4f91") for k in _DANGUS_SK},
                        **{k: ("#acc0af", "#243508") for k in _PUOSMENOS_SK}, Kita=("#f1f1f1", "#444444"))
 SKILTIES_TAMSI_TEKSTAS, SKILTIES_TAMSI_PILKA = "#eef3e4", "#8d9a78"  # tekstas tamsiame skilties fone
@@ -773,7 +774,7 @@ PERZ_DIDELE = PERZ_DIDELE_MIN
 PERZ_MAZA = PERZ_MAZA_MIN
 PERZ_ZEME = PERZ_MAZA[1] - 6  # sniego paviršius mažose peržiūrose, px
 PERZ_TARPAS = (0, 8)  # tarpas po kiekviena peržiūra (visose skiltyse vienodas)
-VEJO_PERZ_W, VEJO_PERZ_H = PERZ_DIDELE[0], PERZ_VEJO_H  # vėjo peržiūra: krentančios snaigės ir dabartinis vėjas kampe
+VEJO_PERZ_W, VEJO_PERZ_H = PERZ_VEJO_W, PERZ_VEJO_H  # vėjo peržiūra: krentančios snaigės ir dabartinis vėjas kampe
 
 
 PERZ_PLOCIAI = {}  # peržiūros vardas → plotis (kiekviena – per visą savo skilties plotį)
@@ -791,9 +792,9 @@ def pp(vardas):
 def nustatyti_perziuru_plocius(plociai):
     """Peržiūrų plotis – visas skilties plotis (skiltys platesnės dėl slinkties juostų). Skiltys
     skirtinguose stulpeliuose skirtingo pločio, todėl kiekviena peržiūra – savo pločio."""
-    global VEJO_PERZ_W, VEJO_PERZ_H
+    global VEJO_PERZ_W
     PERZ_PLOCIAI.update(plociai)
-    VEJO_PERZ_W, VEJO_PERZ_H = pp("vejas"), PERZ_VEJO_H
+    VEJO_PERZ_W = pp("vejas")
 
 
 VEJO_SCENA = (0, PERZ_VEJO_H)  # snaigių juostos viršus ir apačia, px (visa peržiūra)
@@ -905,7 +906,7 @@ NUMATYTUJU_PAV, NUMATYTIEJI = "Numatytasis", -2  # „paruoštukas“, grąžina
 PARUOSTUKAI = (
     ("Ramus vakaras", {"kiekis": 120, "greitis": 60, "dydis": 70, "vejas": 1, "gusiai": 0, "gusio_stiprumas": 0,
                        "kaupimo_greitis": 70, "egles": True, "egliu_mirksi": True, "girliandos": False,
-                       "sniego_senis": True, "senio_kiekis": 1, "senio_stovi": True,
+                       "sniego_senis": True, "senio_kiekis": 2, "senio_stovi": True,
                        "senio_lempuciu_animacija": "sviecia", "valytuvai": False,
                        "bumbulai": False, "fejerverkai": False}),
     ("Pūga", {"kiekis": 450, "greitis": 130, "dydis": 70, "vejas": 7, "gusiai": 5, "gusio_stiprumas": 7, "kaupimo_greitis": 200,
@@ -976,7 +977,7 @@ NUMATYTI = frozendict({
     "kaupimo_greitis": 100,
     "bumbulai": True,
     "bumbulu_juda": True,
-    "bumbulu_kiekis": 5,
+    "bumbulu_kiekis": 7,
     "bumbulu_dydis": 70,
     "bumbulu_greitis": 20,
     "bumbulu_dingsta": True,
@@ -1007,13 +1008,14 @@ NUMATYTI = frozendict({
     "fejerverku_intervalas": 60,  # min; paleidžiama kas tiek minučių nuo vidurnakčio (60 – pilnomis valandomis)
     "fejerverku_trukme": 30,  # s
     "slepti_pilname_ekrane": True,
-    "kryzelis": "klausti",  # ką daro išjungimo mygtukas (X): „klausti“, „deklas“ arba „baigti“
+    "kryzelis": "klausti",  # ką daro uždarymo mygtukas (×): „klausti“, „deklas“ arba „baigti“
     "kalba": "lt",  # „lt“ arba „en“; numatytoji – lietuvių
     "diagnostika": False,  # rašyti sniegas_diagnostika.log
     "valytuvai": True,
     "sniego_senis": True,  # vaikštantis sniego senis, pačiumpamas pele už šaliko
-    "senio_kiekis": 1,
+    "senio_kiekis": 2,
     "senio_dydis": 100,
+    "senio_dydziai": True,  # keli seniai – skirtingo dydžio (senio_ps_priedai)
     "senio_stovi": False,  # senis vaikšto (sustojęs pajudina rankas); „True“ – tik stovi vietoje
     "sniegas_ant_senio": True,  # stovinčiam seniui ant galvos (ir šakelių), rankų ir šluotos pamažu prisninga
     "senio_lemputes": True,  # girliandos lemputės ant šluotos
@@ -1074,11 +1076,13 @@ APRASAI = frozendict({
     "bumbulu_dydis": "Bumbuliukų dydis, % įprasto.",
     "egliu_kiekis": "Kiek eglučių išdėliojama ekranų apačioje.",
     "egliu_aukstis": "Visų eglučių aukštis – tikrais ekrano taškais (didesniame ekrane eglutės santykinai mažesnės).",
-    "egliu_min": "Žemiausių eglučių aukštis. Keičiant keičiasi tik žemiausios – vidutinės ir aukščiausios lieka.",
-    "egliu_max": "Aukščiausių eglučių aukštis. Keičiant keičiasi tik aukščiausios – vidutinės ir žemiausios lieka.",
+    "egliu_min": "Žemiausių eglučių aukštis. Pakeitus šį dydį, kinta tik žemiausios – vidutinės ir aukščiausios lieka.",
+    "egliu_max": "Aukščiausių eglučių aukštis. Pakeitus šį dydį, kinta tik aukščiausios – vidutinės ir žemiausios lieka.",
     "senio_kiekis": "Kiek sniego senių.",
     "senio_dydis": "Sniego senių dydis, % įprasto.",
-    "valytuvu_kiekis": "Kiek sniego valytuvų valo sniegą.",
+    "senio_dydziai": "Kai sniego senių keli, jie skiriasi dydžiu: kas antras – didesnis (dideliame ekrane būna ir "
+                     "mažesnių). Dydžiai parinkti taip, kad piešinys liktų ryškus.",
+    "valytuvu_kiekis": "Kiek sniego valytuvų važinėja ekrane.",
     "valytuvu_dydis": "Sniego valytuvų dydis, % įprasto.",
     "ledas_languose": "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvai buksuoja. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.",
     "gusio_stiprumas": "Kaip stipriai pučia vėjo gūsis. Gūsiai būna vidutiniškai kas 30 s ir trunka apie 4 s. 0 – gūsių nėra.",
@@ -1089,10 +1093,10 @@ APRASAI = frozendict({
     "girliandos": "Retro lempučių girliandos ekrano kairėje ir dešinėje – nuo viršaus iki užduočių juostos.",
     "fejerverkai": "Fejerverkų šou pagal laikrodį: kas kiek minučių ir kiek trunka – žemiau. ▶ antraštėje paleidžia ir išjungus.",
     "bumbulai": "Kalėdiniai bumbuliukai, riedantys sniegu ekrano apačioje (ir ant langų).",
-    "sniego_senis": "Sniego senis ekrano apačioje. Pele jį galima pačiupti už šaliko ir nunešti.",
-    "valytuvai": "Sniego valytuvai, kurie važinėja ir stumia sniegą – ekrano apačioje ir ant langų.",
+    "sniego_senis": "Sniego seniai ekrano apačioje ir ant langų. Pele juos galima pačiupti už šaliko ir nunešti.",
+    "valytuvai": "Sniego valytuvai važinėja ir stumia sniegą ekrano apačioje ir ant langų.",
     "kaupti_apacioje": "Sniegas kaupiasi ekrano apačioje pusnimis. Išjungus – apačioje sukauptas sniegas dingsta.",
-    "kaupti_languose": "Sniegas kaupiasi ant atidarytų langų viršutinio krašto.",
+    "kaupti_languose": "Sniegas kaupiasi ant atvertų langų viršutinio krašto.",
     "slepti_pilname_ekrane": "Kai aktyvi programa užima visą ekraną (žaidimas, filmas, pristatymas), sniegas paslepiamas. Išdidinti įprasti langai – ne.",
     "diagnostika": "Rašo techninį žurnalą sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti problemos. „Atverti“ – parodo žurnalą.",
     "snaiges_sukasi": "Snaigės krisdamos sukasi. Išjungus – nesisuka, tik svyruodamos lengvai pasvyra į šoną.",
@@ -1100,27 +1104,27 @@ APRASAI = frozendict({
     "sniegas_blizga": "Ant sukaupto sniego ir krentančių snaigių kartais sužiba kibirkštėlė.",
     "snaiges_glotnios": ("Krentančios snaigės būna glotniais kraštais ir juda tolygiai, ne vieno taško šuoliukais. Išjungus – "
                          "kaip anksčiau. „Pixel art“ stiliui netaikoma.",
-                         "Labiau apkrauna kompiuterį: įjungus snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
+                         "Labiau apkrauna kompiuterį: įjungus šią parinktį, snaigės pasirodo palaipsniui (kol sukuriami jų piešiniai – "
                          "kelias sekundes, lėtesniame kompiuteryje iki ~20 s). Senesnis kompiuteris, ypač su didelės raiškos "
                          "ekranu (2560×1440 ir daugiau), gali nebespėti – sniegas ima trūkčioti. Tada geriau išjunkite."),
     "glotniu_astrumas": "Glotnių snaigių kraštų aštrumas: 0 – visai minkšti, lyg per rūką; 100 – beveik kaip įprastų "
-                        "snaigių. Pakeitus snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.",
-    "snaigiu_stilius": "Įprastos – glotnios snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.",
+                        "snaigių. Pakeitus šį nustatymą, snaigių piešiniai kuriami iš naujo – kelias sekundes jos pasirodo palaipsniui.",
+    "snaigiu_stilius": "Įprastos – smulkiai išpieštos snaigės; „Pixel art“ – stambiais taškais, kaip senuose žaidimuose.",
     "vejo_kryptis": "Kintanti – vėjas kartais pasikeičia ir trumpam papučia atgal; „Į dešinę“ ir „Į kairę“ – visada ta kryptimi.",
     "girliandu_atspindziai": "Šviečiančių lempučių stikle kartais blyksteli atspindys.",
     "bumbulu_juda": "Bumbuliukai rieda nuokalnėmis, juos stumia vėjas, kartais pašoka. Išjungus – stovi vietoje.",
     "bumbulai_languose": "Kur būna bumbuliukai: tik ekrano apačioje arba ir ant langų viršaus (nuo krašto nurieda ir nukrenta).",
-    "bumbulu_dingsta": "Bumbuliukai kartais pradingsta ir atsiranda kitur. Kaip pradingsta – pažymėkite žemiau (kiekvieną kartą parenkamas vienas iš pažymėtų).",
+    "bumbulu_dingsta": "Bumbuliukai kartais pradingsta ir atsiranda kitur. Kaip pradingsta – pažymėkite žemiau (kiekvieną kartą parenkamas vienas iš pažymėtų būdų).",
     "egliu_atsitiktinis": "Vienodo aukščio – visos eglutės vienodos; atsitiktinio – aukščiai tarp mažiausio ir didžiausio.",
     "egliu_lemputes": "Spalvotos lemputės ant eglučių.",
     "egliu_mirksi": "Lemputės mirksi – kiekviena eglutė savo ritmu.",
     "egliu_burbuliukai": "Žaisliukai ant eglučių šakų.",
     "sniegas_ant_egliu": "Ant dalies šakų viršaus – sniego juostelės.",
     "senio_stovi": "Senis stovi vietoje (kartais pajudina rankas, pasuka galvą). Išjungus – vaikšto. Pačiupti pele galima visada.",
-    "sniegas_ant_senio": "Stovinčiam seniui pamažu prisninga ant galvos, šakelių galvoje, rankų ir šluotos. Pajudėjus (pačiupus pele, numetus) sniegas nubyra.",
+    "sniegas_ant_senio": "Stovinčiam seniui pamažu prisninga ant galvos, šakelių joje, rankų ir šluotos. Seniui pajudėjus (pačiupus pele ar numetus), sniegas nubyra.",
     "senio_lemputes": "Girliandos lemputės ant šluotos; kaip šviečia – pasirinkite šalia.",
     "senio_lempuciu_animacija": "Kaip šviečia lemputės ant šluotos.",
-    "kryzelis": "Ką daro nustatymų lango X: kaskart paklausia, sumažina į sistemos dėklą (sniegas lieka) arba išjungia programą.",
+    "kryzelis": "Ką daro nustatymų lango uždarymo mygtukas ×: kaskart paklausia, sumažina į sistemos dėklą (sniegas lieka) arba išjungia programą.",
     "svyravimas": "Kaip toli snaigės krisdamos siūbuoja į šonus – kristalai labiausiai (kaip lapelis), smulkūs taškeliai – mažiau. 0 – krenta tiesiai.",
     "plasnojimas": "Kaip stipriai kristalai krisdami tai sulėtėja, tai pagreitėja. 0 – krenta tolygiai.",
     "vejas": "Ramiu metu vėjas kas 5–12 s pasirenkamas iš naujo: nuo 0 iki 0,7 šios reikšmės (kintančios krypties – kartais trumpam ir atgal). Gūsio metu – tiek, kiek „Gūsio stiprumas“.",
@@ -1159,7 +1163,7 @@ SKILCIU_NUSTATYMAI = frozendict({
     "fejerverkai": ("fejerverku_intervalas", "fejerverku_trukme"),
     "bumbulai": ("bumbulu_juda", "bumbulu_kiekis", "bumbulu_dydis", "bumbulu_greitis", "bumbulu_dingsta",
                  "bumbulai_languose", "bumbulu_rastai", "bumbulu_spalvos", "bumbulu_dingimai"),
-    "sniego_senis": ("senio_kiekis", "senio_dydis", "senio_stovi", "sniegas_ant_senio", "senio_lemputes",
+    "sniego_senis": ("senio_kiekis", "senio_dydis", "senio_dydziai", "senio_stovi", "sniegas_ant_senio", "senio_lemputes",
                      "senio_lempuciu_animacija"),
     "valytuvai": ("valytuvu_kiekis", "valytuvu_dydis", "ledas_languose"),
 })
@@ -1188,6 +1192,17 @@ def gusis_silpnas(n):
     """Gūsis silpnesnis už pusę „Įprasto vėjo“: įprastas vėjas pučia iki 0,7 × savo reikšmės, todėl toks gūsis beveik
     nesijaučia, o prie stipraus vėjo net jį susilpnina (apie tai įspėjama, elgsena nekeičiama)."""
     return bool(n["vejas_ijungtas"]) and 0 < n["gusio_stiprumas"] < 0.5 * n["vejas"]
+
+
+def lempuciu_forma(n, kilm=False):
+    """„lemputė / lemputės / lempučių“ pagal skaičių (21 lemputė, 22 lemputės, 20 lempučių); kilm=True – po „iki“
+    (iki 21 lemputės, iki 22 lempučių)."""
+    n = abs(int(n))
+    if n % 10 == 1 and n % 100 != 11:
+        return "lemputės" if kilm else "lemputė"
+    if not kilm and 2 <= n % 10 <= 9 and not 12 <= n % 100 <= 19:
+        return "lemputės"
+    return "lempučių"
 
 
 def skaicius_tekstu(x):
@@ -1737,8 +1752,15 @@ class PaslinktasPiesejas(GdiPiesejas):
 
 
 # ---------------------------------------------------------------- pixel art sniego valytuvai (sniego valytuvai)
+# Galinis žibintas (VALYT_RASTAS „r“, 4 eilutė): tamsiai raudonas, o važiuojant
+# atbulomis mirksi baltai, kaip tikras atbulinės eigos žibintas (kas VALYT_ATBULO_PERIODAS s – pusę laiko).
+# Raudonas mirksėjimas ant raudono korpuso beveik nesimatė.
+VALYT_GALO_ZIBINTAS = ("#ffffff", "#5a0c08")  # atbulomis (mirksi), įprastai
+VALYT_ZIBINTU_EILUTE = 4
+VALYT_ATBULO_PERIODAS = 0.5
 # Nustatymų raktai likę „valytuvai…“ – kad neprapultų jau išsaugoti nustatymai.
-VALYT_SPALVOS = frozendict({"D": "#3b3b3b", "d": "#808080", "B": "#9fd3ff", "R": "#ff6a00"})  # korpusas (Y, y) – žemiau
+VALYT_SPALVOS = frozendict({"D": "#3b3b3b", "d": "#808080", "B": "#9fd3ff", "R": "#ff6a00",
+                            "r": VALYT_GALO_ZIBINTAS[1]})  # korpusas (Y, y) – žemiau
 # Korpuso spalvos (šviesi, tamsi) – kiekvienas sniego valytuvas savos: pirmas geltonas, kiti – kaip tikros technikos
 # spalvos (raudona, žalia, oranžinė, mėlyna). Švyturėlis visiems tas pats.
 VALYT_KORPUSAI = (("#f4b400", "#b07800"), ("#d8392b", "#8c1f15"), ("#3f9e4d", "#236330"),
@@ -1748,7 +1770,7 @@ VALYT_RASTAS = [  # žiūri į dešinę; priekyje – verstuvas, matomas iš šo
     ".yyyyy........",
     ".yBBBy........",
     ".yBBBy......yY",
-    "YYYYYYYYYY.yY.",
+    "rYYYYYYYYY.yY.",  # r – galinis žibintas
     "YYYYYYYYYYyyY.",
     "yyyyyyyyyyyyY.",
     ".DDDDDDDD..yY.",
@@ -1778,6 +1800,8 @@ VALYT_SVYT_SVIECIA = 0.4  # periodo dalis, kai šviečia
 VALYT_SVYT_SPALVOS = ("#ff8a1a", "#5c2a0c")  # šviečia, užgesęs
 VALYT_PAKELIMAS = 3  # kiek langelių verstuvas pakeliamas pravažiuojant pro sniego senį
 VALYT_VERSTUVO_LAIKAS = 0.3  # s – per tiek verstuvas sklandžiai pakeliamas / nuleidžiamas (po langelį)
+VALYT_VENGIMAS = 0.3  # tokia dalis kartų pamatęs priešpriešais atvažiuojantį sniego valytuvą apsisuka ir nesusiduria
+VALYT_VENGIMO_PERTRAUKA = 6.0  # s – tiek laiko po išvengimo kito priešpriešais atvažiuojančio nebevengia
 VALYT_ISIBEGEJIMAS = 0.7  # s – per tiek apsisukęs sniego valytuvas įsibėgėja iki visu greičio
 VALYT_STABDYMAS = 30.0  # px (× mastelis) – nuo tiek iki krašto, kur apsisuks, pradeda lėtėti (iki 30 % greičio)
 # Ledas ant langų (nustatymas „ledas_languose“): kur sniego valytuvas nuvalė ir LEDO_LAIKAS s neprisnigo daugiau nei
@@ -1798,6 +1822,7 @@ SENIO_SPYRIO_TRUKME = 0.3  # s – kiek senis mosteli paspyręs bumbuliuką (sen
 SENIO_SPYRIO_PERTRAUKA = (10.0, 20.0)  # s – po tiek tas pats senis vėl gali spirti
 SENIU_BALANSAS = 20.0  # s – kas tiek tikrinama, ar ne per daug senių ekrano apačioje (senis_iseiti)
 SENIO_GRIUVIMO_TIKIMYBE = 0.5  # kokia dalis slydimų ledu baigiasi pargriuvimu (jei slysta pakankamai ilgai)
+SENIO_SUBYRA_GRIUVUS = 0.2  # kokia dalis pargriuvimų baigiasi tuo, kad senis subyra (kaip tikras – nuo smūgio)
 # Griuvimas ledu: (trukmė s, (poza, kadras)) – galva leidžiasi ir kyla po langelį (pritūpia, plumpteli ir pasėdi,
 # pritūpęs atsistoja): staigūs šuoliai tarp pozų (ir galvos perstūmimas atsilošiant) ekrane atrodė kaip trūkčiojimas
 SENIO_GRIUVIMAS = ((0.06, ("pritupia", 0)), (0.06, ("pritupia", 1)), (0.60, ("nukrenta", 0)),
@@ -2086,8 +2111,10 @@ class ParuostukoPlyta:
 
 
 def rodyti_fokusa(w):
-    """Ikona-mygtukas (ttk.Label) pasiekiama klaviatūra: Tab'u atėjus – plonas rėmelis aplink ją."""
-    w.configure(takefocus=1, borderwidth=1, relief="flat")
+    """Ikona-mygtukas (ttk.Label) pasiekiama klaviatūra: Tab'u atėjus – plonas rėmelis aplink ją. Papilkėjusi
+    (disabled) praleidžiama – kitaip Tab sustodavo ir ant neveikiančių ikonų."""
+    w.configure(takefocus=lambda _: int(w.winfo_viewable() and not w.instate(("disabled",))),
+                borderwidth=1, relief="flat")
     w.bind("<FocusIn>", lambda e: w.configure(relief="solid"), add="+")
     w.bind("<FocusOut>", lambda e: w.configure(relief="flat"), add="+")
 
@@ -2175,19 +2202,20 @@ class Patarimas:
                 except Exception:
                     pass
             # to monitoriaus, kuriame pelė (valdiklis), darbo sritis – ne pagrindinio (kitaip antrame ekrane patarimas
-            # „nušokdavo“ į pagrindinį)
-            ml, mr, mb = 0, w.winfo_screenwidth(), w.winfo_screenheight()
+            # „nušokdavo“ į pagrindinį). Monitorius randamas pagal visą jo plotą (pelė gali būti ir ant užduočių
+            # juostos), o langelis ribojamas darbo sritimi.
+            ml, mt, mr, mb = 0, 0, w.winfo_screenwidth(), w.winfo_screenheight()
             tx, ty = (w.winfo_rootx(), w.winfo_rooty()) if prie_valdiklio else (w.winfo_pointerx(), w.winfo_pointery())
             try:
-                for _, (l_, t_, r_, b_) in gauti_monitorius():
+                for (l_, t_, r_, b_), darbo in gauti_monitorius():
                     if l_ <= tx < r_ and t_ <= ty < b_:
-                        ml, mr, mb = l_, r_, b_
+                        ml, mt, mr, mb = darbo
                         break
             except Exception:
                 pass
             x = max(ml, min(x, mr - l.winfo_reqwidth() - 4))
             if y + l.winfo_reqheight() > mb:
-                y = w.winfo_rooty() - l.winfo_reqheight() - 4
+                y = max(mt, w.winfo_rooty() - l.winfo_reqheight() - 4)
             l.geometry(f"+{x}+{y}")
             if Patarimas.perdanga_iskelta:  # geometry() Z tvarkos nekeičia – kitaip liktų po sniegu
                 Patarimas.perdanga_iskelta = False
@@ -4523,7 +4551,7 @@ def vejo_kreive(n):
     trukme = GUSIO_TRUKME
     r_kyla, r_rimsta = 0.8 * GUSIO_KILIMAS / 100, 0.8 * GUSIO_RIMIMAS / 100
     if g <= 0:
-        return {"taskai": [(0.0, c), (10.0, c)], "c": c, "g": 0, "gusis": None, "T": 10.0}
+        return {"taskai": [(0.0, c), (10.0, c)], "gusis": None, "T": 10.0}
     # gūsio pabaigoje pasiektas stiprumas ir laikas iki 90 % (analitiškai – eksponentinis artėjimas)
     r_g = r_kyla if g > c else r_rimsta
     pasiekta = c + (g - c) * (1 - math.exp(-r_g * trukme))
@@ -4543,8 +4571,7 @@ def vejo_kreive(n):
         t = nurimimas * i / k
         taskai.append((t1 + t, c + (pasiekta - c) * math.exp(-r_rimsta * t)))
     taskai.append((T, c))
-    return {"taskai": taskai, "c": c, "g": g, "T": T, "pauze": pauze, "sutrumpinta": rodoma_pauze < pauze,
-            "gusis": (t0, min(t1, t0 + iki90), t1, t2), "nespeja": iki90 > trukme * 1.05}
+    return {"taskai": taskai, "T": T, "gusis": (t0, min(t1, t0 + iki90), t1, t2)}
 
 
 # ------------------------------------------------------------ sniego senis (mažylis)
@@ -4707,14 +4734,26 @@ SENIO_SU_SLUOTA = ("stovi", "dairosi", "rankos", "mojuoja")  # šluota – tik s
 SENIO_BE_SLUOTOS = "_be"
 
 
-def _sn_sluota(t, x, y_apacia, ilgis=20, rykstes=10, plotis=4.0):
+# Šluotų kuokštai – kiekvieno senio savas (seniai[i] – SENIO_SLUOTOS[i % 4]): (rykščių ilgis, pusplotis, kiekvienos
+# rykštės santykinis ilgis, spalvos). 0 – juostoje; kitų skirtumai užpiešiami (senio_sluotos_langeliai).
+SENIO_SLUOTOS = (
+    (10, 4.0, (0.8, 0.95, 0.88, 1.0, 0.9, 0.97, 0.82), "QqZqQZq"),  # įprasta
+    (8, 4.4, (0.9, 1.0, 0.95, 1.0, 0.95, 1.0, 0.9), "qQqZqQq"),     # žema, plati, šviesesnė
+    (12, 3.0, (0.85, 0.9, 1.0, 0.95, 1.0, 0.88, 0.8), "ZQZqZQZ"),   # aukšta, siaura, tamsesnė
+    (10, 3.6, (0.7, 1.0, 0.75, 0.95, 0.7, 1.0, 0.8), "QqQZqQq"),    # nelygiais galais
+)
+
+
+def _sn_sluota(t, x, y_apacia, ilgis=20, rykstes=None, plotis=None, tipas=0):
     """Rykštinė šluota kuokštu į viršų (kaip klasikinio sniego senio): kotas nuo y_apacia aukštyn,
-    rykštės išsiskleidžia vėduokle, po jomis raudonas raištis."""
+    rykštės išsiskleidžia vėduokle, po jomis raudonas raištis. tipas – SENIO_SLUOTOS numeris."""
+    r_, p_, ilgiai, spalvos = SENIO_SLUOTOS[tipas % len(SENIO_SLUOTOS)]
+    rykstes, plotis = rykstes or r_, plotis or p_
     yv = y_apacia - ilgis
     for y in range(yv, y_apacia + 1):
         t[(x, y)] = "T"
     n = 7  # retos rykštės – tarp jų matosi tarpai (ne vientisas gumulas)
-    for i, (ilg, ch) in enumerate(zip((0.8, 0.95, 0.88, 1.0, 0.9, 0.97, 0.82), "QqZqQZq")):
+    for i, (ilg, ch) in enumerate(zip(ilgiai, spalvos)):
         v = -plotis + 2 * plotis * i / (n - 1)
         # pradžia – per visą raiščio plotį (iš vieno taško virš raiščio likdavo tik koto langelis tarp tuštumų)
         _sn_linija(t, x + round(v / 4), yv - 1, x + v, yv - rykstes * ilg, ch)
@@ -4749,7 +4788,7 @@ def _sn_puosmena(t, gx, gy, puosmena):
 
 
 @functools.lru_cache(maxsize=256)  # be ribos per ilgą darbą (visos pozos × puošmenos × tūtos) – iki ~16 MB
-def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika", mirksi=False):
+def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika", mirksi=False, sluota_t=0):
     """poza: „eina“ (kadras 0…5), „stovi“, „kabo“ (atsilenkimas × rankų padėtis, žr. senio_kabo_kadras), „nukrenta“, „meta“, „sauna“, „semia“, „mojuoja“,
     „rankos“, „dairosi“ (galva atsukta į kitą pusę). Žiūri į dešinę (i_kaire – veidrodiškai).
     Grąžina eilutes su spalvomis (None – permatoma). Priesaga „_be“ – ta pati poza be šluotos."""
@@ -4759,7 +4798,9 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika",
     t = {}
     cx, gx = 12.5, 12
     f = kadras / (SENIO_EINA_KADRAI if poza == "eina" else SENIO_KABO_KADRAI)
-    sq = 1.3 if poza == "nukrenta" else SENIO_PRITUPIMAS[kadras] if poza == "pritupia" else 0.0
+    sq = (1.3 if poza == "nukrenta" else SENIO_PRITUPIMAS[kadras] if poza == "pritupia" else
+          (0.9 if kadras == 0 else -0.6) if poza == "ciaudi" else 0.0)  # čiaudi: 0 – pritūpęs įkvepia, 1 – „apči!“
+    # (išsitempia į viršų – krūpteli; veido detalių – praviros burnos, galvos postūmio – tokiame dydyje neįžiūrėti)
     # apatinis gumulas – apvalus iki paskutinės eilutės (35,5 nukirstų jį plokščiai – ant nuvalyto kelio
     # senis stovėjo nukirsta apačia); galvos centras – sveikame langelyje (17), kitaip apvalinant (16,5 → 16)
     # galva gautų kampuotą „ausų“ eilutę
@@ -4809,7 +4850,7 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika",
     # kabo: kadras = atsilenkimas * SENIO_KABO_RANKOS + rankų padėtis
     sw = kadras // SENIO_KABO_RANKOS - SENIO_KABO_KADRAI // 2 if poza == "kabo" else 0  # apatinės dalies atsilenkimas
     most = SENIO_RANKU_POSUKIS[kadras % SENIO_KABO_RANKOS] if poza == "kabo" else 0  # rankų mostas
-    kamp = {"kabo": 55 - 6 * sw, "nukrenta": 25, "pritupia": 25}.get(poza, -10)
+    kamp = {"kabo": 55 - 6 * sw, "nukrenta": 25, "pritupia": 25, "ciaudi": 15 if kadras == 0 else 40}.get(poza, -10)
     _sn_ranka(t, gx - 7, sy + 3, (35 if kadras == 0 else -25) if poza == "rankos" else kamp + most, 4, -1)
     if poza == "meta":  # 0 – užsimoja (gniūžtė rankoje virš peties), 1 – meta (ranka į priekį)
         _sn_ranka(t, gx + 7, sy + 3, 100 if kadras == 0 else 15, 4, 1)
@@ -4822,10 +4863,10 @@ def senio_tinklelis(poza, kadras, i_kaire, bumbulas=0, tuta=0, puosmena="plika",
         _sn_ranka(t, gx + 7, sy + 3, -70, 6, 1)
         for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
             t[(SENIO_RANKA_SEMIANT[0] + dx - 1, SENIO_RANKA_SEMIANT[1] + dy - 1)] = "W"
-    elif poza in SENIO_SU_SLUOTA and sluota:  # stovėdamas laiko šluotą; pamojuodamas ją kilsteli
-        kilst = 3 if poza == "mojuoja" and kadras == 1 else 0
+    elif (poza in SENIO_SU_SLUOTA or poza == "ciaudi") and sluota:  # stovėdamas laiko šluotą; pamojuodamas kilsteli
+        kilst = 3 if poza == "mojuoja" and kadras == 1 else (kadras + 1 if poza == "ciaudi" else 0)
         xs, yr = SENIO_SLUOTA_X, sy + 2 - kilst
-        _sn_sluota(t, xs, 35 - kilst)
+        _sn_sluota(t, xs, 35 - kilst, tipas=sluota_t)
         _sn_linija(t, gx + 7, sy + 3, xs - 1, yr, "B")  # ranka iki koto
         t[(xs + 1, yr - 1)] = t[(xs + 1, yr + 1)] = "b"  # pirštai apie kotą
     elif poza == "sauna":  # laiko konfeti pabūklą (dryžuotą tūtą); 1 – iššovė (žiežirbos)
@@ -4884,7 +4925,8 @@ SENIO_KADRAI = ([("eina", i) for i in range(SENIO_EINA_KADRAI)] + [("stovi", 0)]
                  ("rankos", 0), ("rankos", 1), ("dairosi", 0)] +
                 [(p_ + SENIO_BE_SLUOTOS, k_) for p_, k_ in (("stovi", 0), ("mojuoja", 0), ("mojuoja", 1),
                                                             ("rankos", 0), ("rankos", 1), ("dairosi", 0))] +
-                [("pritupia", k_) for k_ in range(len(SENIO_PRITUPIMAS))])
+                [("pritupia", k_) for k_ in range(len(SENIO_PRITUPIMAS))] +
+                [("ciaudi", 0), ("ciaudi", 1)])  # tik „Tik stovi vietoje“ – su šluota
 
 
 @functools.lru_cache(maxsize=None)
@@ -4923,6 +4965,21 @@ def senio_puosmenos_langeliai(poza, kadras, i_kaire, puosmena):
             else:
                 x += 1
     return tuple(rez)
+
+
+def senio_sluota(i):
+    """i-ojo senio šluotos kuokštas (SENIO_SLUOTOS numeris)."""
+    return i % len(SENIO_SLUOTOS)
+
+
+@functools.lru_cache(maxsize=None)
+def senio_sluotos_langeliai(poza, kadras, i_kaire, sluota_t):
+    """Kuo šis šluotos kuokštas (SENIO_SLUOTOS) skiriasi nuo juostoje nupiešto (0): [(x, y, spalva arba None –
+    permatoma, t. y. juostos fonas)]."""
+    if not sluota_t:
+        return ()
+    a, b = senio_tinklelis(poza, kadras, i_kaire), senio_tinklelis(poza, kadras, i_kaire, sluota_t=sluota_t)
+    return tuple((x, y, b[y][x]) for y in range(SENIO_H) for x in range(SENIO_W) if b[y][x] != a[y][x])
 
 
 @functools.lru_cache(maxsize=None)
@@ -4966,7 +5023,18 @@ def senio_tuta(s_):
     return s_["tuta"]
 
 
-SENIO_SNIEGUOJA = ("stovi", "dairosi", "rankos", "mojuoja")  # tada ant senio prisninga; kitaip – nubyra
+SENIO_SNIEGUOJA = ("stovi", "dairosi", "rankos", "mojuoja", "ciaudi")  # tada ant senio prisninga; kitaip – nubyra
+# „Apči!“: stovintis apsnigtas (daugiau nei SENIO_CIAUDI_NUO) senis kartais (SENIO_CIAUDI_TIKIMYBE, kai baigia stovėti)
+# susigūžia užmerktomis akimis ir nusičiaudi – dalis sniego nuo galvos, šakelių ir šluotos pažyra.
+SENIO_CIAUDI_NUO = 0.7
+SENIO_CIAUDI_TIKIMYBE = 0.15
+SENIO_CIAUDI_PERTRAUKA = 90.0  # s – ne dažniau (kitaip, greitai prisnigus vėl, čiaudėdavo kas pusę minutės)
+SENIO_CIAUDI_TRUKME = (0.6, 0.95)  # s – susigūžęs įkvepia iki pirmo laiko, tada „apči!“ (sniegas pažyra) iki antro
+SENIO_CIAUDI_LIEKA = 0.1  # tokia dalis sniego lieka
+# Du einantys priešpriešais seniai, kai vienas nusprendžia apsisukti, tokia dalimi atvejų pirma abu sustoja ir
+# pamojuoja vienas kitam (tada apsisuka)
+SENIO_MOJAVIMAS = 0.2
+SENIO_MOJAVIMO_PERTRAUKA = 120.0  # s – tas pats senis pamojuoja ne dažniau
 SENIO_SNIEGO_LAIKAS = 45.0  # s, per kiek prisninga iki galo
 SENIO_NUPUTIMO_VEJAS = 3.0  # nuo tokio vėjo („Vėjas“ / „Gūsio stiprumas“ skalė) nuo apsnigto senio nupučiama sniego
 SENIO_NUPUTIMO_RIBA = 0.4  # tiek prilipusio sniego vėjas nenupučia (nupučiama tik nuo apsnigto – daugiau nei 0,5)
@@ -4974,13 +5042,13 @@ SENIO_SNIEGO_DALIS = 1.0    # kiek galimų vietų ilgainiui apsninga (pasirinkta
 
 
 @functools.lru_cache(maxsize=None)
-def senio_sniego_langeliai(poza, kadras, i_kaire, puosmena="plika"):
+def senio_sniego_langeliai(poza, kadras, i_kaire, puosmena="plika", seka=0, sluota_t=0):
     """Kur ant senio gali gulėti sniegas: tušti langeliai tiesiai virš šluotos, rankų, galvos šakelių ir galvos viršaus
     (dviejų viršutinių kontūro eilių – ant šonų sniegas atrodytų kaip baltas kontūras; ant balto kūno – nesimatytų).
     [(x, y, slenkstis)], surikiuota pagal slenkstį: langelis apsninga, kai kaupimas viršija jo slenkstį (taip
     prisninga pamažu). Slenkstis pagal vietą (veidrodiškai – vienodas abiem kryptims), todėl sniegas nemirga
     keičiantis kadrams, o pakeltose rankose lieka tose pačiose šakelėse."""
-    t = senio_tinklelis(poza, kadras, i_kaire, 0, 0, puosmena)
+    t = senio_tinklelis(poza, kadras, i_kaire, 0, 0, puosmena, sluota_t=sluota_t)
     medis = {SENIO_SPALVOS[k] for k in "BbTQqZLl"}  # šakos, šluota, lapeliai ir spygliai
     # galvos viršus. Matuojama nuo galvos vidurio (einant / semiant galva pasislenka):
     # su šakelėmis – kontūras ±3 langeliai nuo vidurio; plikam – tik 3 pavieniai taškai pačiame viršuje
@@ -5006,7 +5074,8 @@ def senio_sniego_langeliai(poza, kadras, i_kaire, puosmena="plika"):
             v = t[y][x]
             if t[y - 1][x] is None and (v in medis or (x, y) in galva):
                 xs = SENIO_W - 1 - x if i_kaire else x
-                rez.append((x, y - 1, random.Random(xs * 7919 + y * 104729).random()))
+                # seka – kiekvienam seniui sava tvarka (kitaip šalia stovintys apsnigdavo lygiai taip pat)
+                rez.append((x, y - 1, random.Random(xs * 7919 + y * 104729 + seka * 15485863).random()))
     return tuple(sorted(rez, key=lambda a: a[2]))
 
 
@@ -5014,10 +5083,10 @@ SENIO_SLUOTOS_LEMPUTES = 5  # kiek girliandos lempučių ant šluotos kuokšto
 
 
 @functools.lru_cache(maxsize=None)
-def senio_sluotos_lemputes(poza, kadras, i_kaire):
+def senio_sluotos_lemputes(poza, kadras, i_kaire, sluota_t=0):
     """Girliandos lemputės ant šluotos kuokšto (kaip ant eglučių): [(x, y, spalvos nr.)] – ant rykščių, tolygiai
     nuo apačios iki viršaus ir pakaitomis į abi puses. Pozose be šluotos – tuščia."""
-    t = senio_tinklelis(poza, kadras, i_kaire, 0)
+    t = senio_tinklelis(poza, kadras, i_kaire, 0, sluota_t=sluota_t)
     rykstes = {SENIO_SPALVOS[k] for k in "QqZ"}
     langeliai = sorted(((x, y) for y in range(SENIO_H) for x in range(SENIO_W) if t[y][x] in rykstes),
                        key=lambda a: (-a[1], a[0]))  # nuo apačios (raiščio) į viršų
@@ -5057,14 +5126,19 @@ def senio_lemputes_spalva(j, senis, sviesumas):
 
 
 # Stovintis senis nekyla, kai aplink jį prisninga (apsninga), bet nusileidžia, kai sniegas po juo suslūgsta
+def senio_ps_priedai(Ps):
+    """„Skirtingo dydžio“: kiek taškų pridedama prie senio „pikselio“ (i-ajam – [i % ilgis]). Tik sveikais taškais:
+    trupmeninis „pikselis“ (pvz. 85 % – 2,54, 115 % – 3,44) piešinį daro nelygų (langeliai pakaitomis 2 ir 3, 3 ir 4
+    taškų) – atrodė neryškus, o 85 % – per mažas. Mažesnis – tik kai „pikselis“ didelis (dideliame ekrane)."""
+    return (0, 1, -1) if Ps >= 4.5 else (0, 1)
 SENIO_GNIUZTE, SENIO_GNIUZTES_PUS = 12.0, 8  # apatinės gniūžtės vidurys ir pusplotis langeliais (žiūrint į dešinę)
 SENIO_MINA = 1.5  # px (×k): tiek einantis senis suslegia pusnį po savimi (senis_mina)
 SENIO_NUSESDA = 40  # px/s (×k): kaip greitai stovintis senis nusileidžia, kai sniegas po juo suslūgsta
 SENIO_KELIO_GYLIS = 1  # langeliai: tiek senio apačios uždengia prisnigtas kelias priešais jį – giliau senis kyla
 SENIO_KYLA = 6  # px/s (×k): kaip greitai stovintis senis ekrano apačioje kyla, kai priešais jį kaupiasi kelio sniegas
-SENIO_STOVINT = ("stovi", "dairosi", "rankos", "mojuoja", "meta", "sauna", "nukrenta")
+SENIO_STOVINT = ("stovi", "dairosi", "rankos", "mojuoja", "meta", "sauna", "nukrenta", "ciaudi")
 # būsenos, kai senis stovi ant paviršiaus (gali būti taikinys, pagaunamas spragtelėjimu ir pan.)
-SENIO_ANT_PAVIRSIAUS = ("eina", "stovi", "meta", "sauna", "mojuoja", "rankos", "dairosi")
+SENIO_ANT_PAVIRSIAUS = ("eina", "stovi", "meta", "sauna", "mojuoja", "rankos", "dairosi", "ciaudi")
 
 
 SENIO_SNIEGO_SPALVOS = {SENIO_SPALVOS["W"]: SENIO_SPALVOS["W"], SENIO_SPALVOS["w"]: SENIO_SPALVOS["w"],
@@ -5939,6 +6013,8 @@ class AlfaSniegas:
             else:
                 for l, t, r, b in self.senos:
                     l, r = max(0, l), min(vw, r)
+                    if r <= l:  # visas už ekrano – neigiamas ilgis memset būtų milžiniškas (atminties gadinimas)
+                        continue
                     for yy in range(max(0, t), min(vh, b)):
                         ctypes.memset(self.bits + (yy * vw + l) * 4, 0, (r - l) * 4)
         n = sn.n
@@ -6286,7 +6362,7 @@ class Sniegas:
         return n
 
     def issaugoti(self):
-        """Atomiškai: laikina byla įrašoma iki disko (fsync) ir pakeičia senąją. Jei bylą trumpam laiko atidariusi
+        """Atomiškai: laikina byla įrašoma iki disko (fsync) ir pakeičia senąją. Jei bylą trumpam laiko atvėrusi
         kita programa (antivirusinė, OneDrive, paieškos indeksas), keitimas pakartojamas."""
         if self.__dict__.get("testas"):  # našumo testo laikini nustatymai neišsaugomi
             return
@@ -6314,7 +6390,7 @@ class Sniegas:
             if not self.saugojimo_klaida_parodyta:
                 self.saugojimo_klaida_parodyta = True
                 messagebox.showerror(PAVADINIMAS,
-                                     T("Nepavyko išsaugoti nustatymų. Gal programos aplankas tik skaitymui?")
+                                     T("Nepavyko išsaugoti nustatymų. Gal į programos aplanką negalima įrašyti?")
                                      + f"\n\n{NUSTATYMU_BYLA}\n\n{e!r}")
 
     def atideti(self, vardas, ms, funkcija):
@@ -6713,7 +6789,7 @@ class Sniegas:
         self.meniu_atidarytas = True
         tekstai = (T("Nustatymai…"), T("Įjungti sniegą" if self.sniegas_isjungtas else "Išjungti sniegą"),
                    T("Rodyti viską" if self.vartotojas_paslepe else "Paslėpti viską"), T("Išjungti"),
-                   T("Nuvalyti sniegą"))
+                   (T("Nuvalyti sniegą"), self.n["kaupimasis"]))  # nesikaupiant – nėra ką valyti
         # paruoštukai (galiojantis – su varnele), gūsis ir fejerverkai – be nustatymų lango (tekstai paruošiami čia:
         # meniu gija tkinter ir nustatymų neliečia)
         aktyvus = self.aktyvus_paruostukas()
@@ -6734,7 +6810,7 @@ class Sniegas:
             user32.AppendMenuW(meniu, MF_STRING, 1, tekstai[0])
             user32.AppendMenuW(meniu, MF_STRING, 2, tekstai[1])
             user32.AppendMenuW(meniu, MF_STRING, 4, tekstai[2])
-            user32.AppendMenuW(meniu, MF_STRING, 5, tekstai[4])
+            user32.AppendMenuW(meniu, MF_STRING | (0 if tekstai[4][1] else MF_GRAYED), 5, tekstai[4][0])
             if paruostukai:
                 user32.AppendMenuW(meniu, MF_SEPARATOR, 0, None)
                 sub = user32.CreatePopupMenu()  # sunaikinamas kartu su meniu (DestroyMenu – rekursyviai)
@@ -6765,7 +6841,7 @@ class Sniegas:
             self.meniu_atidarytas = False
 
     def uzdaryti_langa(self):
-        """Išjungimo mygtukas (X): pagal nustatymą klausia, slepia į dėklą arba baigia. Be dėklo piktogramos – baigia."""
+        """Uždarymo mygtukas (×): pagal nustatymą klausia, slepia į dėklą arba baigia. Be dėklo piktogramos – baigia."""
         if not self.deklas:
             self.baigti()
             return
@@ -6792,7 +6868,7 @@ class Sniegas:
         neklausti = tk.BooleanVar(value=False)
         f = ttk.Frame(d, padding=14)
         f.pack(fill="both", expand=True)
-        ttk.Label(f, text=T("Ką daryti paspaudus išjungimo mygtuką?"), font=("Segoe UI", 10, "bold")).pack(anchor="w")
+        ttk.Label(f, text=T("Ką daryti paspaudus uždarymo mygtuką?"), font=("Segoe UI", 10, "bold")).pack(anchor="w")
         ttk.Label(f, text=T("Sistemos dėkle sniegas veikia toliau – nustatymus atversite\n"
                             "spustelėję piktogramą prie laikrodžio."), foreground="#555555").pack(anchor="w", pady=(4, 10))
         mygtukai = ttk.Frame(f)
@@ -7133,9 +7209,9 @@ class Sniegas:
         if raktas == "girliandu_kiekis" and n["girliandos"]:
             telpa = self.girliandu_telpa()
             if telpa is not None and n["girliandu_kiekis"] > telpa:
-                return T("⚠ Nustatyta {k} lempučių, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
-                         "Sumažinkite dydį arba lempučių kiekį.").format(k=n["girliandu_kiekis"],
-                                                                        d=n["girliandu_dydis"], n=telpa)
+                return T("⚠ Nustatyta {k} {lemp}, bet šiame ekrane, kai dydis {d} %, telpa tik {n} – daugiau nerodoma. "
+                         "Sumažinkite dydį arba lempučių kiekį.").format(
+                    k=n["girliandu_kiekis"], lemp=lempuciu_forma(n["girliandu_kiekis"]), d=n["girliandu_dydis"], n=telpa)
         if raktas in ("fejerverku_intervalas", "fejerverku_trukme") and n["fejerverkai"] \
                 and n["fejerverku_trukme"] >= n["fejerverku_intervalas"] * 60:
             return T("⚠ Šou ({t} s) ne trumpesnis už tarpą tarp šou ({m} min): kol vyksta vienas, kitas praleidžiamas – "
@@ -7248,7 +7324,7 @@ class Sniegas:
             for _bandymas in range(25):
                 l, r, b = rnd.choices(ruozai, weights=svoriai)[0]
                 x = rnd.uniform(l, r)
-                tarpas = min((abs(x - px) - (plotis + pp) / 2 for px, pp, pb in padetys if pb == b), default=1e9)
+                tarpas = min((abs(x - px) - (plotis + pw) / 2 for px, pw, pb in padetys if pb == b), default=1e9)
                 if geriausia is None or tarpas > geriausia[0]:
                     geriausia = (tarpas, x, b)
                 if tarpas > 0:
@@ -7828,7 +7904,7 @@ class Sniegas:
             x = random.uniform(l + b["r"], r - b["r"])
             if all(o is b or o.get("pav") != raktas or abs(o["x"] - x) > o["r"] + b["r"] + 4 for o in self.bumbulai):
                 break
-        b.update(pav=raktas, st=st, x=x, ore=False, v=0.0, vy=0.0, aukstis=0.0)
+        b.update(pav=raktas, st=st, x=x, ore=False, v=0.0, vy=0.0)
         a = self.bumbulo_pavirsius(b, x)
         b["y"] = a[0] if a else None
         self.bumbulo_ribos(b)
@@ -7874,7 +7950,7 @@ class Sniegas:
                 piks_piesti(p, t, k * W, 0, Pf)
             b = {"sprite": sp, "W": W, "R": R, "Pb": Pb, "spalva": spalva, "r": R * Pf, "c": W / 2,
                  "v": 0.0, "v0": random.uniform(40, 90) * self.k, "kryptis": random.choice((-1, 1)),
-                 "kampas": random.uniform(0, 2 * math.pi), "aukstis": 0.0, "vy": 0.0, "sena": None,
+                 "kampas": random.uniform(0, 2 * math.pi), "vy": 0.0, "sena": None,
                  "busena": "rieda", "laikas": random.uniform(10, 60), "anim": None, "t": 0.0, "trukme": 0.0,
                  "ore": False, "w": 0.0, "pav": None, "st": None, "stumt": random.uniform(0.5, 3.0)}
             self.bumbulai.append(b)
@@ -8185,7 +8261,11 @@ class Sniegas:
                 verst = e["x"] + e["kryptis"] * self.valyt_pus()
                 if -2 * r < (b["x"] - verst) * e["kryptis"] < r:
                     b["x"] = verst + e["kryptis"] * r
-                    b["v"] = e["kryptis"] * max(abs(b["v"]), 60 * k)
+                    if e.get("pauze", 0.0) > 0:  # stovintis (apsisukęs stabteli) nestumia – tik sustabdo
+                        if b["v"] * e["kryptis"] < 0:
+                            b["v"] = 0.0
+                    else:
+                        b["v"] = e["kryptis"] * max(abs(b["v"]), 60 * k)
         dx = b["v"] * dt
         b["x"] += dx
         b["kampas"] += dx / r  # rieda, o ne slysta: pasisukimas atitinka nuriedėtą kelią
@@ -8481,12 +8561,20 @@ class Sniegas:
         """Kas seniui ant galvos (SENIO_PUOSMENOS) – parenkama kuriant senį."""
         return s_.get("puosmena", "plika")
 
-    def senio_Ps(self):
+    def senio_Ps(self, s_=None):
         """Seniai piešiami tuo dydžiu, kuriuo nupiešta juosta (keičiant dydį – iki perkūrimo – ne naujuoju:
-        kitaip iš juostos būtų kopijuojamos ne tos vietos ir liktų artefaktai)."""
-        if getattr(self, "senio_sprite", None):
-            return self.senio_sprite["Ps"]
-        return senio_pikselis(self.P, self.n["senio_dydis"])
+        kitaip iš juostos būtų kopijuojamos ne tos vietos ir liktų artefaktai). s_ – to senio (seniai būna
+        skirtingo dydžio – senio_ps_priedai, kiekvienam dydžiui sava juosta); be jo – įprasto dydžio."""
+        sp = self.senio_juosta(s_)
+        if sp:
+            return sp["Ps"]
+        return senio_pikselis(self.P, self.n["senio_dydis"]) + (s_.get("ps_priedas", 0) if s_ else 0)
+
+    def senio_juosta(self, s_=None):
+        """Juosta (kadrai), iš kurios piešiamas senis s_ (jo dydžio); be s_ – įprasto dydžio."""
+        juostos = self.__dict__.get("senio_juostos") or {}
+        return juostos.get(s_.get("ps_priedas", 0), self.__dict__.get("senio_sprite")) if s_ else \
+            self.__dict__.get("senio_sprite")
 
     def naikinti_senius(self):
         for s_ in getattr(self, "seniai", []):
@@ -8502,10 +8590,13 @@ class Sniegas:
                 self.papildomos.append(d["sena"])
         self.seniai, self.senio_daleles = [], []
         self.senio_hwnd = set()
-        if getattr(self, "senio_sprite", None):
-            self.naikinti_dc(self.senio_sprite)
-        self.senio_sprite = None
+        self.naikinti_senio_juostas()
         self.naikinti_senio_vaizdus()
+
+    def naikinti_senio_juostas(self):
+        for sp in (self.__dict__.pop("senio_juostos", None) or {}).values():
+            self.naikinti_dc(sp)
+        self.senio_sprite = None
 
     def naikinti_senio_vaizdus(self):
         for _, d in self.__dict__.pop("_senio_vaizdai", {}).values():
@@ -8519,26 +8610,34 @@ class Sniegas:
             self.naikinti_senius()
             return
         likti = getattr(self, "seniai", [])
-        if getattr(self, "senio_sprite", None):
-            self.naikinti_dc(self.senio_sprite)
+        self.naikinti_senio_juostas()
         self.naikinti_senio_vaizdus()  # sudėti senių paveikslėliai – iš senos juostos
-        Ps = senio_pikselis(self.P, self.n["senio_dydis"])
-        W, H, n = round(SENIO_W * Ps), round(SENIO_H * Ps), len(SENIO_KADRAI)  # kadro dydis juostoje, px
-        kiek = self.n["senio_kiekis"]
-        # Viena juosta: plikas senis su 1-o senio sagomis; kitų senių sagos ir visų galvos šakelės užpiešiamos ant
-        # viršaus (piesti_senius) – atskiros juostos kiekvienam seniui dideliame ekrane užimtų šimtus MB.
-        # dvi eilutės (į dešinę / į kairę), ne viena: su mostaguojančiomis rankomis kadrų beveik šimtas, o
-        # didelis senis dideliame ekrane – iki ~500 px pločio: vienoje eilutėje juosta viršytų 32 767 px
-        sp = self.senio_sprite = self.naujas_dc(W * n, H * 2)
-        if not sp["bmp"]:  # per didelis (pvz. 5K ekranas ir senis 400 %) – geriau be senių nei nematomi su lemputėmis
-            self.naikinti_senius()
-            return
-        sp["Ps"] = Ps
-        p = GdiPiesejas(self.g, sp["dc"])
-        for j, kaire in enumerate((False, True)):
-            for i, (poza, kadras) in enumerate(SENIO_KADRAI):
-                piesti_senio_kadra(p, senio_tinklelis(poza, kadras, kaire, 0), i * W, j * H, Ps,
-                                   senio_x(senio_poslinkis(poza, kadras), kaire, Ps))
+        kiek, n = self.n["senio_kiekis"], len(SENIO_KADRAI)
+        # skirtingo dydžio seniai: i-ojo „pikselis“ – pagrindinis + priedai[i % ilgis] (pirmasis – įprasto);
+        # kiekvienam dydžiui – sava juosta
+        Ps0 = senio_pikselis(self.P, self.n["senio_dydis"])
+        masteliai = senio_ps_priedai(Ps0) if self.n["senio_dydziai"] and kiek > 1 else (0,)
+        # Viena juosta dydžiui: plikas senis su 1-o senio sagomis; kitų senių sagos ir visų galvos šakelės
+        # užpiešiamos ant viršaus (piesti_senius) – atskiros juostos kiekvienam seniui dideliame ekrane užimtų
+        # šimtus MB. Dvi eilutės (į dešinę / į kairę), ne viena: kadrų – keliasdešimt, o didelis senis dideliame
+        # ekrane – iki ~500 px pločio: vienoje eilutėje juosta viršytų 32 767 px
+        self.senio_juostos = {}
+        for m in sorted(set(masteliai[:kiek])):
+            Ps = Ps0 + m
+            W, H = round(SENIO_W * Ps), round(SENIO_H * Ps)  # kadro dydis juostoje, px
+            sp = self.naujas_dc(W * n, H * 2)
+            if not sp["bmp"]:  # per didelis (pvz. 5K ekranas ir senis 400 %) – geriau be senių nei nematomi su lemputėmis
+                self.naikinti_dc(sp)
+                self.naikinti_senius()
+                return
+            sp["Ps"] = Ps
+            self.senio_juostos[m] = sp
+            p = GdiPiesejas(self.g, sp["dc"])
+            for j, kaire in enumerate((False, True)):
+                for i, (poza, kadras) in enumerate(SENIO_KADRAI):
+                    piesti_senio_kadra(p, senio_tinklelis(poza, kadras, kaire, 0), i * W, j * H, Ps,
+                                       senio_x(senio_poslinkis(poza, kadras), kaire, Ps))
+        self.senio_sprite = self.senio_juostos[0]
         for s_ in likti[kiek:]:  # perteklius – pašalinamas
             if s_["sena"]:
                 self.papildomos.append(s_["sena"])
@@ -8549,20 +8648,24 @@ class Sniegas:
                 except tk.TclError:
                     pass
         self.seniai = likti[:kiek]
-        for s_ in self.seniai:
+        for i, s_ in enumerate(self.seniai):
             s_["geom"] = None  # pagavimo langelis – naujo dydžio
+            s_["ps_priedas"] = masteliai[i % len(masteliai)]
         if not hasattr(self, "senio_daleles"):
             self.senio_daleles = []
         for i in range(len(self.seniai), kiek):
             # ne lėčiau kaip 0,7: lėčiau (~11 px/s) senis slinko 1 tašku kas 5–6 kadrus – matėsi laiptuotai, trūkčiojo.
             # Ne greičiau kaip 1,2 – greitesni atrodė skubantys (buvo 0,45–1,3; vidurkis panašus)
-            gr = 1.0 if i == 0 else random.uniform(0.7, 1.2)
+            # ne lėčiau 0,8 ir tempas ne lėčiau 0,9: lėčiausių ėjimo animacija (6 kadrai, galva linkteli 1 langeliu)
+            # buvo vos ~4 kadrai per sekundę – akimi matėsi atskiri kadrai, o judėjimas 1, 1, 0 taško ritmu trūkčiojo
+            gr = 1.0 if i == 0 else random.uniform(0.8, 1.2)
             self.seniai.append({"x": 0.0, "y": None, "vx": 0.0, "vy": 0.0, "kryptis": random.choice((-1, 1)),
                                 "busena": "nera", "t": 0.0, "laukti": 0.5 + i * 0.8, "pav": None, "st": None,
                                 "faze": random.random(), "iki_pauzes": random.uniform(4, 10), "sena": None,
                                 # savas ėjimo greitis ir (atskirai) žingsnių tempas – kitaip keli seniai eidavo
                                 # ir linksėdavo kaip vienas, lyg žąsys
-                                "greitis": gr, "tempas": 1.0 if i == 0 else random.uniform(0.6, 1.35),
+                                "greitis": gr, "tempas": 1.0 if i == 0 else random.uniform(0.9, 1.35),
+                                "ps_priedas": masteliai[i % len(masteliai)],
                                 "langas": None, "rodomas": False, "geom": None, "tempimas": None,
                                 "puosmena": SENIO_PUOSMENOS[(self.__dict__.setdefault(
                                     "puosmenu_pradzia", random.randrange(len(SENIO_PUOSMENOS))) + i)
@@ -8697,7 +8800,7 @@ class Sniegas:
         if langai_ and apacioje >= math.ceil(len(self.seniai) / 2):
             pav = langai_
         svoriai = [(r - l) * (3 if raktas[0] == "zeme" else 1) for raktas, _, l, r in pav]
-        Ps = self.senio_Ps()
+        Ps = self.senio_Ps(s_)
         pus = SENIO_W * Ps * 0.35
         egles = self.n["senio_stovi"] and self.egles
         kiti = [o for o in self.seniai if o is not s_ and o["busena"] != "nera" and o["y"] is not None]
@@ -8754,7 +8857,7 @@ class Sniegas:
     def senio_toliau(self, s_):
         """Po veiksmo: eina toliau, o kai „tik stovi vietoje“ – stovi (jei už eglės – pirma išeina iš už jos)."""
         if self.n["senio_stovi"]:
-            if self.egles and self.senio_uz_egles(s_["x"], s_["y"], self.senio_Ps()) > 0:
+            if self.egles and self.senio_uz_egles(s_["x"], s_["y"], self.senio_Ps(s_)) > 0:
                 s_.update(busena="eina", t=0.0, tikslas_x=None)
             else:
                 s_.update(busena="stovi", t=0.0, stoveti=random.uniform(3, 8))
@@ -8768,8 +8871,9 @@ class Sniegas:
         s_["y"] += s_["vy"] * dt
         s_["x"] += s_["vx"] * dt
         s_["vx"] *= max(0.0, 1 - dt * 0.6)
-        senio_svyruoti(s_, dt, self.senio_Ps(), k)
-        pus = SENIO_W * self.senio_Ps() * 0.3
+        Ps = self.senio_Ps(s_)
+        senio_svyruoti(s_, dt, Ps, k)
+        pus = SENIO_W * Ps * 0.3
         if s_["x"] < pus or s_["x"] > self.vw - pus:  # ekrano kraštas – atsimuša
             s_["x"] = max(pus, min(self.vw - pus, s_["x"]))
             s_["vx"] = -s_["vx"] * 0.4
@@ -8799,14 +8903,13 @@ class Sniegas:
                 return
             smugis = s_["vy"]
             # iškart ten, kur stovės (sniego mediana po gniūžte) – kitaip kitame kadre šokteltų
-            s_.update(y=self.senio_atramos_y(s_, self.senio_Ps(), a[0]), busena="nukrenta", t=0.0, vy=0.0, vx=0.0, tikslas_x=None, y_fiks=None)
+            s_.update(y=self.senio_atramos_y(s_, Ps, a[0]), busena="nukrenta", t=0.0, vy=0.0, vx=0.0, tikslas_x=None, y_fiks=None)
             if smugis > 200 * k:  # sniego purslai
                 self.valyt_debesis(x, a[0] - 1, min(14, int(smugis / (60 * k))), -smugis * 0.25,
-                                    dydis=max(2, round(self.senio_Ps())), lange=ant_lango(s_))
-            Ps = self.senio_Ps()
+                                    dydis=max(2, round(Ps)), lange=ant_lango(s_))
             for o in self.seniai:  # nukrito (numestas) ant kito senio – abu subyra
                 if o is not s_ and o["busena"] in SENIO_ANT_PAVIRSIAUS + ("nukrenta",) and o["pav"] == s_["pav"] \
-                        and abs(o["x"] - x) < SENIO_W * Ps * 0.6:
+                        and abs(o["x"] - x) < SENIO_W * (Ps + self.senio_Ps(o)) * 0.3:
                     self.senio_subyreti(o, Ps, x)
                     self.senio_subyreti(s_, Ps, o["x"])
                     break
@@ -8817,8 +8920,6 @@ class Sniegas:
         if not self.seniai:
             return
         k = self.k
-        Ps = self.senio_Ps()
-        pus = SENIO_W * Ps * 0.32
         n_ = self.n
         snaigiu_yra = n_["snaiges"] and any(n_["tipai"])
         self.seniu_balansas = self.__dict__.get("seniu_balansas", 0.0) + dt
@@ -8826,6 +8927,8 @@ class Sniegas:
             self.seniu_balansas = 0.0
             self.senis_iseiti()
         for s_ in self.seniai:
+            Ps = self.senio_Ps(s_)  # kiekvienas – savo dydžio (senio_ps_priedai)
+            pus = SENIO_W * Ps * 0.32
             s_["t"] += dt
             b = s_["busena"]
             if b != "eina" and s_.get("griuva") is not None:  # pačiuptas, pataikė gniūžte, susidūrė ir pan.
@@ -8921,13 +9024,25 @@ class Sniegas:
                 continue
             if b in ("mojuoja", "rankos", "dairosi"):
                 if s_["t"] >= senio_trumpo_veiksmo_trukme(s_):
+                    if s_.pop("apsisukti", False):  # pamojavo sutiktam seniui (seniu_susidurimai) – eina atgal
+                        s_["kryptis"] = -s_["kryptis"]
                     self.senio_toliau(s_)
+                continue
+            if b == "ciaudi":
+                if s_["t"] >= SENIO_CIAUDI_TRUKME[0] and not s_.get("apci"):
+                    s_["apci"] = True
+                    self.senio_apci(s_, Ps)
+                elif s_["t"] >= SENIO_CIAUDI_TRUKME[1]:
+                    s_.update(busena="stovi", t=0.0, stoveti=random.uniform(2.0, 5.0), apci=False)
                 continue
             if b == "stovi":
                 if s_["t"] >= s_["stoveti"]:
                     if self.n["senio_stovi"]:  # tik stovi: kartais pajudina rankas, pamojuoja, pasuka galvą
                         if self.egles and self.senio_uz_egles(s_["x"], y, Ps) > 0:  # eglės perdėliotos
                             s_.update(busena="eina", t=0.0, tikslas_x=None)
+                        elif s_.get("sniegas", 0.0) > SENIO_CIAUDI_NUO and random.random() < SENIO_CIAUDI_TIKIMYBE \
+                                and time.perf_counter() - s_.get("ciaudejo", -1e9) >= SENIO_CIAUDI_PERTRAUKA:
+                            s_.update(busena="ciaudi", t=0.0, ciaudejo=time.perf_counter(), apci=False)
                         else:
                             senio_stovint(s_)
                     else:
@@ -8948,6 +9063,8 @@ class Sniegas:
                     s_.update(busena="stovi", t=0.0, stoveti=random.uniform(2, 6), tikslas_x=None)
                     continue
                 s_["kryptis"] = 1 if tikslas > s_["x"] else -1
+                # įjungus „Tik stovi vietoje“ griūvant ant ledo – kitaip liktų pritūpusio pozoje iki tikslo
+                s_["griuva"], s_["plumpt"], s_["slysta"] = None, False, None
                 gr = s_.get("greitis", 1.0)
                 dx = s_["kryptis"] * min(24 * k * gr * dt, abs(tikslas - s_["x"]))
                 s_["x"] += dx
@@ -8967,6 +9084,12 @@ class Sniegas:
                 if gv >= SENIO_GRIUVA_PLUMPT:
                     if not s_.get("plumpt"):
                         s_["plumpt"] = True
+                        if random.random() < SENIO_SUBYRA_GRIUVUS:  # plumptelėjo per stipriai – subyra
+                            if ZURNALAS.ijungtas:
+                                ZURNALAS.rasyti(f"SENIS pargriuvęs subyrėjo: x {s_['x']:.0f}")
+                            self.senio_subyreti(s_, Ps)  # gabalai – iš gulinčio senio kadro
+                            s_["griuva"], s_["plumpt"], s_["slysta"], s_["griuti_po"] = None, False, None, None
+                            continue
                         for _ in range(8):  # sniego dulkės
                             if len(self.pustomos) < 300:
                                 self.pustomos.append({"x": s_["x"] + random.uniform(-0.3, 0.3) * SENIO_W * Ps,
@@ -9008,9 +9131,10 @@ class Sniegas:
             if s_.get("slysta") is not None:  # ką tik nuslydo nuo ledo – ne iškart sustoja pailsėti
                 s_["slysta"] = None
                 s_["iki_pauzes"] = max(s_.get("iki_pauzes", 0.0), 2.0)
-            s_["x"] += s_["kryptis"] * 24 * k * gr * dt
-            s_["faze"] += dt * s_.get("tempas", 1.0) / 0.7
-            self.senis_mina(s_, s_["kryptis"] * 24 * k * gr * dt, Ps)
+            ek = s_.get("ejimo_k", 1.0)  # kiekvieną kartą pajudėjęs eina kiek kitu greičiu (nustatoma sustojus)
+            s_["x"] += s_["kryptis"] * 24 * k * gr * ek * dt
+            s_["faze"] += dt * s_.get("tempas", 1.0) * ek / 0.7
+            self.senis_mina(s_, s_["kryptis"] * 24 * k * gr * ek * dt, Ps)
             if iseina:
                 if s_["x"] + SENIO_W * Ps / 2 < 0 or s_["x"] - SENIO_W * Ps / 2 > self.vw:  # išėjo – iškris ant lango
                     s_.update(busena="nera", t=0.0, laukti=random.uniform(1.5, 3.0), pav=None, st=None, iseina=False,
@@ -9018,23 +9142,26 @@ class Sniegas:
                 continue
             if (s_["x"] - pus < lo or s_["x"] + pus > hi) and self.senis_nusoka(s_, lo, hi, Ps):
                 continue
-            if s_["x"] - pus < lo:
-                s_["x"], s_["kryptis"] = lo + pus, 1
-            elif s_["x"] + pus > hi:
-                s_["x"], s_["kryptis"] = hi - pus, -1
+            if s_["x"] - pus < lo or s_["x"] + pus > hi:
+                s_["x"], s_["kryptis"] = (lo + pus, 1) if s_["x"] - pus < lo else (hi - pus, -1)
+                if random.random() < 0.35:  # priėjęs kraštą kartais apsidairo, o ne iškart apsisukęs eina atgal
+                    s_["ejimo_k"] = random.uniform(0.9, 1.1)
+                    senio_dairytis(s_)
+                    continue
             s_["iki_pauzes"] -= dt
             if s_["iki_pauzes"] <= 0:
+                s_["ejimo_k"] = random.uniform(0.9, 1.1)
                 b = senio_pauze()
                 s_.update(busena=b, t=0.0, stoveti=random.uniform(1.0, 3.0), suviai=0)
                 if b == "dairosi":
                     senio_dairytis(s_)
         if getattr(self, "bumbulai", None):
-            self.seniai_spiria(Ps, dt)
+            self.seniai_spiria(dt)
         if len(self.seniai) > 1:
-            self.seniu_susidurimai(Ps)
+            self.seniu_susidurimai()
         self.senio_daleliu_zingsnis(dt)
 
-    def seniai_spiria(self, Ps, dt):
+    def seniai_spiria(self, dt):
         """Einantis senis, priėjęs prie ant to paties paviršiaus gulinčio bumbuliuko, jį paspiria (mosteli – senio_kadras):
         bumbuliukas nurieda ta pačia kryptimi (toliau – įprasta riedėjimo fizika, ant ledo – toli). Tas pats senis
         vėl spirti gali tik po SENIO_SPYRIO_PERTRAUKA s."""
@@ -9052,7 +9179,7 @@ class Sniegas:
                 if b["busena"] != "rieda" or b["ore"] or b.get("pav") != s_["pav"] or b["y"] is None:
                     continue
                 dx = (b["x"] - s_["x"]) * kr
-                if 0 < dx < SENIO_W * Ps * 0.32 + b["r"] + 2 * k and abs(b["y"] - s_["y"]) < b["r"] + 4 * k:
+                if 0 < dx < SENIO_W * self.senio_Ps(s_) * 0.32 + b["r"] + 2 * k and abs(b["y"] - s_["y"]) < b["r"] + 4 * k:
                     b["v"] = kr * max(abs(b["v"]), b["v0"] * random.uniform(2.2, 3.2))
                     b["kryptis"], b["stumt"] = kr, random.uniform(3.0, 5.0)
                     s_["spiria"] = SENIO_SPYRIO_TRUKME
@@ -9084,7 +9211,7 @@ class Sniegas:
             return
         if not any(p[0][0] == "langas" for p in self.senio_pavirsiai()):
             return
-        apacioje = [o for o in self.seniai if o["busena"] in ("eina", "stovi", "dairosi", "rankos", "mojuoja")
+        apacioje = [o for o in self.seniai if o["busena"] in ("eina", "stovi", "dairosi", "rankos", "mojuoja", "ciaudi")
                     and o.get("pav") and o["pav"][0] == "zeme"]
         if len(apacioje) <= math.ceil(len(self.seniai) / 2):
             return
@@ -9160,14 +9287,49 @@ class Sniegas:
                 self.senio_nupusti(s_, lygis, max(SENIO_NUPUTIMO_RIBA, lygis - dt * 0.02 * (vejas - 2.0)), Ps)
             else:
                 s_["puciama"] = False
-                if snaigiu_yra and lygis < 1.0:
-                    s_["sniegas"] = min(1.0, lygis + dt / SENIO_SNIEGO_LAIKAS)
+                if snaigiu_yra and lygis < 1.0:  # kiekvienam seniui prisninga savo greičiu
+                    gr = s_.get("sniego_greitis") or s_.setdefault("sniego_greitis", random.uniform(0.6, 1.4))
+                    s_["sniegas"] = min(1.0, lygis + dt * gr / SENIO_SNIEGO_LAIKAS)
         elif lygis > 0.0:
             s_["sniegas"] = 0.0
             if lygis > 0.15 and b != "nera" and s_["y"] is not None:  # subyrėjus – sniegas byra kartu su juo
                 H = SENIO_H * Ps
                 self.valyt_debesis(s_["x"], s_["y"] - H * 0.7, max(2, int(10 * lygis)), -40 * self.k, dydis=max(1, round(Ps)),
                                    lange=ant_lango(s_))
+
+    def senio_apci(self, s_, Ps):
+        """„Apči!“ (po įkvėpimo): beveik visas sniegas nuo galvos, šakelių ir šluotos pažyra – smulkus (kaip nupučiant,
+        tik į priekį ir aukštyn) ir stambesni gumulėliai, kurie nukrenta; nuo galvos – purslų debesėlis."""
+        lygis = s_.get("sniegas", 0.0)
+        if s_["y"] is None:
+            return
+        # stambesni gumulėliai – iš kas antro nubyrančio langelio (prieš senio_nupusti: jis pakeičia lygį)
+        nr, n = self.senio_kadras(s_), len(SENIO_KADRAI)
+        poza, kadras = SENIO_KADRAI[nr % n]
+        x0, y0 = s_["x"] - SENIO_W * Ps / 2, s_["y"] - SENIO_H * Ps + 1
+        seka = self.seniai.index(s_) if s_ in self.seniai else 0
+        naujas, lange = lygis * SENIO_CIAUDI_LIEKA * SENIO_SNIEGO_DALIS, ant_lango(s_)
+        for j, (x, y, slenkstis) in enumerate(senio_sniego_langeliai(poza, kadras, nr >= n, self.senio_puosmena(s_), seka,
+                                                                     senio_sluota(seka))):
+            if slenkstis >= lygis * SENIO_SNIEGO_DALIS:
+                break
+            if slenkstis >= naujas and j % 2 == 0 and len(self.valyt_daleles) < MAKS_VALYT_DALELIU:
+                d = {"x": x0 + (x + 0.5) * Ps, "y": y0 + (y + 1) * Ps, "kiekis": 0.0, "sena": None,
+                     "vx": s_["kryptis"] * random.uniform(20, 80) * self.k, "vy": -random.uniform(40, 120) * self.k,
+                     "gyv": 2.5, "d": max(2, round(Ps * random.choice((1.5, 2.0, 2.5))))}
+                if lange:
+                    d["l"] = True
+                self.valyt_daleles.append(d)
+        n0 = len(self.pustomos)
+        self.senio_nupusti(s_, lygis, lygis * SENIO_CIAUDI_LIEKA, Ps)
+        for d in self.pustomos[n0:]:  # ne pavėjui, o nuo senio – į priekį
+            d["vx"] = s_["kryptis"] * random.uniform(30, 90) * self.k + d["vx"] * 0.3
+            d["vy"] = -random.uniform(50, 110) * self.k
+        H = SENIO_H * Ps
+        self.valyt_debesis(s_["x"] + s_["kryptis"] * SENIO_W * Ps * 0.15, s_["y"] - H * 0.75, 6, -90 * self.k,
+                           gyv=0.6, dydis=max(1, round(Ps)), lange=ant_lango(s_))
+        if ZURNALAS.ijungtas:
+            ZURNALAS.rasyti(f"SENIS nusičiaudėjo: x {s_['x']:.0f}, sniego {lygis:.2f} → {lygis * SENIO_CIAUDI_LIEKA:.2f}")
 
     def senio_nupusti(self, s_, lygis, naujas, Ps):
         """Stiprus vėjas nupučia sniegą nuo senio galvos, šakelių ir šluotos: dingę langeliai (slenkstis tarp naujo ir
@@ -9181,7 +9343,9 @@ class Sniegas:
         k = self.k
         x0, y0 = s_["x"] - SENIO_W * Ps / 2, s_["y"] - SENIO_H * Ps + 1
         vejas_px = self.vejas * 12 * k
-        for x, y, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, self.senio_puosmena(s_)):
+        seka = self.seniai.index(s_) if s_ in self.seniai else 0
+        for x, y, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, self.senio_puosmena(s_), seka,
+                                                       senio_sluota(seka)):
             if slenkstis >= lygis * SENIO_SNIEGO_DALIS:
                 break
             if slenkstis >= naujas * SENIO_SNIEGO_DALIS and len(self.pustomos) < 300:
@@ -9189,13 +9353,14 @@ class Sniegas:
                                       "vx": vejas_px * random.uniform(0.6, 1.2), "vy": -random.uniform(20, 60) * k,
                                       "gyv": random.uniform(2, 4), "kiekis": 0.3, "sena": None})
 
-    def seniu_susidurimai(self, Ps):
+    def seniu_susidurimai(self):
         """Du seniai eina vienas į kitą: priėjęs arti kartais apsisuka, o jei ne – susidūrę abu subyra."""
-        W, H = SENIO_W * Ps, SENIO_H * Ps
         ant = [s_ for s_ in self.seniai if s_["busena"] in SENIO_ANT_PAVIRSIAUS + ("nukrenta",) and s_["pav"]]
         artimas = {}
         for i, a in enumerate(ant):
             for b in ant[i + 1:]:
+                Ps = (self.senio_Ps(a) + self.senio_Ps(b)) / 2  # skirtingo dydžio – vidurkis
+                W, H = SENIO_W * Ps, SENIO_H * Ps
                 if a["busena"] == "nera" or b["busena"] == "nera" or a["pav"] != b["pav"] or \
                         abs(a["y"] - b["y"]) > H * 0.3:
                     continue
@@ -9215,20 +9380,37 @@ class Sniegas:
                 s_["susitikimas"] = None
                 continue
             o = artimas[id(s_)][1]
+            if s_["busena"] == "nera" or o["busena"] == "nera":  # ką tik subyrėjo (susidūrė su trečiu)
+                continue
             if s_.get("susitikimas") != id(o):
                 s_["susitikimas"] = id(o)
                 if s_.get("tikslas_x") is None and not s_.get("iseina") and random.random() < 0.5:
-                    s_["kryptis"] = -s_["kryptis"]
+                    if s_["busena"] == "eina" and o["busena"] in ("eina", "stovi") and not o.get("iseina") \
+                            and o.get("tikslas_x") is None and random.random() < SENIO_MOJAVIMAS \
+                            and min(time.perf_counter() - x_.get("mojavo", -1e9) for x_ in (s_, o)) \
+                            >= SENIO_MOJAVIMO_PERTRAUKA:
+                        # pirma abu sustoja ir pamojuoja vienas kitam; tada šis (ir ėjęs priešpriešais) apsisuka
+                        o["susitikimas"] = id(s_)
+                        for x_, kitas in ((s_, o), (o, s_)):
+                            link = 1 if kitas["x"] > x_["x"] else -1  # atsisuka į kitą
+                            x_.update(busena="mojuoja", t=0.0, kryptis=link, mojavo=time.perf_counter(),
+                                      apsisukti=x_["busena"] == "eina" and x_["kryptis"] == link)
+                        if ZURNALAS.ijungtas:
+                            ZURNALAS.rasyti(f"SENIAI pamojavo vienas kitam: x {s_['x']:.0f} ir {o['x']:.0f}")
+                    else:
+                        s_["kryptis"] = -s_["kryptis"]
 
     def senio_subyreti(self, s_, Ps, nuo_x=None):
         """Subyra: gabalai išlekia ir nukrenta, vietoje lieka sniego kauburėlis; po kelių sekundžių iš dangaus
         iškrenta naujas senis (kitoje vietoje)."""
         if s_["busena"] == "nera":
             return
+        Ps = self.senio_Ps(s_)  # savo dydžio (kviečiantysis gali perduoti kito senio)
         W, H = round(SENIO_W * Ps), round(SENIO_H * Ps)  # kaip piesti_senius – kad nuolaužos sutaptų su seniu
         poza, kadras = SENIO_KADRAI[self.senio_kadras(s_) % len(SENIO_KADRAI)]
-        tinkl = senio_tinklelis(poza, kadras, s_["kryptis"] < 0, self.seniai.index(s_) % len(SENIO_SAGOS),
-                                s_.get("tuta") or 0, self.senio_puosmena(s_))
+        i = self.seniai.index(s_)
+        tinkl = senio_tinklelis(poza, kadras, s_["kryptis"] < 0, i % len(SENIO_SAGOS),
+                                s_.get("tuta") or 0, self.senio_puosmena(s_), sluota_t=senio_sluota(i))
         kryptis = 0 if nuo_x is None else (1 if s_["x"] >= nuo_x else -1)
         gabalai = senio_nuolauzos(tinkl, int(s_["x"] - W / 2), int(s_["y"]) - H + 1, Ps, kryptis, self.k,
                                   self.vw, self.vh)
@@ -9340,8 +9522,9 @@ class Sniegas:
         for d in self.senio_daleles:
             if d["tipas"] == "gniuzte" and not d.get("i_seni"):
                 for o in self.seniai:
+                    Po = self.senio_Ps(o)
                     if o is not d["savininkas"] and o["busena"] in SENIO_ANT_PAVIRSIAUS and \
-                            abs(d["x"] - o["x"]) < SENIO_W * Ps * 0.3 and o["y"] - SENIO_H * Ps * 0.85 < d["y"] < o["y"]:
+                            abs(d["x"] - o["x"]) < SENIO_W * Po * 0.3 and o["y"] - SENIO_H * Po * 0.85 < d["y"] < o["y"]:
                         d["i_seni"] = True
                         # pataikytasis susiūbuoja ir dažnai atsako tuo pačiu (jei mesti yra iš ko)
                         o.update(busena="nukrenta", t=0.0, jega=None, konfeti=None, suviai=0, pasemta=False,
@@ -9440,6 +9623,8 @@ class Sniegas:
             kadras = int(s_["faze"] * SENIO_EINA_KADRAI) % SENIO_EINA_KADRAI
         elif poza == "kabo":
             kadras = senio_kabo_kadras(s_)
+        elif poza == "ciaudi":  # įkvepia, tada „apči!“
+            kadras = 0 if s_["t"] < SENIO_CIAUDI_TRUKME[0] else 1
         else:
             kadras = 0
         if poza in SENIO_SU_SLUOTA and not self.n["senio_stovi"]:  # vaikšto – trumpai sustojęs be šluotos
@@ -9786,7 +9971,7 @@ class Sniegas:
         st = s_.get("st")
         return st["t"] if st is not None else None
 
-    def piesti_senio_puosmenas(self, dc, ox, oy, nr, puosmena, spalva, tuta, sniegas, Ps):
+    def piesti_senio_puosmenas(self, dc, ox, oy, nr, puosmena, spalva, tuta, sniegas, Ps, seka=0, sluota_t=0):
         """Ant senio juostos kadro (ox, oy – jo kairysis viršutinis kampas): šakelės galvoje, 2-o ir kitų senių
         sagos, tūtos spalvos ir pirmi sniegas langelių sniego (ant galvos, šakelių, rankų, šluotos)."""
         n = len(SENIO_KADRAI)
@@ -9797,6 +9982,10 @@ class Sniegas:
 
         def L(v):  # langelio riba px – kaip piks_piesti (Ps gali būti trupmeninis)
             return round(v * Ps)
+        if sluota_t:  # savas šluotos kuokštas (juostoje – SENIO_SLUOTOS[0]); None – juostos fonas (permatoma)
+            for x, y, sp in senio_sluotos_langeliai(poza, kadras, i_kaire, sluota_t):
+                FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + 1, y), oy + L(y + 1))),
+                         tept(sp or SPRAITO_FONAS))
         if puosmena != "plika":  # šakelės galvoje (juostoje senis be jų)
             for x, y, w, sp in senio_puosmenos_langeliai(poza, kadras, i_kaire, puosmena):
                 FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + w, y), oy + L(y + 1))), tept(sp))
@@ -9810,13 +9999,13 @@ class Sniegas:
                          tept(spalvos[tuta]))
         if sniegas:
             baltas = tept(SNIEGAS)
-            for x, y, _ in senio_sniego_langeliai(poza, kadras, i_kaire, puosmena)[:sniegas]:
+            for x, y, _ in senio_sniego_langeliai(poza, kadras, i_kaire, puosmena, seka, sluota_t)[:sniegas]:
                 FillRect(dc, byref(RECT(ox + X(x, y), oy + L(y), ox + X(x + 1, y), oy + L(y + 1))), baltas)
 
-    def senio_vaizdas(self, i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps):
+    def senio_vaizdas(self, i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps, sp=None):
         """i-ojo senio dabartinis kadras su puošmenomis atskirame paveikslėlyje (fonas – kaip juostos)."""
         kesas = self.__dict__.setdefault("_senio_vaizdai", {})
-        sp = self.senio_sprite
+        sp = sp or self.senio_sprite
         raktas = (id(sp), nr, puosmena, spalva, tuta, sniegas, W, H)
         v = kesas.get(i)
         if v is not None and v[0] == raktas:
@@ -9834,25 +10023,27 @@ class Sniegas:
             d["w"], d["h"] = W, H
         n = len(SENIO_KADRAI)
         gdi32.BitBlt(d["dc"], 0, 0, W, H, sp["dc"], nr % n * W, nr // n * H, SRCCOPY)
-        self.piesti_senio_puosmenas(d["dc"], 0, 0, nr, puosmena, spalva, tuta, sniegas, Ps)
+        self.piesti_senio_puosmenas(d["dc"], 0, 0, nr, puosmena, spalva, tuta, sniegas, Ps, i, senio_sluota(i))
         kesas[i] = (raktas, d)
         return d
 
-    def piesti_senius(self, i_langa, visas, lange=None):
-        """lange: True – tik ant langų esantys, False – visi kiti, None – visi."""
+    def piesti_senius(self, i_langa, visas, lange=None, pagauti=False):
+        """lange: True – tik ant langų esantys, False – visi kiti, None – visi. pagauti – tik pele pačiuptas
+        („kabo“; jis piešiamas atskirai, priekyje visko), kitaip – visi kiti ir dalelės."""
         if not self.senio_sprite or not (self.seniai or self.senio_daleles):
             return
-        Ps = self.senio_Ps()
-        W, H = round(SENIO_W * Ps), round(SENIO_H * Ps)  # kaip juostoje (kurti_senius)
         n = len(SENIO_KADRAI)
 
         def L(v):  # langelio riba px – kaip piks_piesti (Ps gali būti trupmeninis)
             return round(v * Ps)
         for i, s_ in enumerate(self.seniai):
-            if lange is not None and ant_lango(s_) != lange:
+            if (lange is not None and ant_lango(s_) != lange) or (s_["busena"] == "kabo") != pagauti:
                 continue
             nauja = None
             if s_["busena"] != "nera" and s_["y"] is not None:
+                sp = self.senio_juosta(s_)  # savo dydžio juosta
+                Ps = sp["Ps"]
+                W, H = round(SENIO_W * Ps), round(SENIO_H * Ps)  # kaip juostoje (kurti_senius)
                 nr = self.senio_kadras(s_)
                 x0, y0 = int(s_["x"] - W / 2), int(s_["y"]) - H + 1
                 X = senio_x(senio_poslinkis(*SENIO_KADRAI[nr % n]), nr >= n, Ps)  # kaip juostoje
@@ -9861,33 +10052,35 @@ class Sniegas:
                 sniegas = 0  # kiek sniego langelių (jie surikiuoti pagal slenkstį) jau padengta
                 if lygis > 0:
                     poza, kadras = SENIO_KADRAI[nr % n]
-                    for _, _, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, puosmena):
+                    for _, _, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, puosmena, i, senio_sluota(i)):
                         if slenkstis >= lygis:
                             break
                         sniegas += 1
                 # Senis su šakelėmis, sagomis, tūta ir sniegu – vienas paveikslėlis, perpiešiamas tik pasikeitus kadrui
                 # ar puošmenoms: kas kadrą – vienas TransparentBlt, ne dešimtys FillRect (našumo testas: 5 seniai
                 # pridėdavo ~1,8 ms per kadrą)
-                vaizdas = self.senio_vaizdas(i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps)
+                vaizdas = self.senio_vaizdas(i, nr, puosmena, spalva, tuta, sniegas, W, H, Ps, sp)
                 if vaizdas is not None:
                     nauja = self.permatomas_kopijavimas((W, H), x0, y0, vaizdas["dc"], 0, 0,
                                                         y_max=self.senio_apacia(s_))
                 else:  # nepavyko sukurti – kaip anksčiau: juostos kadras ir puošmenos ant viršaus
-                    nauja = self.permatomas_kopijavimas((W, H), x0, y0, self.senio_sprite["dc"],
+                    nauja = self.permatomas_kopijavimas((W, H), x0, y0, sp["dc"],
                                                         nr % n * W, nr // n * H,  # juostoje – 2 eilutės (kryptys)
                                                         y_max=self.senio_apacia(s_))
                     if nauja:
-                        self.piesti_senio_puosmenas(self.fdc, x0, y0, nr, puosmena, spalva, tuta, sniegas, Ps)
+                        self.piesti_senio_puosmenas(self.fdc, x0, y0, nr, puosmena, spalva, tuta, sniegas, Ps, i,
+                                                    senio_sluota(i))
                 if nauja and self.n["senio_lemputes"]:  # girliandos lemputės ant šluotos (ir apsnigtos – matosi)
                     poza, kadras = SENIO_KADRAI[nr % n]
-                    lemp = senio_sluotos_lemputes(poza, kadras, nr >= n)
+                    lemp = senio_sluotos_lemputes(poza, kadras, nr >= n, senio_sluota(i))
                     if lemp:
                         laikas, anim = time.perf_counter(), self.n["senio_lempuciu_animacija"]
                         for x, y, j in lemp:
                             sp = senio_lemputes_spalva(j, i, senio_lemputes_sviesumas(anim, laikas, j, len(lemp), i))
                             user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(
                                 x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y), y0 + L(y + 1))), self.g.teptukas(sp))
-                if nauja and senio_mirksi(s_):  # sumirksi – užmerktos akys ant kadro
+                # sumirksi – užmerktos akys ant kadro; prieš čiaudint susigūžęs – užmerktomis akimis
+                if nauja and (s_["busena"] == "ciaudi" or senio_mirksi(s_)):
                     for x, y, sp in senio_mirksnio_langeliai(*SENIO_KADRAI[nr % n], nr >= n):
                         user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(
                             x0 + X(x, y), y0 + L(y), x0 + X(x + 1, y), y0 + L(y + 1))), self.g.teptukas(sp))
@@ -9900,6 +10093,8 @@ class Sniegas:
                     i_langa.append(nauja)
             s_["sena"] = nauja
             self.atnaujinti_senio_langa(s_)
+        if pagauti:
+            return
         # gniūžtės (baltos su kontūru) ir konfeti (spalvoti popieriukai, krisdami vartaliojasi)
         Ps = self.senio_Ps()
         kontur, baltas = self.g.teptukas(SENIO_SPALVOS["g"]), self.g.teptukas(SNIEGAS)
@@ -9959,7 +10154,7 @@ class Sniegas:
             return
         try:
             l = s_.get("langas") or self.kurti_senio_langa(s_)
-            Ps = self.senio_Ps()
+            Ps = self.senio_Ps(s_)
             gx, gy, gw, gh = self.SENIO_GRIEBIMAS
             if nera:
                 x0, y0 = self.vx - 10000, self.vy - 10000
@@ -10045,7 +10240,7 @@ class Sniegas:
     def senis_paleistas(self, s_, e):
         if s_.get("paspausta") is not None:  # nepajudinus – spragtelėjimas
             s_["paspausta"] = None
-            if s_["busena"] in ("eina", "stovi", "mojuoja", "rankos", "dairosi"):
+            if s_["busena"] in ("eina", "stovi", "mojuoja", "rankos", "dairosi", "ciaudi"):
                 dvigubas = time.perf_counter() - s_.get("spragt_laikas", -9) < 0.4
                 s_["spragt_laikas"] = time.perf_counter()
                 if dvigubas:  # dukart – pasveikina konfeti
@@ -10260,7 +10455,7 @@ class Sniegas:
                 self.valyt_pazymeti(e, min(a, c0), max(b, c0 + len(aukst)) + 1)
             self.valyt_purslai(vidurys, pagr - min(V, 2 * H) * 0.3, min(24, 6 + int(V / (4 * self.k))))
         for x in (e, o):
-            x["atgal"] = random.uniform(0.7, 1.1)
+            x["atgal"] = random.uniform(0.5, 1.6)
             x["kruvos_ilgis"] = 0
 
     def valyt_debesis(self, x, y, kiek, vy, gyv=0.8, dydis=None, lange=False):
@@ -10434,11 +10629,14 @@ class Sniegas:
             tirpsta = KELIO_TIRPIMAS * self.k * self.kelio_tirpimo_laikas
             self.kelio_tirpimo_laikas = 0.0
             ribos = self.kelio_ribos()
-            ta = tb = None
+            ta = tb = None  # pažymimi tik tirpstantys ruožai (ne viskas tarp dviejų krūvų skirtinguose ekrano galuose)
             for c in range(n):
                 v, rb = kel[c], ribos[c]
                 if v > rb + 0.01:
                     kel[c] = max(rb, v - tirpsta)
+                    if ta is not None and c > tb + 1:
+                        self.pazymeti_zeme(ta - 1, tb + 2)
+                        ta = None
                     ta = c if ta is None else ta
                     tb = c
             if ta is not None:
@@ -10518,16 +10716,23 @@ class Sniegas:
                 if not self.valyt_ieskoti(e, privaloma=True):
                     e["x"] = min(max(e["x"], lo + pus), hi - pus) if hi - lo >= 2 * pus else (lo + hi) / 2
                 continue
-            v = 55 * k * e.get("greitis", 1.0)
+            v = 55 * k * e.get("greitis", 1.0) * e.get("kelione", 1.0)
             d = e["kryptis"]
             if e.get("atgal", 0) > 0:  # atsitraukia atbuline eiga, tada apsisuka
                 e["atgal"] -= dt
                 e["x"] = max(lo + pus, min(hi - pus, e["x"] - d * v * 0.6 * dt))
                 e["ratai"] -= v * 0.6 * dt
-                if e["atgal"] <= 0:
+                if (e["x"] <= lo + pus + 0.5) if d > 0 else (e["x"] >= hi - pus - 0.5):
+                    # atsirėmė atbulas į kraštą: neapsisuka (tada žiūrėtų į kraštą, tuoj vėl suktųsi ir užstrigtų kampe
+                    # su kitais) – trumpai stabteli ir važiuoja pirmyn (kitas tuo metu jau traukiasi)
+                    e["atgal"], e["kruvos_ilgis"], e["isib"], e["pauze"] = 0.0, 0, 0.0, random.uniform(0.3, 0.8)
+                    self.valyt_nauja_kelione(e, lo, hi, pus)
+                elif e["atgal"] <= 0:
                     e["kryptis"], e["kruvos_ilgis"] = -d, 0
+                    self.valyt_nauja_kelione(e, lo, hi, pus)
                 continue
             S = STULPELIS
+            vengia = False
             for o in self.valytuvai:
                 if o is e or o["pav"] != e["pav"] or o["busena"] in ("nera", "krenta"):
                     continue
@@ -10540,15 +10745,34 @@ class Sniegas:
                 # tarp verstuvų (ar iki kito galo) liko mažiau nei abiejų kauburiai – susitiko
                 laisva = abs(dx) - 2 * pus - e.get("kruvos_ilgis", 0) * S - \
                     (o.get("kruvos_ilgis", 0) * S if priespriesa else 0)
+                # pamatęs priešpriešais atvažiuojantį – kartais (VALYT_VENGIMAS) apsisuka anksčiau ir nesusiduria;
+                # sprendžia vieną kartą (iki kito apsisukimo – valyt_nauja_kelione). Nevengia, jei už nugaros iki
+                # krašto mažiau nei 150 px (apsisukęs tuoj atsirems į kraštą ir vėl suksis – „blaškysis“ prie krašto)
+                # ir jei vengė neseniai (VALYT_VENGIMO_PERTRAUKA – tarp kelių sniego valytuvų mėtytųsi pirmyn atgal).
+                uz_nugaros = e["x"] - lo - pus if d > 0 else hi - pus - e["x"]
+                if priespriesa and 3 * self.valyt_Pe < laisva < 250 * k and e.get("vengia") != id(o) \
+                        and e.get("pauze", 0.0) <= 0 and uz_nugaros >= 150 * k \
+                        and not 0 <= e["t"] - e.get("vengta", -1e9) < VALYT_VENGIMO_PERTRAUKA:
+                    e["vengia"], o["vengia"] = id(o), id(e)  # vienas sprendimas susitikimui (ne abiejų atskirai)
+                    if random.random() < VALYT_VENGIMAS:
+                        vengia, e["vengta"] = True, e["t"]
+                        break
                 if laisva < 2 * self.valyt_Pe:
                     if priespriesa:
                         self.valyt_susidurimas(e, o, pav)
                     else:
-                        e["atgal"] = random.uniform(0.5, 0.9)
+                        e["atgal"] = random.uniform(0.4, 1.3)
                     if ZURNALAS.ijungtas:
                         ZURNALAS.rasyti(f"VALYTUVAS sustojo prie kito ({'susidūrė' if priespriesa else 'atsitraukia'}): "
                                         f"x {e['x']:.0f}, kitas {o['x']:.0f}")
                     break
+            if vengia:
+                e["kryptis"] = -d
+                e["isib"], e["pauze"] = 0.0, random.uniform(0.3, 0.8)
+                self.valyt_nauja_kelione(e, lo, hi, pus)
+                if ZURNALAS.ijungtas:
+                    ZURNALAS.rasyti(f"VALYTUVAS išvengė susidūrimo: x {e['x']:.0f}")
+                continue
             if e.get("atgal", 0) > 0:
                 continue
             if e.get("pauze", 0.0) > 0:  # apsisukęs trumpai stabteli (perjungia pavarą), tada įsibėgėja
@@ -10557,6 +10781,10 @@ class Sniegas:
             # įsibėgėja (VALYT_ISIBEGEJIMAS s) ir prie krašto, kur apsisuks, sulėtėja – ne staigiai visu greičiu
             isib = e["isib"] = min(1.0, e.get("isib", 1.0) + dt / VALYT_ISIBEGEJIMAS)
             liko = hi - pus - e["x"] if e["kryptis"] > 0 else e["x"] - lo - pus
+            pk = e.get("posukis")  # kartais apsisuka nepasiekęs krašto (atsitiktinėje vietoje)
+            pk = pk[1] if pk and pk[0] == e["pav"] else None
+            if pk is not None:
+                liko = min(liko, (pk - e["x"]) * e["kryptis"])
             gk = min(isib, 0.3 + 0.7 * max(0.0, liko) / (VALYT_STABDYMAS * k))
             # ant ledo (po galiniais ratais) buksuoja: ratai sukasi greičiau, važiuoja lėtai, iš po ratų – trupiniai
             led = e["pav"][0] == "langas" and e.get("st") is not None and \
@@ -10588,9 +10816,15 @@ class Sniegas:
                 self.valyt_stumti(e, pav, priekis, krastas)
                 if e["pav"][0] == "langas" and self.n["ledas_languose"]:
                     self.ledo_zymeti(e.get("st"), e["x"] - pus, e["x"] + pus)
-            if krastas:
+            if krastas or (pk is not None and (e["x"] - pk) * e["kryptis"] >= 0):
                 e["kryptis"] = -e["kryptis"]
-                e["isib"], e["pauze"] = 0.0, random.uniform(0.25, 0.45)
+                # dažniausiai trumpai stabteli, kartais ilgiau, retai – kelias sekundes; bet jei šalia kitas sniego
+                # valytuvas – tik trumpai (kitaip kampuose susigrūsdavo: stovintį pasiveja kitas, susiduria ir t. t.)
+                p = random.random() if not any(o is not e and o["pav"] == e["pav"] and abs(o["x"] - e["x"]) < 300 * k
+                                               and o["busena"] not in ("nera", "krenta") for o in self.valytuvai) else 1.0
+                e["isib"], e["pauze"] = 0.0, (random.uniform(3.0, 6.0) if p < 0.06 else
+                                              random.uniform(0.9, 2.0) if p < 0.3 else random.uniform(0.25, 0.6))
+                self.valyt_nauja_kelione(e, lo, hi, pus)
                 if ZURNALAS.ijungtas:  # derinimui: kur apsisuka, palyginti su lango kraštais
                     st_ = e.get("st")
                     ZURNALAS.rasyti(f"VALYTUVAS apsisuko: priekis {priekis:.0f}, paviršius {lo:.0f}–{hi:.0f}"
@@ -10603,6 +10837,17 @@ class Sniegas:
                     self.valyt_ieskoti(e)  # švaru – arba kartais tiesiog keliauja ten, kur sniego daugiau
 
         self.zymeti_lango_daleles(buvo_lange, n0)
+
+    def valyt_nauja_kelione(self, e, lo, hi, pus):
+        """Apsisukus – kiek kitoks greitis ir kartais (~1/3) apsisukimo vieta prieš kraštą, kad keli sniego
+        valytuvai nesuktų to paties ciklo (susiduria – atsitraukia – apsisuka) vienodu ritmu."""
+        e["kelione"] = random.uniform(0.8, 1.15)
+        e["posukis"], e["vengia"] = None, None
+        if random.random() < 0.33:
+            a, b = (e["x"] + 150 * self.k, hi - pus - 40 * self.k) if e["kryptis"] > 0 else \
+                (lo + pus + 40 * self.k, e["x"] - 150 * self.k)
+            if b > a:
+                e["posukis"] = (e["pav"], random.uniform(a, b))
 
     def zymeti_lango_daleles(self, lange, n0):
         """Ant lango važiuojančio sniego valytuvo ką tik pažertos dalelės (purslai, gumulai, trupiniai) – lango
@@ -10731,12 +10976,12 @@ class Sniegas:
         seniai = getattr(self, "seniai", None)
         if not seniai or (e["pav"] is not None and e["pav"][0] == "zeme"):  # žemėje seniai – ant pusnų, ne kelyje
             return False
-        senio_pus = SENIO_W * self.senio_Ps() * 0.36 + 2 * STULPELIS
         # visas sniego valytuvas (jis valo ir po savimi – nuo galo iki verstuvo) ir priešais stumiamas kauburys
         d = e["kryptis"]
         kruva = e.get("kruvos_ilgis", 0) if kruva is None else kruva
         a, b = sorted((e["x"] - d * self.valyt_pus(), priekis + d * (kruva + 2) * STULPELIS))
         for s_ in seniai:
+            senio_pus = SENIO_W * self.senio_Ps(s_) * 0.36 + 2 * STULPELIS
             if s_["pav"] == e["pav"] and s_["busena"] in SENIO_ANT_PAVIRSIAUS + ("nukrenta",) and \
                     a < s_["x"] + senio_pus and s_["x"] - senio_pus < b:
                 return True
@@ -10776,13 +11021,13 @@ class Sniegas:
                                       "vy": d["vy"] * random.uniform(0.6, 1.0), "gyv": 8.0, "oras": True,
                                       "kiekis": 0.0, "sena": None, "dyd": max(1, d["dyd"] // 2),
                                       **({"l": True} if d.get("l") else {})})
-                    d["dyd"] -= 1
+                    d["dyd"] = max(1, d["dyd"] - 1)  # mažas (Pe = 1) – ne iki 0 (liktų tik kontūras)
                     d["byra"] = random.uniform(0.3, 0.5) if d["dyd"] > 2 else None
                     if d["byra"] is None:
                         del d["byra"]
             if d["vy"] > 0 and nd:
                 di = int(d["x"]) >> 6
-                ant_lango = False
+                nusileido_ant_lango = False
                 for sy, x1, x2, hl, lx, st in (dezes[di] if 0 <= di < nd else ()):
                     if x1 <= d["x"] < x2:
                         ci = int((d["x"] - lx) // S)
@@ -10796,9 +11041,9 @@ class Sniegas:
                                 if not st["nesvarus"]:
                                     st["nesvarus"] = True
                                     self.nesvarus_langai.append(st)
-                            ant_lango = True
+                            nusileido_ant_lango = True
                             break
-                if ant_lango:
+                if nusileido_ant_lango:
                     if d["sena"]:
                         self.papildomos.append(d["sena"])
                     continue
@@ -10871,6 +11116,8 @@ class Sniegas:
                                                     nr * W, e.get("korpusas", 0) * H)
                 if nauja:
                     self.piesti_svyturely(e, x0, int(e["y"]) - H + 1, Pe)
+                    if e.get("atgal", 0) > 0:
+                        self.piesti_atbulo_zibinta(e, x0, int(e["y"]) - H + 1, Pe)
                     self.piesti_stikla(e, x0, int(e["y"]) - H + 1, Pe)
                     # ant lango – už eglių, kaip ir lango sniegas (ekrano apačioje – kelyje, priešais egles)
                     # ant lango – už eglių ir kelio (žemai nutemptas langas): uzdengti_eglemis pati tikrina, ar kerta
@@ -10898,6 +11145,15 @@ class Sniegas:
             rr = self.ribos(x0 + sx1 + x1, y0 + sy1 + y1, x0 + sx1 + x2, y0 + sy1 + y2)
             if rr:
                 FillRect(self.fdc, ctypes.byref(RECT(*rr)), tept(spalva))
+
+    def piesti_atbulo_zibinta(self, e, x0, y0, Pe):
+        """Važiuojant atbulomis galinis žibintas mirksi baltai (juostoje jis nupieštas tamsiai raudonas)."""
+        if (time.perf_counter() / VALYT_ATBULO_PERIODAS) % 1.0 >= 0.5:
+            return
+        c, r = (0 if e["kryptis"] >= 0 else VALYT_PLOTIS - 1), VALYT_ZIBINTU_EILUTE
+        rr = self.ribos(x0 + round(c * Pe), y0 + round(r * Pe), x0 + round((c + 1) * Pe), y0 + round((r + 1) * Pe))
+        if rr:
+            user32.FillRect(self.fdc, ctypes.byref(wintypes.RECT(*rr)), self.g.teptukas(VALYT_GALO_ZIBINTAS[0]))
 
     def piesti_svyturely(self, e, x0, y0, Pe):
         """Mirksintis švyturėlis ant sniego valytuvo kabinos (piešiama ant jau nupiešto sniego valytuvo, jo ribose)."""
@@ -11102,10 +11358,11 @@ class Sniegas:
                 kadras, zemyn, apkirpti = self.bumbulo_vaizdas(b)
                 pus = b["r"] / b["R"] / 2  # rutulio centras – puse langelio kairiau ir aukščiau sprite centro
                 x0 = int(b["x"] - b["c"] + pus)
-                y0 = int(b["y"] - b["aukstis"] - b["r"] - b["c"] + pus + zemyn) + 1
+                y0 = int(b["y"] - b["r"] - b["c"] + pus + zemyn) + 1
                 # Niekas – žemiau paviršiaus pagrindo (užduočių juostos, lango viršaus): riedant pasisukęs žemyn
                 # snapelis išlįsdavo už ekrano apačios linijos.
-                atr = self.bumbulo_atrama(b, b["x"]) if b.get("pav") else None
+                # ore (pašokęs) – neapkerpamas: kol jis skrenda, langas gali pasislinkti aukštyn virš jo
+                atr = self.bumbulo_atrama(b, b["x"]) if b.get("pav") and not b["ore"] else None
                 riba = int(atr[0] + atr[3]) if atr is not None else None
                 if apkirpti:
                     riba = int(b["y"]) + 1 if riba is None else min(riba, int(b["y"]) + 1)
@@ -11544,8 +11801,9 @@ class Sniegas:
             led = st.get("ledas")
             if not led:
                 continue
-            for _ in range(kiek(LEDO_BLIZG_DAZNIS * sum(1 for v in led if v > 0) * S / 1000 * dt)):
-                c = random.choice([i for i, v in enumerate(led) if v > 0])
+            lediniai = [i for i, v in enumerate(led) if v > 0]  # vieną kartą langui, ne kiekvienam blyksniui
+            for _ in range(kiek(LEDO_BLIZG_DAZNIS * len(lediniai) * S / 1000 * dt)):
+                c = random.choice(lediniai)
                 x = st["l"] + (c + random.random()) * S
                 if self.ant_ledo(st, x) and any(c1 <= c < c2 for c1, c2 in st["matomi"]):
                     y = st["t"] - max(3, int(round(3 * self.k))) + random.uniform(0, 2)
@@ -12028,6 +12286,9 @@ class Sniegas:
             if not lange:
                 self.piesti_pustomas(i_langa, visas)
             self.piesti_valytuvus(i_langa, visas, lange)
+        # pele pačiuptas senis – priekyje visų (kitaip jį uždengdavo sniego valytuvai, bumbuliukai ir šalia jų
+        # uždedamos eglės)
+        self.piesti_senius(i_langa, visas, pagauti=True)
 
         # 3) arti esančios snaigės – priekyje visko, išskyrus girliandas
         if not alfa:
@@ -12190,6 +12451,14 @@ class Sniegas:
                     self.langai_judejo = True
             except Exception:
                 pass
+        if ivykis == EVENT_OBJECT_DESTROY and objektas == 0 and vaikas == 0 and hwnd:  # HWND Windows vėliau duoda kitam langui –
+            for vardas in ("_klasiu_kesas", "nekelti_del", "iskylantys_nuo", "_kampu_irasai"):  # pamirštama
+                d_ = self.__dict__.get(vardas)
+                if d_:
+                    d_.pop(hwnd, None)
+            p_ = self.__dict__.get("pakelti_pranesta")
+            if p_:
+                p_.discard(hwnd)
         if hwnd and hwnd == self.__dict__.get("nuleista_po") and ivykis in (
                 EVENT_OBJECT_HIDE, EVENT_OBJECT_DESTROY, EVENT_OBJECT_CLOAKED):
             try:
@@ -12746,7 +13015,8 @@ class Sniegas:
     def tk_klaida(self, tipas, reiksme, eiga):
         """Klaidos tkinter atgaliniuose kvietimuose (mygtukai, laikmačiai) – kitaip jos dingsta be pėdsakų."""
         self.paskutine_klaida = repr(reiksme)
-        ZURNALAS.rasyti("KLAIDA (tkinter): " + "".join(traceback.format_exception(tipas, reiksme, eiga)))
+        self.d_klaidos = getattr(self, "d_klaidos", 0) + 1  # ir į diagnostikos suvestinės „klaidų iš viso“
+        ZURNALAS.rasyti("KLAIDA (tkinter): " + "".join(traceback.format_exception(tipas, reiksme, eiga)), visada=True)
 
     # ------------------------------------------------------------ našumo testas
 
@@ -12820,7 +13090,7 @@ class Sniegas:
         self.root.withdraw()  # peržiūrų animacijos netrukdo matuoti
         # kol nustatymų langas paslėptas, o pradžioje ir pabaigoje nesimato ir sniego, – eiga prie laikrodžio
         # (kitaip neaišku, ar testas dar vyksta, ar jau baigėsi)
-        self.deklo_pranesimas(T("Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant Sniego piktogramos prie "
+        self.deklo_pranesimas(T("Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant programos „Sniegas“ piktogramos prie "
                                 "laikrodžio.").format(m=trukme))
         self.testo_etapas(0)
 
@@ -13032,13 +13302,13 @@ class Sniegas:
         self.paskutine_klaida = repr(e)
         self.d_klaidos += 1
         if self.d_klaidos <= 20 or self.d_klaidos % 100 == 0:  # pasikartojanti klaida neužpildo žurnalo
-            ZURNALAS.rasyti(f"KLAIDA #{self.d_klaidos}: {repr(e)}\n{traceback.format_exc()}")
+            ZURNALAS.rasyti(f"KLAIDA #{self.d_klaidos}: {repr(e)}\n{traceback.format_exc()}", visada=True)
         if not self.klaida_parodyta:
             self.klaida_parodyta = True
-            tekstas = T("Įvyko klaida, bet programa bando dirbti toliau. "
-                        "Jei sniegas elgiasi keistai – paleiskite programą iš naujo.") + f"\n\n{e!r}"
+            tekstas = T("Įvyko klaida, bet programa bando veikti toliau. "
+                        "Jei vaizdas stringa, mirga ar kas nors dingo, paleiskite programą iš naujo.") + f"\n\n{e!r}"
             # ne kadro / laikmačio viduje: modalinis langas sustabdytų sniegą, kol jis atidarytas
-            self.root.after_idle(lambda: messagebox.showerror(PAVADINIMAS, tekstas))
+            self.root.after_idle(lambda: messagebox.showerror(PAVADINIMAS, tekstas, parent=self.dialogo_tevas()))
 
     def isvalyti_busena(self):
         """Dukart spustelėjus būsenos juostą: klaida ir skaitikliai joje – nuo nulio (žurnalo skaitikliai lieka)."""
@@ -13067,7 +13337,7 @@ class Sniegas:
                 def ms(x):  # lietuviškai – dešimtainis kablelis
                     t = f"{x:.1f}"
                     return t.replace(".", ",") if KALBA == "lt" else t
-                tekstas = T("Snaigių: {a}   Kadrų per sek.: {b}   Kadrui: {c} ms   Langų su sniegu: {d}").format(
+                tekstas = T("Snaigių: {a}   Kadr./s: {b}   Kadrui: {c} ms   Langų su sniegu: {d}").format(
                     a=len(self.snaiges), b=self.kadru_skaitliklis, c=ms(vid), d=su_sniegu)
                 if self.kadru_skaitliklis:
                     k_ = self.kadru_skaitliklis
@@ -13103,7 +13373,7 @@ class Sniegas:
     # ------------------------------------------------------------ nustatymų langas
 
     def nustatyti_lango_ikona(self):
-        """Lango ir užduočių juostos piktograma – sniego senis. Vien iconphoto Windows sistemoje nepakako: užduočių
+        """Lango ir užduočių juostos piktograma – programos ženkliukas (sniego kalnelis su snaigėmis). Vien iconphoto Windows sistemoje nepakako: užduočių
         juostoje likdavo tkinter plunksna (ji – Tk lango klasės piktograma). Todėl .ico įkeliamas per Windows ir
         nustatomas ir langui (WM_SETICON: didelė ir maža), ir visai Tk langų klasei (tkinter numatytoji –
         nustatyti_tk_ikona)."""
@@ -13253,7 +13523,6 @@ class Sniegas:
         pr = ttk.Frame(antraste)
         pr.pack(side="left", pady=(8, 0))
         ttk.Label(pr, text=T("Paruoštukai") + ":", font=("Segoe UI", 9, "bold")).pack(side="left", padx=(0, 6))
-        self.paruostuku_kint = tk.IntVar(value=-1)
         self.paruostuku_mygtukai = []
         for i, apr, fonas, tekstas in PARUOSTUKU_PLYTOS:
             pav = NUMATYTUJU_PAV if i == NUMATYTIEJI else PARUOSTUKAI[i][0]
@@ -13345,7 +13614,7 @@ class Sniegas:
                              command=self.perjungti_autostarta)
         cb.grid(row=2, column=0, columnspan=2, sticky="w", padx=4, pady=2)
         Patarimas(cb, T("Programa paleidžiama automatiškai prisijungus prie „Windows“."))
-        et = ttk.Label(g, text=T("Išjungimo mygtukas"))
+        et = ttk.Label(g, text=T("Uždarymo mygtukas"))
         et.grid(row=3, column=0, sticky="w", padx=4, pady=(2, 0))
         self.patarimas_nustatymui(et, "kryzelis")
         self.kryzelio_kint = tk.StringVar(value=T(KRYZELIO_TEKSTAI[KRYZELIO_VEIKSMAI.index(self.n["kryzelis"])]))
@@ -13390,13 +13659,13 @@ class Sniegas:
         for stulpelis in stulpeliai:
             stulpelis.grid_configure(sticky="ns")
             stulpelis.winfo_children()[-1].pack_configure(fill="both", expand=True)
-        # Mygtuko „Išjungti“ nėra: išjungiama lango X (pagal „Išjungimo mygtukas“) arba dėklo meniu „Išjungti“.
+        # Mygtuko „Išjungti“ nėra: išjungiama lango X (pagal „Uždarymo mygtukas“) arba dėklo meniu „Išjungti“.
         self.atnaujinti_paruostukus()
 
         self.busena = ttk.Label(r, text="", anchor="w", relief="sunken", padding=(6, 2))
         self.busena.pack(fill="x", side="bottom")
         self.busena.bind("<Double-Button-1>", lambda e: self.isvalyti_busena())
-        Patarimas(self.busena, lambda: T("Dukart spustelėkite – išvalyti klaidą ir skaitiklius.")
+        Patarimas(self.busena, lambda: T("Dukart spustelėkite, kad išvalytumėte klaidą ir skaitiklius.")
                   if (self.paskutine_klaida or self.windows_trynimai > self.__dict__.get("busenos_trynimai0", 0)
                       or getattr(self, "ekranu_perkurimai", 0) > self.__dict__.get("busenos_perkurimai0", 0)) else None)
 
@@ -13503,6 +13772,13 @@ class Sniegas:
         if getattr(w, "slankiklis", None) is not None:
             w.slankiklis.state(busena)
 
+    def is_viso_spalva(self):
+        """„(iš 1000)“ – savo pilka spalva (stilius jos neperrašo), todėl išjungtoje skiltyje – blyškesnė."""
+        try:
+            self.is_viso.configure(foreground="#666666" if self.n["snaiges"] else "#a8b4c2")
+        except (tk.TclError, AttributeError):
+            pass
+
     def atnaujinti_skiltis(self):
         """Pirma visi skilties valdikliai – pagal skilties varnelę, tada – priklausomi nustatymai."""
         if not getattr(self, "skiltys", None):
@@ -13519,10 +13795,7 @@ class Sniegas:
                         w.state(("!disabled",) if ijungta else ("disabled",))
         except (tk.TclError, KeyError):
             return  # nustatymų langas uždarytas / perkuriamas
-        try:  # „(iš 1000)“ – savo pilka spalva (stilius jos neperrašo), todėl išjungtoje skiltyje – blyškesnė
-            self.is_viso.configure(foreground="#666666" if self.n["snaiges"] else "#a8b4c2")
-        except (tk.TclError, AttributeError):
-            pass
+        self.is_viso_spalva()
         self.atnaujinti_egliu_valdiklius()
         self.atnaujinti_bumbulu_valdiklius()
         self.atnaujinti_fejerverku_valdiklius()
@@ -13660,7 +13933,9 @@ class Sniegas:
         ttk.Label(kaire, text=T("Sukurta padedant „Claude“ („Anthropic“) ir „Google Gemini“"), foreground="#555555").pack(anchor="w", pady=(10, 0))
         licencija = ttk.Label(kaire, text=T("Laisva programa – GNU GPL 3.0 licencija"), foreground="#1a5fb4", cursor="hand2")
         licencija.pack(anchor="w", pady=(2, 0))
-        licencija.bind("<Button-1>", lambda e: webbrowser.open(LICENCIJOS_NUORODA))
+        for seka in ("<Button-1>", "<space>", "<Return>"):  # ir klaviatūra (Tab + Tarpas / Enter)
+            licencija.bind(seka, lambda e: webbrowser.open(LICENCIJOS_NUORODA))
+        rodyti_fokusa(licencija)
         Patarimas(licencija, T("Galima laisvai naudoti, keisti ir platinti; pakeistos versijos – irgi su atviru kodu pagal "
                                "tą pačią licenciją. Spustelėkite – licencijos tekstas."))
         # Diagnostika – suskleista (reikia tik ieškant problemų): spustelėjus „▸ Diagnostika“ – išsiskleidžia
@@ -13695,9 +13970,7 @@ class Sniegas:
         # (Anksčiau žurnalas – varnelė su mygtuku, o testai – du mygtukai be būdo atverti jų rezultatus.)
         g = ttk.LabelFrame(tevas, padding=6)  # pavadinimas – išskleidžiančioje rodyklėje („▸ Diagnostika“)
         g.columnconfigure(0, weight=1)
-        eilutes = [("Žurnalas", None, DIAGNOSTIKOS_BYLA,
-                    T("Techninis žurnalas sniegas_diagnostika.log (kadrų trukmės, klaidos) – kai reikia ieškoti "
-                      "problemos."))]
+        eilutes = [("Žurnalas", None, DIAGNOSTIKOS_BYLA, None)]  # patarimas – kaip varnelės (APRASAI["diagnostika"])
         eilutes.append(("Našumo testas", self.nasumo_testas, NASUMO_BYLA,
                         T("~5 min paeiliui išbando įvairius nustatymus ir surašo, kiek kiekvienas kainuoja procesoriui ir (jei "
                           "yra NVIDIA) vaizdo plokštei. Jūsų nustatymai po testo bus grąžinti. Rezultatai – "
@@ -13709,7 +13982,10 @@ class Sniegas:
         for eil, (pav, veiksmas, byla, patarimas) in enumerate(eilutes):
             et = ttk.Label(g, text=T(pav))
             et.grid(row=eil, column=0, sticky="w", padx=4, pady=2)
-            Patarimas(et, patarimas)
+            if patarimas is None:
+                self.patarimas_nustatymui(et, "diagnostika")
+            else:
+                Patarimas(et, patarimas)
             if veiksmas is None:  # žurnalas – įjungiamas varnele (nustatymas „diagnostika“)
                 v = self.kint["diagnostika"] = tk.BooleanVar(value=self.n["diagnostika"])
                 w = ttk.Checkbutton(g, text=T("Įjungtas"), variable=v, command=lambda: self.pakeista("diagnostika"))
@@ -13777,8 +14053,8 @@ class Sniegas:
             sb.bind("<FocusOut>", lambda e, v=v, i=i: v.set(str(self.n["tipai"][i])))  # tuščią – atkuria
             self.tipu_kint.append(v)
         self.piesti_tipu_perziuras()
-        # Vienas tinklelis visai skilčiai: 0 – piktograma, 1 – pavadinimas, 2 – juosta ir skaičius,
-        # 3 – prierašas. Visos juostos (rūšių, bendro kiekio, dydžio ir kt.) – viename stulpelyje, lygiai po viena kita.
+        # Vienas tinklelis visai skilčiai: 0 – piktograma, 1 – pavadinimas, 2 – juosta ir skaičius (prierašas –
+        # tame pačiame rėmelyje). Visos juostos (rūšių, bendro kiekio, dydžio ir kt.) – viename stulpelyje, lygiai po viena kita.
         e = len(TIPAI) + 1
         ttk.Separator(g, orient="horizontal").grid(row=e, column=0, columnspan=3, sticky="we", padx=4, pady=(10, 8))
         # Stilius – svarbus pasirinkimas (keičia visų snaigių išvaizdą), todėl virš kiekių ir paryškintas; glotnus
@@ -13825,7 +14101,7 @@ class Sniegas:
         aprasas = T("Bendras snaigių kiekis. Pakeitus jį čia, kiekis atsitiktinai paskirstomas rūšims (kiek kurios – "
                     "matyti rūšių eilutėse aukščiau). Vėl pakeitus po pertraukos – parenkamas naujas atsitiktinis rūšių "
                     "mišinys.")
-        aprasas += "\n" + T("Dukart spustelėkite pavadinimą – numatytieji ({v}, įprastas rūšių mišinys)").format(
+        aprasas += "\n" + T("Dukart spustelėkite pavadinimą – numatytieji ({v}, įprastas rūšių mišinys).").format(
             v=sum(NUMATYTI["tipai"]))
         for w in (etikete, remas):
             Patarimas(w, aprasas)
@@ -13838,8 +14114,8 @@ class Sniegas:
         self.slankiklis(g, "greitis", "Kritimo greitis, %", e + 1, ilgis=2)
         self.slankiklis(g, "svyravimas", "Svyravimas į šonus, %", e + 2, ilgis=2)
         self.slankiklis(g, "plasnojimas", "Plasnojimas, %", e + 3, ilgis=2)
-        self.zymimasis(g, "snaiges_sukasi", "Snaigės sukasi", e + 4, ilgis=4)
-        self.zymimasis(g, "sniegas_blizga", "Sniegas kartais sužiba", e + 5, ilgis=4)
+        self.zymimasis(g, "snaiges_sukasi", "Snaigės sukasi", e + 4, ilgis=3)
+        self.zymimasis(g, "sniegas_blizga", "Sniegas kartais sužiba", e + 5, ilgis=3)
 
     def kurti_girliandu_skilti(self, tevas):
         g = self.skilties_remas(tevas, "Girliandos", "girliandos")
@@ -13849,7 +14125,8 @@ class Sniegas:
         self.girl_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.slankiklis(g, "girliandu_kiekis", "Lempučių vienoje pusėje", 2)
         self.papildomi_aprasai["girliandu_kiekis"] = lambda: None if self.girliandu_telpa() is None else T(
-            "Esant dabartiniam dydžiui, šiame ekrane telpa iki {n} lempučių – daugiau nebus.").format(n=self.girliandu_telpa())
+            "Kai dydis dabartinis, šiame ekrane telpa iki {n} {lemp} – daugiau nebus.").format(
+            n=self.girliandu_telpa(), lemp=lempuciu_forma(self.girliandu_telpa(), kilm=True))
         self.slankiklis(g, "girliandu_dydis", "Dydis, %", 3)
         self.slankiklis(g, "girliandu_mirksejimas", "Mirksėjimas, %", 4)
         self.zymimasis(g, "girliandu_atspindziai", "Atspindžiai stikle (kartais blyksteli)", 5)
@@ -13903,7 +14180,7 @@ class Sniegas:
 
     def kurti_vejo_skilti(self, g):
         self.vejo_drobe = tk.Canvas(g, width=VEJO_PERZ_W, height=VEJO_PERZ_H, bg=DANGUS, highlightthickness=0)
-        self.vejo_drobe.grid(row=0, column=0, columnspan=3, pady=PERZ_TARPAS)
+        self.vejo_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.vejo_skiltis = g
         # Tik pagrindiniai: pauzė tarp gūsių, jų trukmė, įsibėgėjimas ir nurimimas – pastovūs.
         self.slankiklis(g, "vejas", "Įprastas vėjas", 1)
@@ -14266,7 +14543,7 @@ class Sniegas:
             rb = ttk.Radiobutton(kur, text=T(tekstas), variable=v, value=reiksme,
                                  command=lambda: self.pakeista("bumbulai_languose"))
             rb.pack(side="left", padx=(0, 8) if not reiksme else 0)
-            # „Tik ekrano apačioje“ veikia ir be sniego ant langų – jai įspėjimo „⚠ Reikia įjungti…“ nerodome
+            # „Tik apačioje“ veikia ir be sniego ant langų – jai įspėjimo „⚠ Reikia įjungti…“ nerodome
             Patarimas(rb, lambda r=reiksme: self.slankiklio_patarimas("bumbulai_languose", be_ispejimo=not r))
             if not reiksme:  # „Ir ant langų“ – pagal taisyklę atnaujinti_bumbulu_valdiklius (reikia sniego ant langų)
                 self.valdikliu_grupes.setdefault("bumbulu_vieta", []).append(rb)
@@ -14290,14 +14567,14 @@ class Sniegas:
             cb.grid(row=0, column=i, sticky="w", padx=(0, 6 if i < 3 else 0))
             Patarimas(cb, lambda v=v, i=i: (T("⚠ Bent vienas pradingimo būdas turi likti (jei norite, kad nepradingtų, nuimkite varnelę viršuje).") + "\n\n" if v.get() and sum(
                 x.get() for x in self.tipu_varneles["bumbulu_dingimai"]) == 1 else "") + T(BUMBULU_DINGIMU_TEKSTAI[i])
-                + "\n" + T("Kai pažymėti keli būdai – kiekvieną kartą parenkamas atsitiktinai."))
+                + "\n" + T("Kai pažymėti keli būdai, kiekvieną kartą atsitiktinai parenkamas vienas iš jų."))
             self.valdikliu_grupes.setdefault("bumbulu_dingimai", []).append(cb)
         self.slankiklis(g, "bumbulu_kiekis", "Kiekis", 6)
         self.slankiklis(g, "bumbulu_dydis", "Dydis, %", 7)
         self.slankiklis(g, "bumbulu_greitis", "Judrumas, %", 8)
 
         # Raštai ir spalvos – viename rėmelyje: kairėje 4 raštai (2 × 2), už skirtuko – 14 spalvų
-        # (3 × 5: nuo šiltų iki šaltų – BUMBULU_SPALVU_TVARKA). Paveikslėliai patys yra jungikliai (be varnelių
+        # (2 × 7: nuo šiltų iki šaltų – BUMBULU_SPALVU_TVARKA). Paveikslėliai patys yra jungikliai (be varnelių
         # po jais – kad skiltis nebūtų aukšta). Pavadinimas – antraštėje užvedus pelę.
         r = ttk.LabelFrame(g, text=T("Raštai ir spalvos"), padding=(4, 2))
         r.grid(row=9, column=0, columnspan=2, sticky="we", padx=4, pady=(6, 0))
@@ -14340,6 +14617,7 @@ class Sniegas:
             "gusis_dabar": n["gusio_stiprumas"] > 0,
             "sniegas_ant_senio": n["senio_stovi"],  # prisninga tik stovinčiam
             "senio_lemputes": n["senio_stovi"],  # šluota – tik stovinčiam (vaikštantis – be jos)
+            "senio_dydziai": n["senio_kiekis"] > 1,
             "sniego_konturas": kaupia(n, "kaupti_apacioje"),  # pusnių ir kelio kontūras (ant langų – visada)
             "snaiges_glotnios": n["snaigiu_stilius"] != "pikseliai",  # pixel art – visada šuoliukais
             "glotniu_astrumas": n["snaigiu_stilius"] != "pikseliai" and n["snaiges_glotnios"],
@@ -14710,7 +14988,7 @@ class Sniegas:
         self.root.after(90, self.animuoti_perziura, self.sasajos_karta)
 
     def kurti_senio_skilti(self, tevas):
-        g = self.skilties_remas(tevas, "Sniego senis", "sniego_senis")
+        g = self.skilties_remas(tevas, "Sniego seniai", "sniego_senis")
         g.pack(fill="x")
         self.skilties_ikona(g, "isbarstyti", T("Išdėlioti iš naujo"), self.perdelioti_senius)
         self.senio_drobe = tk.Canvas(g, width=pp("seniai"), height=PERZ_SENIO_H, bg=DANGUS, highlightthickness=0,
@@ -14719,7 +14997,10 @@ class Sniegas:
         self.senio_drobe.grid(row=0, column=0, columnspan=2, pady=PERZ_TARPAS)
         self.slankiklis(g, "senio_kiekis", "Kiekis", 2)
         self.slankiklis(g, "senio_dydis", "Dydis, %", 3)
-        self.zymimasis(g, "senio_stovi", "Tik stovi vietoje", 4)
+        self.zymimasis(g, "senio_stovi", "Tik stovi vietoje", 4, ilgis=1)
+        self.zymimasis(g, "senio_dydziai", "Skirtingo dydžio", 4, ilgis=1, stulpelis=1)
+        self.papildomi_aprasai["senio_dydziai"] = lambda: None if self.n["senio_kiekis"] > 1 else T(
+            "⚠ Veikia, kai sniego senių daugiau nei vienas.")
         self.zymimasis(g, "sniegas_ant_senio", "Stovinčiam prisninga ant galvos ir šluotos", 5)
         for raktas in ("sniegas_ant_senio", "senio_lemputes", "senio_lempuciu_animacija"):  # šluota – tik stovinčiam
             self.papildomi_aprasai[raktas] = lambda: None if self.n["senio_stovi"] else T(
@@ -14834,7 +15115,8 @@ class Sniegas:
         x0, y0 = int(p["x"] - SENIO_W * Pp / 2), int(p["y"]) - SENIO_H * Pp + 1
         piks_piesti(DrobesPiesejas(c), senio_tinklelis(poza, kadras, nr >= n, 0, senio_tuta(p), self.senio_puosmena(p)),
                     x0, y0, Pp)
-        lygis = p.get("sniegas", 0.0) * SENIO_SNIEGO_DALIS if self.n["sniegas_ant_senio"] else 0.0
+        lygis = p.get("sniegas", 0.0) * SENIO_SNIEGO_DALIS \
+            if self.n["sniegas_ant_senio"] and self.n["senio_stovi"] else 0.0
         for x, y, slenkstis in senio_sniego_langeliai(poza, kadras, nr >= n, self.senio_puosmena(p)) if lygis else ():
             if slenkstis >= lygis:
                 break
@@ -14878,7 +15160,7 @@ class Sniegas:
         p = self.senio_perziura
         if l <= e.x <= r and t <= e.y <= b:
             p.update(busena="kabo", t=0.0, tempiamas=(p["x"] - e.x, p["y"] - e.y), ist=[(time.perf_counter(), e.x, e.y)],
-                     sv_x=None)
+                     sv_x=None, jega=None, konfeti=None, suviai=0, pasemta=False)  # kaip senis_tempiamas
 
     def senio_perz_tempiamas(self, e):
         p = self.senio_perziura
@@ -14907,6 +15189,8 @@ class Sniegas:
         self.slankiklis(g, "valytuvu_kiekis", "Kiekis", 2)
         self.slankiklis(g, "valytuvu_dydis", "Dydis, %", 3)
         self.zymimasis(g, "ledas_languose", "Nuvalytos langų vietos apledėja", 4)
+        self.papildomi_aprasai["ledas_languose"] = lambda: None if kaupia(self.n, "kaupti_languose") else T(
+            "⚠ Reikia įjungti „Kaupti ant langų viršaus“ (skiltyje „Sniego kaupimasis“).")
         self.valyt_perziura = {"x": 80.0, "kryptis": 1, "ratai": 0.0,
                                 "h": [3.0 + (i % 7) * 0.5 for i in range(pp("valytuvai") // 3)], "daleles": []}
         self.piesti_valyt_perziura()
@@ -15270,9 +15554,9 @@ class Sniegas:
     def numatytoji_tekstu(self, raktas):
         v = NUMATYTI[raktas]
         if raktas == "egliu_atsitiktinis":
-            return T("Numatytoji reikšmė – „{t}“.").format(t=T("Atsitiktinio aukščio" if v else "Vienodo aukščio"))
+            return T("Numatytoji reikšmė – „{t}“.").format(t=T("Atsitiktinis" if v else "Vienodas"))
         if raktas == "bumbulai_languose":
-            return T("Numatytoji reikšmė – „{t}“.").format(t=T("Ir ant langų" if v else "Tik ekrano apačioje"))
+            return T("Numatytoji reikšmė – „{t}“.").format(t=T("Ir ant langų" if v else "Tik apačioje"))
         if isinstance(v, bool):
             return T("Numatytoji reikšmė – įjungta." if v else "Numatytoji reikšmė – išjungta.")
         tekstai = {"snaigiu_stilius": (SNAIGIU_STILIAI, ("Pixel art", "Įprastos")),
@@ -15365,11 +15649,11 @@ class Sniegas:
         sb.slankiklis = sc
         return remas, sb
 
-    def zymimasis(self, tevas, raktas, tekstas, eil, ilgis=2):
+    def zymimasis(self, tevas, raktas, tekstas, eil, ilgis=2, stulpelis=0):
         v = tk.BooleanVar(value=self.n[raktas])
         self.kint[raktas] = v
         cb = ttk.Checkbutton(tevas, text=T(tekstas), variable=v, command=lambda k=raktas: self.pakeista(k))
-        cb.grid(row=eil, column=0, columnspan=ilgis, sticky="w", padx=4, pady=2)
+        cb.grid(row=eil, column=stulpelis, columnspan=ilgis, sticky="w", padx=4, pady=2)
         self.valdikliai[raktas] = cb
         self.patarimas_nustatymui(cb, raktas)
 
@@ -15445,7 +15729,7 @@ class Sniegas:
                     self.root.after_idle(lambda v=self.tipu_kint[i], k=nauji[i]: v.set(str(k)))
                     break
             self.is_viso.configure(foreground="#c0392b")
-            self.root.after(1500, self.atnaujinti_skiltis)  # spalva – vėl pagal skilties būseną
+            self.root.after(1500, self.is_viso_spalva)  # spalva – vėl pagal skilties būseną
         self.n["tipai"] = nauji
         self.atnaujinti_is_viso()
         self.atnaujinti_paruostukus()
@@ -15479,7 +15763,7 @@ class Sniegas:
         if raktas in SKILCIU_RAKTAI:
             self.atnaujinti_skiltis()  # visa skiltis papilkėja / atsiranda
         elif raktas in ("kaupti_apacioje", "kaupti_languose", "bumbulu_dingsta", "gusio_stiprumas", "gusiai",
-                        "senio_stovi", "snaigiu_stilius", "snaiges_glotnios"):
+                        "senio_stovi", "snaigiu_stilius", "snaiges_glotnios", "senio_kiekis"):
             self.atnaujinti_bumbulu_valdiklius()  # priklausomi nustatymai papilkėja / atsiranda
         if raktas in ("vejas", "vejas_ijungtas", "gusio_stiprumas", "girliandos", "girliandu_kiekis", "girliandu_dydis",
                       "fejerverkai", "fejerverku_intervalas", "fejerverku_trukme"):
@@ -15554,7 +15838,7 @@ class Sniegas:
             self.atideti("girliandos", 300, self.kurti_girliandas)
             if raktas == "girliandu_dydis" and getattr(self, "girl_drobe", None) is not None:
                 self.piesti_girl_perziura()
-        elif raktas in ("sniego_senis", "senio_kiekis", "senio_dydis"):
+        elif raktas in ("sniego_senis", "senio_kiekis", "senio_dydis", "senio_dydziai"):
             self.atideti("seniai", 300, self.kurti_senius)
             if raktas == "senio_dydis":
                 self.piesti_senio_perziura()
@@ -15594,7 +15878,6 @@ class Sniegas:
 
     def atkurti_numatytuosius(self, klausti=True):
         if klausti and not messagebox.askyesno(PAVADINIMAS, T("Atkurti visus numatytuosius nustatymus?")):
-            self.atnaujinti_paruostukus()  # mygtukas jau nuspaustas – grąžinama tikroji žymė
             return
         nauji = numatytieji()
         nauji["kalba"] = self.n["kalba"]  # kalba – ne „nustatymas“, kurį norėtųsi atkurti
@@ -15786,7 +16069,6 @@ class Sniegas:
         pav, nust = PARUOSTUKAI[i]
         if klausti and not messagebox.askyesno(PAVADINIMAS, T("Pritaikyti paruoštuką „{p}“?").format(p=T(pav)) + "\n\n"
                                    + T("Keičiami tik šio paruoštuko nustatymai, kiti lieka tokie, kokie yra.")):
-            self.atnaujinti_paruostukus()  # mygtukas jau nuspaustas – grąžinama tikroji žymė
             return
         kiekis = nust.get("kiekis")
         if kiekis is not None:
@@ -15816,13 +16098,11 @@ class Sniegas:
         return -1
 
     def atnaujinti_paruostukus(self):
-        """Pritaikytas (galiojantis) paruoštukas – nuspaustas, paryškintas ir su varnele."""
-        kint = getattr(self, "paruostuku_kint", None)
-        if kint is None:
+        """Pritaikytas (galiojantis) paruoštukas – plytelė paryškinta (ParuostukoPlyta.zymeti)."""
+        if not self.__dict__.get("paruostuku_mygtukai"):  # nustatymų langas dar nekurtas
             return
         i = self.aktyvus_paruostukas()
         try:
-            kint.set(i)
             for pl in self.paruostuku_mygtukai:
                 pl.zymeti(pl.paruostukas == i)
             for raktas, at in self.__dict__.get("atkurimo_zymes", {}).items():  # ↺: rankytė – jei yra ką atkurti
@@ -15987,8 +16267,8 @@ def kalba_is_nustatymu():
 
 
 def sukurti_ikonos_byla(kelias):
-    """sniegas.ico kompiliavimui. Jei tokia pat jau yra – neperrašoma: Failų naršyklė, rodanti aplanką su .ico, bylą
-    laiko atidariusi (atvaizduotą atmintyje), ir Windows neleidžia jos perrašyti – Python tai rodo kaip
+    """sniegas.ico kompiliavimui. Jei tokia pat jau yra – neperrašoma: rinkmenų naršyklė, rodanti aplanką su .ico, bylą
+    laiko atvėrusi (atvaizduotą atmintyje), ir Windows neleidžia jos perrašyti – Python tai rodo kaip
     OSError(22, 'Invalid argument'). Perrašoma per laikiną bylą; nepavykus – aiškus paaiškinimas, ką daryti."""
     duomenys = logo_ico((16, 24, 32, 48, 64, 128, 256))
     try:
@@ -16009,7 +16289,7 @@ def sukurti_ikonos_byla(kelias):
         r = tk.Tk()
         r.withdraw()
         messagebox.showerror(PAVADINIMAS, f"{kelias}\n\n{e!r}\n\n" + T(
-            "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atidariusi kita programa (dažniausiai failų "
+            "Nepavyko perrašyti piktogramos – greičiausiai ją laiko atvėrusi kita programa (dažniausiai rinkmenų "
             "naršyklės langas su šiuo aplanku rodo jos paveikslėlį). Uždarykite to aplanko langą arba ištrinkite "
             "sniegas.ico ir paleiskite dar kartą."), parent=r)
         r.destroy()
@@ -16021,11 +16301,12 @@ def main():
         print("Ši programa veikia tik Windows. / This program runs only on Windows.")
         return
     if "--ikona" in sys.argv:  # piktograma kompiliavimui: py Sniegas_….pyw --ikona
+        nustatyti_kalba(kalba_is_nustatymu())  # klaidos pranešimas – nustatymų kalba
         sukurti_ikonos_byla(PROGRAMOS_APLANKAS / "sniegas.ico")
         return
     nustatyti_dpi()
     try:
-        # Kad užduočių juostoje būtų programos (sniego senio) ženkliukas, o ne Python'o
+        # Kad užduočių juostoje būtų programos ženkliukas (sniego kalnelis su snaigėmis), o ne Python'o
         f = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID
         f.argtypes, f.restype = [wintypes.LPCWSTR], ctypes.c_long  # HRESULT; tipai – dėl aiškumo
         f(PROGRAMOS_ID)
