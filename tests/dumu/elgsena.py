@@ -111,21 +111,86 @@ tikrinti("didelis senis nušoka už lango (ne atgal ant jo)", suoliai >= 5 and n
 isvalyti(); langai.clear(); langai[1] = [300, 600, 1300, 1000, False]
 nustatyti(senio_kiekis=6, senio_dydziai=True); eiti(5)
 _sub = a.senio_subyreti; subyrejo = []
-a.senio_subyreti = lambda o, *x_, **k_: (subyrejo.append(o["busena"]), _sub(o, *x_, **k_))
+# tik nusileidžiant (krenta / nukrenta) – eidami susidūrę seniai subyra tyčia
+a.senio_subyreti = lambda o, *x_, **k_: (subyrejo.append(o["busena"]) if o["busena"] in ("krenta", "nukrenta") else None,
+                                         _sub(o, *x_, **k_))
 for _ in range(10):
-    a.perdelioti_senius(); eiti(4)
+    a.perdelioti_senius(); eiti(2)  # kaip naudotojas – kas 2 s
+eiti(3)
 a.senio_subyreti = _sub
 tikrinti("„Išdėlioti iš naujo“ ×10: iškrintantys nenukrenta vienas ant kito", not subyrejo, subyrejo[:6])
+tikrinti("„Išdėlioti iš naujo“ ×10: sargai tylūs (iškritimai – ne klaida)", not sargai(), sargai()[:2])
 
 # 5c. Išjungus sniego kaupimąsi seniai ir valytuvai nuo langų nenukrenta; sniegas nuo langų nubyra
 isvalyti(); langai.clear(); langai[1] = [300, 600, 1700, 1000, False]
 nustatyti(senio_kiekis=4, valytuvai=True, valytuvu_kiekis=2, kaupimo_greitis=300); eiti(40)
+for _o, _x in zip(a.seniai[:2], (700.0, 1300.0)):  # bent du tikrai ant lango (kitaip kartais nebūdavo nė vieno)
+    _o.update(busena="krenta", x=_x, y=450.0, vy=0.0, vx=0.0, pav=None, st=None, iskris=None)
+eiti(4)
 pries = sum(1 for o in a.seniai + a.valytuvai if o.get("pav") and o["pav"][0] == "langas")
-nn_ = dict(a.n); nn_["kaupimasis"] = False; a.taikyti_nustatymus(nn_); a.langai_judejo = True; eiti(10)
-po_ = sum(1 for o in a.seniai + a.valytuvai if o.get("pav") and o["pav"][0] == "langas")
-tikrinti("be kaupimosi: langai sekami, seniai ir valytuvai lieka ant jų", a.langai and po_ >= max(1, pries - 1), (pries, po_))
+nukrito = []; _iv = a.ivykis
+a.ivykis = lambda kas: (nukrito.append(kas) if kas == "seniai: nukrito nuo lango" else None, _iv(kas))
+valyt_krito = []
+def stebeti(i):
+    valyt_krito.extend(e for e in a.valytuvai if e["busena"] == "krenta" and e.get("pav") is None and e.get("vy", 0) >= 0
+                       and e.get("_buvo_lange"))
+    for e in a.valytuvai: e["_buvo_lange"] = bool(e.get("pav") and e["pav"][0] == "langas")
+nn_ = dict(a.n); nn_["kaupimasis"] = False; a.taikyti_nustatymus(nn_); a.langai_judejo = True; eiti(10, stebeti)
+a.ivykis = _iv
+tikrinti("be kaupimosi: langai sekami, niekas nuo jų nenukrito (nušokti gali)", a.langai and pries and not nukrito and not valyt_krito,
+         (pries, nukrito, len(valyt_krito)))
 tikrinti("be kaupimosi: sniego ant langų nėra", all(max(st["h"]) < 0.01 for st in a.langai.values()))
 tikrinti("be kaupimosi: sargai tylūs", not sargai(), sargai()[:2])
+
+# 5d. Žemiau stovintis senis piešiamas priekyje (ne „palenda“ po aukščiau stovinčiu, net jei sąraše pirmas)
+isvalyti(); langai.clear(); langai.update({2: [900, 600, 1500, 1050, False], 1: [300, 400, 1700, 1000, False]})
+nustatyti(senio_kiekis=2, senio_stovi=True); eiti(1)
+s0, s1 = a.seniai
+s0.update(busena="krenta", x=1100.0, y=500.0, vy=0.0, vx=0.0, pav=None, st=None)
+s1.update(busena="krenta", x=1120.0, y=300.0, vy=0.0, vx=0.0, pav=None, st=None)
+eiti(3)
+eil = []; _pk = a.permatomas_kopijavimas
+a.permatomas_kopijavimas = lambda dydis, x0, y0, *r_, **k_: (eil.append(y0), _pk(dydis, x0, y0, *r_, **k_))[1]
+a.piesti_senius([], True, lange=True); a.permatomas_kopijavimas = _pk
+tikrinti("žemiau stovintis senis piešiamas priekyje", len(eil) == 2 and eil == sorted(eil), (eil, s0["pav"], s1["pav"]))
+
+# 5e. Valytuvas ant aukštesnio lango nepiešiamas ant žemiau esančio lango senio (piešiama pagal langus)
+isvalyti(); langai.clear(); langai.update({2: [900, 450, 1500, 1050, False], 1: [300, 400, 1700, 1000, False]})
+nustatyti(senio_kiekis=1, senio_stovi=True, valytuvai=True, valytuvu_kiekis=1); eiti(1)
+s0, e0 = a.seniai[0], a.valytuvai[0]
+s0.update(busena="krenta", x=1100.0, y=430.0, vy=0.0, vx=0.0, pav=None, st=None)
+e0.update(busena="krenta", x=1150.0, y=300.0, vy=0.0, pav=None, st=None)
+eiti(2)
+eil = []; _pk = a.permatomas_kopijavimas
+_vdc = a.valyt_sprite["dc"]; _Ps = a.senio_Ps(s0); _sw = (round(sn.SENIO_W * _Ps), round(sn.SENIO_H * _Ps))
+a.permatomas_kopijavimas = lambda dydis, x0, y0, *r_, **k_: (eil.append(("valytuvas" if r_ and r_[0] == _vdc else "senis"
+                                                                          if tuple(dydis) == _sw else "kita", y0)),
+                                                             _pk(dydis, x0, y0, *r_, **k_))[1]
+a.piesti(); a.permatomas_kopijavimas = _pk
+eil = [k_ for k_, _ in eil if k_ in ("senis", "valytuvas")]
+_t1, _t2 = a.langai[1]["t"], a.langai[2]["t"]
+_virsai = sorted((_t1, _t2))
+tikrinti("purslas ir konfeti ant aukštesnio lango – to lango gylyje (už žemiau stovinčio senio)",
+         a.daleles_grupe({"x": 1150.0, "y": _t1 - 20.0, "l": True}, _virsai) == _t1
+         and a.daleles_grupe({"x": 1150.0, "y": _t1, "ant": (1, a.langai[1])}, _virsai) == _t1
+         and a.daleles_grupe({"x": 1150.0, "y": _t2 - 3.0, "l": True}, _virsai) == _t2, (_t1, _t2))
+# senis ant aukštesnio lango paleidžia konfeti – skrisdama ji to lango gylyje (ne priešais žemiau stovintį senį)
+_s_up = {"pav": ("langas", 1), "st": a.langai[1]}
+_n0 = len(a.senio_daleles); a.senio_daleles.append({"x": 1150.0, "y": _t1 - 60.0, "tipas": "konfeti", "sena": None})
+a.zymeti_senio_daleles(_s_up, _n0); _kf = a.senio_daleles.pop()
+tikrinti("senio ant lango paleista konfeti – to lango gylyje", sn.ant_lango(_kf) and a.daleles_grupe(_kf, _virsai) == _t1,
+         _kf.get("is_lango"))
+# ant aukštesnio lango – tik dalelės (subyrėjusio senio gabalai), daiktai – tik ant žemesnio: dalelės vis tiek savo gylyje
+_ev = dict(e0); e0.update(busena="nera", pav=None, st=None)
+_gab = {"x": 1150.0, "y": float(_t1), "tipas": "gabalas", "sena": None, "guli": True, "ant": (1, a.langai[1])}
+a.senio_daleles.append(_gab)
+_gr = a.langu_grupes()
+tikrinti("langas tik su dalelėmis – sava grupė (dalelės ne priekyje žemesnio lango senio)",
+         _gr is not None and [t for t, _ in _gr] == _virsai and a.daleles_grupe(_gab, [t for t, _ in _gr]) == _t1,
+         _gr and [t for t, _ in _gr])
+a.senio_daleles.remove(_gab); e0.update(_ev); a.__dict__.pop("_daleliu_t", None)
+tikrinti("valytuvas ant aukštesnio lango – už žemiau stovinčio senio", s0.get("pav") and e0.get("pav") and s0["pav"] != e0["pav"]
+         and eil.index("valytuvas") < eil.index("senis"), (eil, s0.get("pav"), e0.get("pav")))
 
 # 6. Įvykių suvestinė žurnale: dažni įvykiai – viena eilutė „ĮVYKIAI“
 eil = []; _rz = sn.ZURNALAS.rasyti
