@@ -21,6 +21,7 @@ def tikrinti(pav, sal, info=""):
     REZ.append(bool(sal)); print(("  OK  " if sal else "  KLAIDA ") + pav + (f"  [{info}]" if info else ""), flush=True)
 
 ARTI = 1e9  # ekrano apačia ir oras – arčiausiai
+PUST = set()  # šio kadro pustomų dalelių id
 langai = {}
 def enum(cb, lp):
     for h_, v in list(langai.items()):
@@ -49,10 +50,15 @@ def daiktai():
     return [("senis", o) for o in a.seniai] + [("valytuvas", o) for o in a.valytuvai] + [("bumbulas", o) for o in a.bumbulai]
 
 def dalelės():
-    return list(a.senio_daleles) + list(a.valyt_daleles) + list(a.skeveldros)
+    return list(a.senio_daleles) + list(a.valyt_daleles) + list(a.skeveldros) + list(a.pustomos)
+
+def ore(o):
+    return o.get("busena") == "krenta" or bool(o.get("ore"))
 
 def dezes_dabar():
-    return {id(o): (d, daikto_gylis(o)) for rusis, o in daiktai() if (d := daikto_deze(o, rusis))}
+    """Daiktų stačiakampiai ir gylis; ore esančio (krenta, pašokęs) – None: iš kur jo dalelės, nežinoma (nuo lango
+    ką tik nukritęs valytuvas ar bumbuliukas dar beria to lango sniegą)."""
+    return {id(o): (d, None if ore(o) else daikto_gylis(o)) for rusis, o in daiktai() if (d := daikto_deze(o, rusis))}
 
 def ties_lango(x, y, kitaip):
     """Taškas ties vieno lango viršumi (pvz. valytuvo stumiamas ar per kraštą nustumtas gumulas) – to lango gylis."""
@@ -60,6 +66,7 @@ def ties_lango(x, y, kitaip):
     return ties.pop() if len(ties) == 1 else kitaip
 
 def priskirti_tiesa(dezes_pries, tevai=()):
+    PUST.clear(); PUST.update(id(p) for p in a.pustomos)
     """Naujoms dalelėms – gylis daikto, prie kurio jos atsirado (kadro pradžioje ar pabaigoje); gulinčioms – ant ko guli."""
     dezes_po = dezes_dabar()
     for d in dalelės():
@@ -74,7 +81,10 @@ def priskirti_tiesa(dezes_pries, tevai=()):
         # tiesa priskiriama tik tada, kai ji vienareikšmė; kitaip (None) tvarka tikrinama pagal programos žymą
         # (daleles_t) – tada tikrinamas bent piešimo tvarkos mechanizmas
         # nuo kitos dalelės atskilęs trupinys (byra) – jos gylyje, jei visos šalia esančios to paties gylio
-        tev = {g for tx, ty, g in tevai if abs(tx - x) <= 12 and abs(ty - y) <= 12}
+        if any(abs(hx - x) <= 30 and abs(hy - y) <= 30 for hx, hy in GALVOS):
+            continue  # gumulas sutyžo ant senio galvos – purslai senio gylyje (kilmė dviprasmiška – programos žyma)
+        tev = {g for tx, ty, g, i_ in tevai if abs(tx - x) <= 12 and abs(ty - y) <= 12} if "kiekis" in d and id(d) not in PUST \
+            else set()  # trupiniai – tik sniego gumulų (valyt_daleles), ne pustomas sniegas
         if tev:
             if len(tev) == 1:
                 d["_tiesa"] = tev.pop()
@@ -90,7 +100,7 @@ def priskirti_tiesa(dezes_pries, tevai=()):
                     dvipr = True
                 else:
                     rado.add(g)
-        if dvipr or len(rado) > 1:
+        if dvipr or len(rado) > 1 or None in rado:
             continue
         # ore esančio daikto dalelė, atsiradusi ties lango viršumi (pvz. valytuvo per kraštą nustumtas gumulas, kai
         # valytuvas jau krenta), – dviprasmiška
@@ -118,8 +128,8 @@ for v in ("piesti_senius", "piesti_gumulus", "piesti_bumbulus_kadre", "piesti_va
 
 def tiesa(o):
     if "_tiesa" in o:
-        if o["_tiesa"] is None:  # nežinoma – programos žyma
-            t = a.daleles_t(o)
+        if o["_tiesa"] is None:  # nežinoma – programos žyma (pustomos – tik „is_lango“, kitaip ekrano apačios)
+            t = o.get("is_lango") if id(o) in PUST else a.daleles_t(o)
             return ARTI if t is None else t
         return o["_tiesa"]
     return daikto_gylis(o)
@@ -129,6 +139,7 @@ def persidengia(p, q):
 
 PAZEIDIMAI = collections.Counter(); PAVYZDZIAI = []
 def tikrinti_kadra():
+    PUST.clear(); PUST.update(id(p) for p in a.pustomos)
     el = [(kv, r, o, tiesa(o)) for kv, r, o in PIESIMAS]
     for i, (kv1, r1, o1, g1) in enumerate(el):
         for kv2, r2, o2, g2 in el[i + 1:]:
@@ -145,6 +156,11 @@ def tikrinti_kadra():
                         return {k: o.get(k) for k in ("tipas", "busena", "l", "is_lango", "guli", "d", "dyd") if o.get(k) is not None}
                     PAVYZDZIAI.append((k_, round(g2), round(g1), apr(o2), apr(o1), kv1, kv2))
 
+GALVOS = []  # šio kadro gumulų ant senių galvų vietos
+_sgg = a.senis_gavo_gumula
+def _sgg_w(o, d):
+    GALVOS.append((d["x"], d["y"])); return _sgg(o, d)
+a.senis_gavo_gumula = _sgg_w
 def scena(sekla, sek=50):
     random.seed(sekla)
     langai.clear()
@@ -157,11 +173,12 @@ def scena(sekla, sek=50):
     langai_z = dict(sorted(langai.items(), key=lambda kv: -kv[1][1])); langai.clear(); langai.update(langai_z)
     nn = dict(sn.numatytieji()); nn.update(sniego_senis=True, senio_kiekis=6, senio_dydziai=True, senio_stovi=False,
                                            valytuvai=True, valytuvu_kiekis=4, bumbulai=True, bumbulu_kiekis=10,
-                                           egles=False, girliandos=False, fejerverkai=False, kaupimo_greitis=300)
+                                           egles=False, girliandos=False, fejerverkai=False, kaupimo_greitis=300,
+                                           vejas_ijungtas=True, vejas=6 if sekla % 2 else 3, gusio_stiprumas=8 if sekla % 2 else 2)
     a.taikyti_nustatymus(nn); a.langai_judejo = True
     for i in range(int(sek * 30)):
         dezes = dezes_dabar()
-        tevai = [(d["x"], d["y"], d.get("_tiesa")) for d in a.valyt_daleles]
+        tevai = [(d["x"], d["y"], d.get("_tiesa"), id(d)) for d in a.valyt_daleles]
         # retkarčiais: senis ant lango subyra, bumbuliukas ant lango sudūžta (kad būtų gabalų, šukių, purslų)
         if i % 90 == 45:
             ant = [o for o in a.seniai if o.get("pav") and o["pav"][0] == "langas" and o["busena"] == "eina"]
@@ -169,7 +186,7 @@ def scena(sekla, sek=50):
         if i % 120 == 60:
             ant = [b for b in a.bumbulai if b.get("pav") and b["pav"][0] == "langas" and b["busena"] == "rieda" and not b["ore"]]
             if ant: a.pradeti_dingima(random.choice(ant))
-        PIESIMAS.clear()
+        PIESIMAS.clear(); GALVOS.clear()
         laikas[0] += 1 / 30; a._kadras()
         priskirti_tiesa(dezes, tevai)
         tikrinti_kadra()
