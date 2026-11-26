@@ -16,7 +16,7 @@ class B(sn.Sniegas):
 sn.proceso_busena = lambda: (0, 0, 0, 1.0); sn.ekrano_daznis = lambda: 60
 a = B(); a.diag_ekranai = lambda *x: "1920x1200@0,0"; a.testo_etapas = lambda i: None
 a.kaina_atstatymo, a.kaina_pilno_atst = 0.006, 1.9
-a.testas = {"matas0": (time.perf_counter() - 20, 0.0), "meginiai": [], "rez": [], "pradzia": "x", "gpu": "",
+a.testas = {"matas0": (time.perf_counter() - 20, 0.0), "meginiai": [], "rez": [], "pradzia": "x", "gpu": {"pav": ""},
             "etapai": [("Programa paslėpta (bazė)", None, None), ("+ bumbuliukai", {}, None)]}
 a.testas["rez"].append({"pav": "Programa paslėpta (bazė)", "ks": None, "darbas": None, "p95": None, "fizika": None,
                         "piesimas": None, "ekranas": None, "cpu": 1, "w": None, "mhz": None})

@@ -23,7 +23,7 @@ def r(pav, w, d=3.0, paslepta=False):
             "w": w, "mhz": 400, "kaina_st": 3.1, "kaina_pil": 0.7, "stac_visi": 200}
 rez = [r("Programa paslėpta (bazė)", 10.5, paslepta=True), r("Jūsų nustatymai", 8.2), r("Tik sniegas, 60 kadr./s", 11.8),
        r("Tik sniegas, 30 kadr./s", 8.4), r("Programa paslėpta (bazė, pabaigoje)", 7.6, paslepta=True)]
-t = a.nasumo_ataskaita({"rez": rez, "pradzia": "x", "gpu": "RTX"})
+t = a.nasumo_ataskaita({"rez": rez, "pradzia": "x", "gpu": {"pav": "RTX"}})
 print(t)
 tikrinti("palyginime paslėptas etapas neminimas", "pabaigoje)" not in t.split("Kaina, palyginti")[1].split("Atkūrimo sprendimo")[0])
 # 12.42: W palyginimų nebėra (vaizdo plokštės dažnis šokinėja – skirtumai klaidino), lieka tik pastaba

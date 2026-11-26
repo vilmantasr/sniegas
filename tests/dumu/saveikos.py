@@ -216,5 +216,102 @@ tikrinti("išeinantis + „Tik stovi vietoje“: grįžta, nenukrenta", ivykiai(
          and s_["x"] >= r1, (round(s_["x"]), r1, s_["busena"]))
 a.n["senio_stovi"] = False
 
+# 10. Eglių įvairovė (13.05): vos vos skirtingos spalvos, dalis – ilgesniu kamienu; šakos tokio pat dydžio
+random.seed(10); langai.clear()
+nustatyti(senio_kiekis=0, sniego_senis=False, egles=True, egliu_kiekis=12); eiti(1)
+sp = {e["spalvos"][0] for e in a.egles}
+ilgi = [e for e in a.egles if e.get("eil")]
+tikrinti("eglės: spalvos skiriasi", len(sp) >= len(a.egles) - 1, len(sp))
+tikrinti("eglės: dalis – ilgesniu kamienu (3 langeliai)", 0 < len(ilgi) < len(a.egles) and
+         all(len(e["eil"]) == len(sn.EGLIU_SABLONAI[e["sab"]]) + 1 and e["eil"][-1].strip(".") == "n" for e in ilgi),
+         (len(ilgi), len(a.egles)))
+_e = ilgi[0] if ilgi else a.egles[0]
+_kx = _e["x0"] + (len(_e["eil"][0]) // 2 + 0.5) * _e["s"]; _ky = _e["ribos"][3] - 2
+tikrinti("eglės: ilgesnis kamienas – eglės dalis (dengia)", sn.egle_dengia(_e, _kx, _ky), (_kx, _ky))
+tikrinti("eglės: skirtumas mažas (žalia lieka žalia)", all(abs(int(e["spalvos"][0][3:5], 16) - 0xa0) < 0x20 for e in a.egles))
+
+# 11. Pastabų pataisymai (13.05)
+class _Iv:  # pelės įvykis
+    def __init__(self, x, y): self.x_root, self.y_root = x + a.vx, y + a.vy
+random.seed(11); langai.clear()
+nustatyti(senio_kiekis=1); eiti(1)
+s_ = a.seniai[0]
+s_.update(busena="krenta", x=600.0, y=100.0, vy=0.0, vx=0.0, pav=None, st=None, iskris="zeme", iskris_xy=(600.0, 900.0),
+          apsisukti=True, jega="silpnai", pasemta=True)
+a.senis_paimtas(s_, _Iv(600, 80)); a.senis_tempiamas(s_, _Iv(640, 80))
+tikrinti("pačiuptas iškrintantis senis – be iškritimo ir pusiau atliktų veiksmų žymių",
+         s_["busena"] == "kabo" and not s_.get("iskris") and not s_.get("iskris_xy") and not s_.get("apsisukti")
+         and not s_.get("jega") and not s_.get("pasemta"), {k: s_.get(k) for k in ("busena", "iskris", "apsisukti", "jega")})
+a.senis_paleistas(s_, _Iv(640, 80)); eiti(1)
+_pn = sn.paruostuko_nustatymai(dict(sn.PARUOSTUKAI[0][1]))
+tikrinti("paruoštukai atstato „Kaupti ekrano apačioje“", _pn.get("kaupti_apacioje") is True, _pn.get("kaupti_apacioje"))
+_mon = a.monitoriai[0][0]
+tikrinti("pusiau už ekrano nustumtas langas – vis dar ekrane", a.ant_ekrano_atkarpos(_mon[2] - 400, _mon[2] + 600, 500)
+         and not a.ant_ekrano_atkarpos(_mon[2] - 40, _mon[2] + 600, 500))
+tikrinti("uždaryto lango dalelė – pirmo ne aukštesnio lango grupėje", a.daleles_grupe({"is_lango": 333}, [251, 401, 601]) == 401)
+
+# 12. Antros pastabų dalies pataisymai (13.05)
+random.seed(12)
+_ats = 0
+for _ in range(600):
+    _s = {"busena": "konfeti", "t": 0.0, "kryptis": 1, "x": 500.0}
+    sn.senio_veiksmo_eiga(_s, lambda l: (500.0, 500.0), 1.0, (0, 1920), (0, 1080), [])
+    _ats += _s["kryptis"] == -1
+tikrinti("konfeti: maždaug trečdalį kartų senis atsisuka", 0.25 < _ats / 600 < 0.42, _ats / 600)
+# vienas virš kito esantys monitoriai: viršutinio ekrano langas – daiktai ant jo telpa
+_mon0, _vy0 = a.__dict__.get("monitoriai"), a.vy
+a.monitoriai, a.vy = [((0, -1080, 1920, 0), (0, -1080, 1920, -40)), ((0, 0, 1920, 1080), (0, 0, 1920, 1040))], -1080
+_st = {"l": 300, "r": 900, "t": 500, "B": 0}  # ekrano y = 500 - 1080 → viršutiniame monitoriuje
+tikrinti("vertikalūs monitoriai: ant viršutinio ekrano lango daiktai telpa", a.lange_telpa(_st, 100))
+_st = {"l": 300, "r": 900, "t": 1130, "B": 0}  # apatinio monitoriaus pačiame viršuje – netelpa
+tikrinti("vertikalūs monitoriai: apatinio ekrano viršuje – netelpa", not a.lange_telpa(_st, 100))
+a.monitoriai, a.vy = _mon0, _vy0
+# eglių skilties ↺: 20–40 → 60–120 (mažesnė riba neapribojama senąja didesne), net kai fokusas laukelyje
+nustatyti(egles=True, egliu_min=20, egliu_max=40); eiti(0.5)
+_ask = messagebox.askyesno; messagebox.askyesno = lambda *a_, **k: True
+try:
+    a.valdikliai["egliu_min"].focus_force(); root.update()
+    a.atkurti_skilti("egles", "Eglutės"); root.update()
+finally:
+    messagebox.askyesno = _ask
+tikrinti("eglių ↺: abi ribos – numatytosios", (a.n["egliu_min"], a.n["egliu_max"]) == (sn.NUMATYTI["egliu_min"],
+         sn.NUMATYTI["egliu_max"]) and a.kint["egliu_min"].get() == str(sn.NUMATYTI["egliu_min"]),
+         (a.n["egliu_min"], a.n["egliu_max"], a.kint["egliu_min"].get()))
+# bylos su visais nuliais (bumbuliukų raštai, spalvos, dingimai) – numatytosios
+import json as _js, tempfile as _tf
+_b = sn.Path(_tf.mkdtemp()) / "n.json"
+_b.write_text(_js.dumps({"bumbulu_rastai": [0] * 4, "bumbulu_spalvos": [0] * 14, "bumbulu_dingimai": [0] * 4}), encoding="utf-8")
+_n = a.ikelti_nustatymus(_b)
+tikrinti("nustatymai: visi nuliai bumbuliukų sąrašuose – numatytieji", all(_n[k] == sn.NUMATYTI[k] for k in
+         ("bumbulu_rastai", "bumbulu_spalvos", "bumbulu_dingimai")))
+# našumo testo metu dėklas: nustatymai neatsidaro, paruoštukai nepritaikomi; „Išjungti“ – lieka
+_rod, _par, _bai = a.rodyti_nustatymus, a.pritaikyti_paruostuka, a.baigti
+_kv = []
+a.rodyti_nustatymus = lambda: _kv.append("rodyti"); a.pritaikyti_paruostuka = lambda *x, **k: _kv.append("paruostukas")
+a.baigti = lambda: _kv.append("baigti")
+a.testas = {"dummy": True}
+try:
+    a.deklo_ivykiai[:] = [sn.WM_LBUTTONUP, sn.WM_MBUTTONUP]
+    a.meniu_komandos[:] = [1, 2, sn.MENIU_PARUOSTUKAI + 1, 3]
+    _vp, _si = a.vartotojas_paslepe, a.sniegas_isjungtas
+    a.tikrinti_deklo_ivykius()
+    tikrinti("našumo testo metu dėklas: tik „Išjungti“", _kv == ["baigti"] and a.vartotojas_paslepe == _vp
+             and a.sniegas_isjungtas == _si, _kv)
+finally:
+    a.__dict__.pop("testas", None)
+    a.rodyti_nustatymus, a.pritaikyti_paruostuka, a.baigti = _rod, _par, _bai
+# tempiamas tuščias langas: nesvarių sričių nebeprideda, kopų forma ta pati
+random.seed(13); langai.clear()
+nustatyti(senio_kiekis=0, sniego_senis=False); langai[0x77] = [400, 400, 1000, 800, False]; eiti(0.5)
+_st0 = a.langai[0x77]
+_pr = _st0["profilis"]
+_st0["h"][:] = [0.0] * len(_st0["h"]); _st0.pop("ledas", None)  # tuščias (sniegas nubyrėjo pirmu tempimo žingsniu)
+a.nesvarios_sritys = []
+langai[0x77] = [420, 400, 1020, 800, False]; a.langai_judejo = True
+a.perskaityti_langus()
+tikrinti("tuščias langas pajudėjo: perpiešimo nereikia, kopų forma ta pati",
+         not a.nesvarios_sritys and a.langai[0x77]["profilis"] is _pr, a.nesvarios_sritys)
+langai.clear(); a.perskaityti_langus()
+
 tikrinti("programos klaidų nebuvo", not ZK and not KLAIDOS, (ZK + KLAIDOS)[:1])
 print(f"{sum(REZ)}/{len(REZ)}")
