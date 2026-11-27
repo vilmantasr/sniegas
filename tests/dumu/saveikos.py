@@ -218,15 +218,15 @@ a.n["senio_stovi"] = False
 
 # 10. Eglių įvairovė (13.05): vos vos skirtingos spalvos, dalis – ilgesniu kamienu; šakos tokio pat dydžio
 random.seed(10); langai.clear()
-nustatyti(senio_kiekis=0, sniego_senis=False, egles=True, egliu_kiekis=12); eiti(1)
+nustatyti(senio_kiekis=0, sniego_senis=False, egles=True, egliu_kiekis=40); eiti(1)  # 40 – kad ilgų tikrai būtų
 sp = {e["spalvos"][0] for e in a.egles}
 ilgi = [e for e in a.egles if e.get("eil")]
-tikrinti("eglės: spalvos skiriasi", len(sp) >= len(a.egles) - 1, len(sp))
+tikrinti("eglės: spalvos skiriasi", len(sp) >= 0.8 * len(a.egles), (len(sp), len(a.egles)))
 tikrinti("eglės: dalis – ilgesniu kamienu (3 langeliai)", 0 < len(ilgi) < len(a.egles) and
          all(len(e["eil"]) == len(sn.EGLIU_SABLONAI[e["sab"]]) + 1 and e["eil"][-1].strip(".") == "n" for e in ilgi),
          (len(ilgi), len(a.egles)))
 _e = ilgi[0] if ilgi else a.egles[0]
-_kx = _e["x0"] + (len(_e["eil"][0]) // 2 + 0.5) * _e["s"]; _ky = _e["ribos"][3] - 2
+_kx = _e["x0"] + (len(sn.egles_sablonas(_e)[0]) // 2 + 0.5) * _e["s"]; _ky = _e["ribos"][3] - 2
 tikrinti("eglės: ilgesnis kamienas – eglės dalis (dengia)", sn.egle_dengia(_e, _kx, _ky), (_kx, _ky))
 tikrinti("eglės: skirtumas mažas (žalia lieka žalia)", all(abs(int(e["spalvos"][0][3:5], 16) - 0xa0) < 0x20 for e in a.egles))
 
@@ -311,6 +311,81 @@ langai[0x77] = [420, 400, 1020, 800, False]; a.langai_judejo = True
 a.perskaityti_langus()
 tikrinti("tuščias langas pajudėjo: perpiešimo nereikia, kopų forma ta pati",
          not a.nesvarios_sritys and a.langai[0x77]["profilis"] is _pr, a.nesvarios_sritys)
+langai.clear(); a.perskaityti_langus()
+
+# 13. Paskutinio audito pataisymai (13.06)
+random.seed(14)
+_ats = 0
+for _ in range(300):
+    _s = {"busena": "konfeti", "t": 0.0, "kryptis": 1, "x": 5.0, "iseina": True}
+    sn.senio_veiksmo_eiga(_s, lambda l: (5.0, 500.0), 1.0, (0, 1920), (0, 1080), [])
+    _ats += _s["kryptis"] == -1
+tikrinti("konfeti: išeinantis pro kraštą neatsisuka", _ats == 0, _ats)
+# laukelyje paliktas nepritaikytas (per mažas) skaičius neperrašo paruoštuko / ↺ reikšmės, išėjus iš laukelio
+nustatyti(egles=True); eiti(0.3)
+a.valdikliai["egliu_min"].focus_force(); root.update()
+a.kint["egliu_min"].set("1"); root.update()
+_buvo = a.n["egliu_min"]
+a.nustatyti_laukelius({"egliu_min": sn.NUMATYTI["egliu_min"]}); root.update(); root.update()
+tikrinti("laukelyje nebaigtas rinkti tekstas paruoštuko neperrašo", _buvo == sn.NUMATYTI["egliu_min"]
+         and a.n["egliu_min"] == sn.NUMATYTI["egliu_min"] and a.kint["egliu_min"].get() == str(sn.NUMATYTI["egliu_min"]),
+         (_buvo, a.n["egliu_min"], a.kint["egliu_min"].get()))
+# testo metu meniu gija prideda „Išjungti“ tuo metu, kai tvarkomi kiti įvykiai – nedingsta
+class _Saras(list):
+    def pop(self, *x):
+        v = super().pop(*x)
+        if v == sn.WM_LBUTTONUP: a.meniu_komandos.append(3)
+        return v
+_bai, _kv = a.baigti, []
+a.baigti = lambda: _kv.append("baigti"); a.testas = {"dummy": True}
+_iv0 = a.deklo_ivykiai
+try:
+    a.deklo_ivykiai = _Saras([sn.WM_LBUTTONUP]); a.meniu_komandos[:] = [1]
+    a.tikrinti_deklo_ivykius()
+    tikrinti("testo metu „Išjungti“, pridėtas tvarkant kitus įvykius, nedingsta", _kv == ["baigti"], _kv)
+finally:
+    a.__dict__.pop("testas", None); a.baigti = _bai; a.deklo_ivykiai = _iv0
+
+# 14. Dar vieno audito pataisymai (13.06)
+import threading as _th
+# klaida našumo testo etape – testas nutraukiamas, viskas grąžinama
+nustatyti(senio_kiekis=0, sniego_senis=False); eiti(0.2)
+_pr = dict(a.n); _ev = _th.Event(); _ts, _kl = a.testo_sniegas, a.klaida_parodyta
+a.testo_sniegas = lambda: 1 / 0
+a.testas = {"pradiniai": _pr, "etapai": [("x", {"kiekis": 5}, None)], "rez": [], "stabdyti": _ev, "gpu": {"pav": ""},
+            "meginiai": [], "pradzia": "x", "paslepe": False}
+try:
+    a.testo_etapas(0); root.update()
+finally:
+    a.testo_sniegas = _ts
+tikrinti("klaida testo etape: testas nutrauktas, nustatymai grąžinti", "testas" not in a.__dict__ and _ev.is_set()
+         and a.n.get("kiekis") == _pr.get("kiekis") and not a.vartotojas_paslepe)
+KLAIDOS[:] = [k_ for k_ in KLAIDOS if "ZeroDivision" not in str(k_)]; ZK[:] = [k_ for k_ in ZK if "ZeroDivision" not in k_]
+a.klaida_parodyta = _kl
+# žurnalo pervadinimas nepavyko (byla užrakinta) – rašoma toliau
+_d = sn.Path(_tf.mkdtemp()); _z = sn.Zurnalas(_d / "z.log"); _z.MAKS = 10
+(_d / "z.log").write_text("x" * 50, encoding="utf-8")
+_rp = sn.Path.replace
+def _blogas(self, *x): raise PermissionError("užrakinta")
+sn.Path.replace = _blogas
+try:
+    _z.rasyti("BANDYMAS")
+finally:
+    sn.Path.replace = _rp
+tikrinti("žurnalas: nepavykus pervadinti – rašoma toliau", "BANDYMAS" in (_d / "z.log").read_text(encoding="utf-8"))
+# valytuvas nenusileidžia ant lango, siauresnio nei 3 tarpai (iš ten kitą kadrą išvyktų ir vėl kristų)
+random.seed(15); langai.clear()
+nustatyti(senio_kiekis=0, sniego_senis=False, valytuvai=True); eiti(0.5)
+_tp = a.valyt_tarpas(); _w = int(2.5 * _tp)
+langai[0x88] = [800, 500, 800 + _w, 700, False]; a.langai_judejo = True; eiti(0.3)
+_st = a.langai.get(0x88)
+_e = a.valytuvai[0]
+_e.update(busena="krenta", x=800 + _w / 2 - a.vx, y=_st["t"] - 50 if _st else 400.0, vy=0.0, pav=None, st=None)
+for _ in range(30):
+    a.valyt_kristi(_e, 1 / 30)
+    if _e["busena"] != "krenta": break
+tikrinti("valytuvas: ant per siauro lango nenusileidžia", _st is not None and not (_e.get("pav") or ("",))[0] == "langas",
+         (_e["busena"], _e.get("pav"), _w))
 langai.clear(); a.perskaityti_langus()
 
 tikrinti("programos klaidų nebuvo", not ZK and not KLAIDOS, (ZK + KLAIDOS)[:1])

@@ -59,8 +59,8 @@ try:  # Python 3.15+: nekeičiamas žodynas – konstantų lentelių atsitiktina
 except NameError:
     frozendict = dict
 
-VERSIJA = "13.05"
-DATA = "2026-11-22"
+VERSIJA = "13.06"
+DATA = "2026-11-27"
 PAVADINIMAS = f"Sniegas {VERSIJA} ({DATA})"
 
 AUTORIUS = "Vilmantas Ramonas"
@@ -265,6 +265,8 @@ EN = frozendict({
     "Visi šios skilties nustatymai – numatytieji.": "All settings in this section are at their defaults.",
     "Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.":
         "Click (or Space) to toggle. Right-click – only this one / all again.",
+    "Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik ši / vėl visos.":
+        "Click (or Space) to toggle. Right-click – only this one / all again.",
     "Sustabdyti": "Stop",
     "Fejerverkai dabar": "Fireworks now",
     "Sustabdyti fejerverkus": "Stop fireworks",
@@ -344,6 +346,7 @@ EN = frozendict({
         "⚠ The show ({t} s) is not shorter than the gap between shows ({m} min): while a show runs the next one is "
         "skipped – shows will be less frequent than set.",
     "Tai vienintelis pasirinktas – bent vienas turi likti.": "This is the only one selected – at least one must stay.",
+    "Tai vienintelė pasirinkta – bent viena turi likti.": "This is the only one selected – at least one must stay.",
     "Lygus": "Plain", "Juosta": "Stripe", "Dvispalvis": "Two-tone",
     "Apsnigtas viršus": "Snowy top",
     "Raštai ir spalvos": "Patterns and colors",
@@ -543,7 +546,7 @@ EN = frozendict({
     "Sniego valytuvų dydis, % įprasto.":
         "Snowplow size, % of normal.",
     "Nuvalytos langų vietos apledėja": "Cleared spots on windows ice over",
-    "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvai buksuoja. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.":
+    "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvų ratai prasisuka. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.":
         "Where a snowplow has cleared the top of a window and no snow has settled for about 30 s, a 50–100 px patch of ice forms. Baubles barely slow down on it and snowplows spin their wheels. Ice covered with snow is not slippery; it melts after a few minutes.",
     "60 – sklandžiau, bet procesorius dirba maždaug dvigubai daugiau.": "60 is smoother, but uses about twice the CPU.",
     "30 – mažiausia apkrova: vaizdo plokštė lieka ramybės būsenoje.": "30 uses the least CPU, and the graphics card stays idle.",
@@ -572,7 +575,7 @@ EN = frozendict({
         "When there are several snowmen, they differ in size: every second one is bigger (on a large screen there are "
         "smaller ones too). The sizes are chosen so the picture stays sharp.",
     "Stovinčiam prisninga ant galvos ir šluotos": "Snow settles on the head and broom while standing",
-    "Pačiupk už šaliko!": "Grab the scarf!",
+    "Pačiupkite už šaliko!": "Grab the scarf!",
     "Girliandos": "Light strings",
     "Mirksėjimas, %": "Blinking, %",
     "Lempučių vienoje pusėje": "Bulbs on each side",
@@ -592,7 +595,7 @@ EN = frozendict({
         "Performance profile (Python 3.15+): the program restarts and records which of its parts take the most CPU time. Results – sniegas_profilis.txt.",
     "Našumo testas pradėtas (~{m} min). Eiga – užvedus pelę ant programos „Sniegas“ piktogramos prie laikrodžio.":
         "Performance test started (~{m} min). Hover over the Snow icon next to the clock to see progress.",
-    "Sniegas – našumo testas: {i} iš {n} etapų, liko ~{m} min": "Snow – performance test: stage {i} of {n}, ~{m} min left",
+    "Sniegas – našumo testas: {i} etapas iš {n}, liko ~{m} min": "Snow – performance test: stage {i} of {n}, ~{m} min left",
     "(sniegas paslėptas – matuojama be jo)": "(snow hidden – measuring without it)",
     "Vyksta našumo testas…": "Performance test running…",
     "Našumo testas baigtas {laikas} – rezultatai: „Apie…“ → „Diagnostika“ → „Atverti“.":
@@ -610,7 +613,7 @@ VIETINE_BYLA = PROGRAMOS_APLANKAS / "sniegas_nustatymai.json"
 
 
 def aplankas_rasomas(aplankas):
-    bandymas = aplankas / ".sniegas_rasymo_bandymas"
+    bandymas = aplankas / f".sniegas_rasymo_bandymas_{os.getpid()}"  # du kartu paleisti netrukdo vienas kitam
     try:
         bandymas.write_text("", encoding="utf-8")
         return True
@@ -707,8 +710,11 @@ class Zurnalas:
         if not (self.ijungtas or visada):
             return
         try:
-            if self.kelias.exists() and self.kelias.stat().st_size > self.MAKS:
-                self.kelias.replace(self.kelias.with_suffix(".old.log"))
+            try:  # nepavykus pervadinti (byla atverta kitoje programoje, OneDrive) – rašoma toliau į tą pačią
+                if self.kelias.exists() and self.kelias.stat().st_size > self.MAKS:
+                    self.kelias.replace(self.kelias.with_suffix(".old.log"))
+            except OSError:
+                pass
             with open(self.kelias, "a", encoding="utf-8") as f:
                 f.write(time.strftime("%Y-%m-%d %H:%M:%S  ") + str(tekstas).rstrip().replace("\n", "\n    ") + "\n")
         except Exception:
@@ -1090,7 +1096,7 @@ APRASAI = frozendict({
                      "mažesnių). Dydžiai parinkti taip, kad piešinys liktų ryškus.",
     "valytuvu_kiekis": "Kiek sniego valytuvų važinėja ekrane.",
     "valytuvu_dydis": "Sniego valytuvų dydis, % įprasto.",
-    "ledas_languose": "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvai buksuoja. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.",
+    "ledas_languose": "Kur sniego valytuvas nuvalė lango viršų ir apie 30 s neprisnigo, susidaro 50–100 px ilgio ledo ruoželis. Ant jo bumbuliukai beveik nelėtėja, o sniego valytuvų ratai prasisuka. Užsnigtas ledas neslidus, po kelių minučių ištirpsta.",
     "gusio_stiprumas": "Kaip stipriai pučia vėjo gūsis. Gūsiai būna vidutiniškai kas 30 s ir trunka apie 4 s. 0 – gūsių nėra.",
     "snaiges": "Krentančios snaigės. Žemiau – kiek ir kokių rūšių, kaip krenta ir atrodo.",
     "vejas_ijungtas": "Vėjas, gūsiai ir sūkuriai. Išjungus – oras ramus: snaigės krenta, tik svyruoja.",
@@ -1387,8 +1393,6 @@ if sys.platform == "win32":
     user32.MonitorFromWindow.restype = _H
     user32.MonitorFromWindow.argtypes = [wintypes.HWND, wintypes.DWORD]
     user32.GetForegroundWindow.restype = wintypes.HWND
-    user32.GetParent.restype = wintypes.HWND
-    user32.GetParent.argtypes = [wintypes.HWND]
     for _f in ("IsWindow", "IsWindowVisible", "IsIconic", "IsZoomed", "GetWindowTextLengthW"):
         getattr(user32, _f).argtypes = [wintypes.HWND]
     if hasattr(user32, "GetDpiForWindow"):  # Windows 10 1607+
@@ -5568,7 +5572,7 @@ def senio_veiksmo_eiga(s_, ranka, k, riba_x, riba_y, daleles, maks_nauju=40, tai
     else:
         if not s_.get("konfeti"):
             s_["konfeti"] = (random.choice(list(KONFETI_RINKINIAI)), random.choice(list(KONFETI_FORMOS)))
-            if random.random() < SENIO_ATSISUKA_SAUNANT:  # kartais atsisuka – šauna atgal (ne vis judėjimo kryptimi)
+            if not s_.get("iseina") and random.random() < SENIO_ATSISUKA_SAUNANT:  # išeinantis – ne (šoktelėtų atgal)  # kartais atsisuka – šauna atgal (ne vis judėjimo kryptimi)
                 s_["kryptis"] = -s_["kryptis"]
         rinkinys, forma = s_["konfeti"]
         kampai, greitis, kiek, laikai = KONFETI_FORMOS[forma]
@@ -6695,6 +6699,8 @@ class Sniegas:
         self.kurti_bumbulus()
         self.kurti_valytuvus()
         self.kurti_senius()
+        for s_ in getattr(self, "seniai", ()):  # pagrindas (užduočių juosta) galėjo pasislinkti – aukštis iš naujo
+            s_["y_fiks"] = None
         self.kurti_snaigiu_atlasa()
         a = self.__dict__.get("alfa")
         if a is not None and a.veikia:
@@ -6839,7 +6845,10 @@ class Sniegas:
                                                           user32.GetSystemMetrics(SM_CXSMICON),
                                                           user32.GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE)
                 finally:
-                    kelias.unlink(missing_ok=True)  # piktograma jau atmintyje
+                    try:
+                        kelias.unlink(missing_ok=True)  # piktograma jau atmintyje
+                    except OSError:  # antivirusinė trumpam užrakino – piktograma vis tiek pridedama
+                        pass
                 if not self._deklo_ikona:
                     self.deklas = None  # bandysime vėl per kitą tikrinimą
                     return
@@ -6928,15 +6937,14 @@ class Sniegas:
     def tikrinti_deklo_ivykius(self):
         # Kitas tikrinimas suplanuojamas visada (finally) – viena klaida neturi visam laikui „atjungti“ piktogramos.
         try:
-            if self.__dict__.get("testas"):  # testo metu – tik meniu ir „Išjungti“ (kiti veiksmai sugadintų matavimą)
-                ivykiai = [p for p in self.deklo_ivykiai if p in (WM_RBUTTONUP, "i_dekla")]
-                komandos = [k for k in self.meniu_komandos if k == 3]
-                if len(ivykiai) < len(self.deklo_ivykiai) or len(komandos) < len(self.meniu_komandos):
-                    self.deklo_pranesimas(T("Vyksta našumo testas…"))
-                self.deklo_ivykiai[:], self.meniu_komandos[:] = ivykiai, komandos
+            # testo metu – tik meniu ir „Išjungti“ (kiti veiksmai sugadintų matavimą); tikrinama kiekvienas atskirai, ne
+            # sąrašas perrašomas: meniu gija gali pridėti komandą bet kada, ir „Išjungti“ neturi dingti
+            testas, atmesta = bool(self.__dict__.get("testas")), False
             while self.deklo_ivykiai:
                 pele = self.deklo_ivykiai.pop(0)
-                if pele == WM_LBUTTONUP:
+                if testas and pele not in (WM_RBUTTONUP, "i_dekla"):
+                    atmesta = True
+                elif pele == WM_LBUTTONUP:
                     self.rodyti_nustatymus()
                 elif pele == WM_RBUTTONUP:
                     self.deklo_meniu()
@@ -6946,7 +6954,9 @@ class Sniegas:
                     self.i_dekla()
             while self.meniu_komandos:
                 komanda = self.meniu_komandos.pop(0)
-                if komanda == 1:
+                if testas and komanda != 3:
+                    atmesta = True
+                elif komanda == 1:
                     self.rodyti_nustatymus()
                 elif komanda == 2:
                     self.perjungti_sniega()
@@ -6967,6 +6977,8 @@ class Sniegas:
                         self.pritaikyti_paruostuka(i, klausti=False)
                 elif komanda == 3:
                     self.baigti()
+            if atmesta and not getattr(self, "baigiama", False):
+                self.deklo_pranesimas(T("Vyksta našumo testas…"))
         except Exception as e:
             self.klaida(e)
         finally:
@@ -11026,8 +11038,11 @@ class Sniegas:
             if st["l"] <= x < st["r"] and y0 <= st["t"] <= e["y"]:
                 e.update(pav=("langas", hwnd), st=st)
                 pav = self.valyt_pavirsius(e)
-                if pav is not None:
+                # nusileidžia tik ten, kur ir važiuotų (≥ 3 tarpai): ant siauresnio kitą kadrą išvyktų ir vėl
+                # krintų į tą pačią vietą
+                if pav is not None and pav[4] - pav[3] >= 3 * self.valyt_tarpas():
                     break
+                pav = None
                 e.update(pav=None, st=None)
         else:
             c = int(x // S)
@@ -13970,8 +13985,10 @@ class Sniegas:
                 + f"\n\n{NASUMO_BYLA}\n\n" + T("Pradėti?"), parent=self.dialogo_tevas()):
             return
         stabdyti = threading.Event()
-        exe = shutil.which("nvidia-smi") or str(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32"
-                                                 / "nvidia-smi.exe")
+        # pirma – sisteminė (tvarkyklės) kopija: shutil.which Windows ieško ir einamajame aplanke
+        exe = str(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "nvidia-smi.exe")
+        if not os.path.exists(exe):
+            exe = shutil.which("nvidia-smi") or exe
         meginiai, gpu = [], {"pav": ""}
         if os.path.exists(exe):
             # kas sekundę po vieną užklausą (ne „-lms“ ciklas: į kanalą nvidia-smi rašo buferiu, eilutės ateitų
@@ -13979,14 +13996,16 @@ class Sniegas:
             def matuoti_gpu():
                 try:
                     gpu["pav"] = subprocess.run([exe, "--query-gpu=name", "--format=csv,noheader"], capture_output=True,
-                                                text=True, timeout=5, creationflags=0x08000000).stdout.strip().splitlines()[0]
+                                                text=True, encoding="utf-8", errors="replace", timeout=5,
+                                                creationflags=0x08000000).stdout.strip().splitlines()[0]
                 except Exception as e:
                     gpu["klaida"] = repr(e)  # į žurnalą įrašoma pabaigoje (ne iš šios gijos)
                     return
                 while not stabdyti.is_set():
                     try:
                         isv = subprocess.run([exe, "--query-gpu=power.draw,clocks.gr", "--format=csv,noheader,nounits"],
-                                             capture_output=True, text=True, timeout=3, creationflags=0x08000000).stdout
+                                             capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                             timeout=3, creationflags=0x08000000).stdout
                         w, mhz = (float(x) for x in isv.splitlines()[0].split(",")[:2])
                         meginiai.append((time.perf_counter(), w, mhz))
                     except Exception:
@@ -14004,7 +14023,30 @@ class Sniegas:
                                 "laikrodžio.").format(m=trukme))
         self.testo_etapas(0)
 
+    def testo_nutraukti(self, e):
+        """Klaida testo eigoje: testas nutraukiamas, viskas grąžinama kaip prieš jį (kitaip testas „vyktų“ amžinai –
+        nustatymų langas paslėptas, dėklas atmeta veiksmus, nvidia-smi klausiama be pabaigos)."""
+        testas = self.__dict__.pop("testas", None)
+        if testas:
+            testas["stabdyti"].set()
+            self.kopijavimo_rezimas, self.vartotojas_paslepe, self.testo_matas = None, testas["paslepe"], None
+            random.seed()
+            for zingsnis in (self.spalvinti_rodymo_mygtuka, lambda: self.taikyti_nustatymus(testas["pradiniai"]),
+                             self.taikyti_matomuma, self.deklo_patarimas, self.rodyti_nustatymus):
+                try:
+                    zingsnis()
+                except Exception:
+                    ZURNALAS.rasyti("KLAIDA nutraukiant našumo testą:\n" + traceback.format_exc(), visada=True)
+            ZURNALAS.rasyti("NAŠUMO TESTAS nutrauktas dėl klaidos", visada=True)
+        self.klaida(e)
+
     def testo_etapas(self, i):
+        try:
+            self._testo_etapas(i)
+        except Exception as e:
+            self.testo_nutraukti(e)
+
+    def _testo_etapas(self, i):
         testas = self.__dict__.get("testas")
         if not testas:
             return
@@ -14013,7 +14055,7 @@ class Sniegas:
             return
         _, pakeitimai, rezimas = testas["etapai"][i]
         liko = max(1, round((len(testas["etapai"]) - i) * (NASUMO_ISIBEGEJIMAS + NASUMO_MATAVIMAS) / 60))
-        self.deklo_patarimas(T("Sniegas – našumo testas: {i} iš {n} etapų, liko ~{m} min").format(
+        self.deklo_patarimas(T("Sniegas – našumo testas: {i} etapas iš {n}, liko ~{m} min").format(
             i=i + 1, n=len(testas["etapai"]), m=liko)
             + ("\n" + T("(sniegas paslėptas – matuojama be jo)") if pakeitimai is None else ""))
         self.kopijavimo_rezimas = rezimas
@@ -14054,6 +14096,12 @@ class Sniegas:
         self.pilnas_perpiesimas = True
 
     def testo_matuoti(self, i):
+        try:
+            self._testo_matuoti(i)
+        except Exception as e:
+            self.testo_nutraukti(e)
+
+    def _testo_matuoti(self, i):
         testas = self.__dict__.get("testas")
         if not testas:
             return
@@ -14063,6 +14111,12 @@ class Sniegas:
         self.root.after(int(NASUMO_MATAVIMAS * 1000), lambda: self.testo_irasyti(i))
 
     def testo_irasyti(self, i):
+        try:
+            self._testo_irasyti(i)
+        except Exception as e:
+            self.testo_nutraukti(e)
+
+    def _testo_irasyti(self, i):
         testas = self.__dict__.get("testas")
         if not testas:
             return
@@ -15592,8 +15646,12 @@ class Sniegas:
         def patarimas():
             busena = T(("naudojamas" if v.get() else "nenaudojamas") if rastas else
                        ("naudojama" if v.get() else "nenaudojama"))
-            uzuomina = T("Tai vienintelis pasirinktas – bent vienas turi likti.") if jungiklis.aktyvus and vienintelis() \
-                else T("Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi.") \
+            # raštas – vyriškoji giminė, spalva – moteriškoji
+            uzuomina = T("Tai vienintelis pasirinktas – bent vienas turi likti." if rastas else
+                         "Tai vienintelė pasirinkta – bent viena turi likti.") if jungiklis.aktyvus and vienintelis() \
+                else T("Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik šis / vėl visi."
+                       if rastas else
+                       "Spustelėkite (arba paspauskite tarpo klavišą), kad pakeistumėte. Dešiniuoju – tik ši / vėl visos.") \
                 if jungiklis.aktyvus else \
                 T("Bumbuliukai išjungti – įjunkite skilties antraštėje.")
             return f"{rusis}: {T(pavadinimas)} – {busena}\n{uzuomina}"
@@ -16028,7 +16086,7 @@ class Sniegas:
         # patarimas – toje pusėje, kur seniuko nėra; pačiupus (kol tempiamas) – nereikia
         if not p.get("tempiamas"):
             kaireje = p["x"] > pp("seniai") / 2
-            c.create_text(4 if kaireje else pp("seniai") - 4, 3, text=T("Pačiupk už šaliko!"),
+            c.create_text(4 if kaireje else pp("seniai") - 4, 3, text=T("Pačiupkite už šaliko!"),
                           anchor="nw" if kaireje else "ne", fill="#cfd8e3", font=("Segoe UI", 8))
         x0, y0 = int(p["x"] - SENIO_W * Pp / 2), int(p["y"]) - SENIO_H * Pp + 1
         piks_piesti(DrobesPiesejas(c), senio_tinklelis(poza, kadras, nr >= n, 0, senio_tuta(p), self.senio_puosmena(p)),
@@ -16467,10 +16525,8 @@ class Sniegas:
         Patarimas(etikete, lambda: "\n\n".join(filter(None, (self.slankiklio_patarimas(r) for r in raktai))))
 
         def numatytosios(_):
-            if "disabled" not in self.valdikliai[raktai[0]].state():
-                self.root.focus_set()  # kitaip sufokusuoto laukelio reikšmė laikoma „dar renkama“ ir nepritaikoma
-                for r in (raktai[1], raktai[0], raktai[1]):  # antra riba – dar kartą, jei pirmąkart apsiribojo
-                    self.kint[r].set(str(NUMATYTI[r]))
+            if "disabled" not in self.valdikliai[raktai[0]].state():  # kaip skilties ↺ (fokusas, abi ribos)
+                self.nustatyti_laukelius({r: NUMATYTI[r] for r in raktai})
         etikete.bind("<Double-Button-1>", numatytosios)
 
     def numatytoji_tekstu(self, raktas):
@@ -17025,7 +17081,9 @@ class Sniegas:
                 if var is None:
                     self.n[k] = v
                     continue
-                if self.n.get(k) == v:
+                # praleidžiama, tik jei ir laukelyje tas pats: kitaip ten likęs nepritaikytas (už ribų) tekstas
+                # išėjus iš laukelio (baigti_ivedima) būtų pritaikytas vietoj šios reikšmės
+                if self.n.get(k) == v and (isinstance(var, tk.BooleanVar) or str(var.get()) == str(v)):
                     continue
                 self._ivedimas_baigtas = k
                 var.set(v if isinstance(var, tk.BooleanVar) else str(v))
@@ -17267,7 +17325,7 @@ def sukurti_ikonos_byla(kelias):
 
 def main():
     if sys.platform != "win32":
-        print("Ši programa veikia tik Windows. / This program runs only on Windows.")
+        print("Ši programa veikia tik „Windows“ sistemoje. / This program runs only on Windows.")
         return
     if "--ikona" in sys.argv:  # piktograma kompiliavimui: py Sniegas_….pyw --ikona
         nustatyti_kalba(kalba_is_nustatymu())  # klaidos pranešimas – nustatymų kalba
